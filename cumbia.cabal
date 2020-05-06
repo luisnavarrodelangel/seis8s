@@ -5,7 +5,7 @@ description:         Please see README.md
 homepage:            https://github.com/luisnavarrodelangel/cumbia/blob/master/README.md
 license:             GPL-3
 license-file:        LICENSE
-author:              uis N. Del Angel & David Ogborn
+author:              Luis N. Del Angel & David Ogborn
 maintainer:          navarrol@mcmaster.ca
 copyright:           2020 Luis N. Del Angel & David Ogborn
 category:            Web
@@ -21,7 +21,7 @@ Library
       tempi,
       tidal,
       haskellish >= 0.2.1 && <0.3,
-      haskell-src-exts >= 1.21.0,
+      haskell-src-exts >= 1.21.0
 
   GHC-Options:       -Wall -fwarn-tabs -fno-warn-unused-do-bind
   Exposed-modules:   Sound.Cumbia.Generic
@@ -35,18 +35,4 @@ Library
                      Sound.Cumbia.Style
 
   other-modules:
-  default-language:  Haskell2010
-
-executable cumbia
-  hs-source-dirs:    .
-  main-is:           Main.hs
-  build-depends:
-      base,
-      time,
-      tempi,
-      tidal,
-      haskellish >= 0.2.1 && <0.3,
-      haskell-src-exts >= 1.21.0,
-
-
   default-language:  Haskell2010
