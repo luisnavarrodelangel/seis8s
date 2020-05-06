@@ -1,7 +1,7 @@
-module Harmony where
+module Sound.Cumbia.Harmony where
 
-import Generic
-import Rhythm
+import Sound.Cumbia.Generic
+import Sound.Cumbia.Rhythm
 
 import Data.Time
 import Data.Tempo

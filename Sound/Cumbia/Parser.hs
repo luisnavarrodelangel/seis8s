@@ -1,12 +1,14 @@
-module Parser (parseLang) where
+module Sound.Cumbia.Parser (parseLang) where
 
-import Program
-import GlobalMaterial
-import Style
-import Instrument
+import Sound.Cumbia.Program
+import Sound.Cumbia.GlobalMaterial
+import Sound.Cumbia.Style
+import Sound.Cumbia.Instrument
+import Sound.Cumbia.InstrumentState
 
 import Language.Haskell.Exts
 import Language.Haskellish
+import Control.Monad.State
 import Data.Tempo
 import Data.Time
 import Data.Bifunctor
@@ -29,6 +31,10 @@ myParser = do
     reserved "test"
     return (defaultGlobalMaterial,cumbia,piano)
 
+--   getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State InstrumentState [Event]
 -- render :: (GlobalMaterial,Style,Instrument) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Tidal.ControlMap)]
+-- runState :: State s a -> s -> (a, s) -- as soon as the state is meaningful I should stop discarding it.
 render :: Program -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Tidal.ControlMap)]
-render (gmm, style, inst) tempo iw ew = (pianoEvents gmm style tempo iw ew) inst
+render (gmm, style, inst) tempo iw ew = fst $ runState x emptyInstrumentState --this should be another argument to my render function
+  where
+     x = getEvents inst gmm style tempo iw ew

@@ -1,6 +1,6 @@
-module GlobalMaterial where
+module Sound.Cumbia.GlobalMaterial where
 
-import Harmony
+import Sound.Cumbia.Harmony
 
 import Data.Tempo
 import Data.Time

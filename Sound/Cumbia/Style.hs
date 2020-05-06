@@ -1,9 +1,9 @@
-module Style where
+module Sound.Cumbia.Style where
 
 
-import Generic
-import Harmony
-import Rhythm
+import Sound.Cumbia.Generic
+import Sound.Cumbia.Harmony
+import Sound.Cumbia.Rhythm
 -- import GlobalMaterial
 
 import Data.Maybe

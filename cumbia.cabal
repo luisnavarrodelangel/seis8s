@@ -20,7 +20,9 @@ Library
       time,
       tempi,
       tidal,
-      haskellish >= 0.2.1 && <0.3,
+      mtl,
+      containers,
+      haskellish >= 0.2.0 && <0.3,
       haskell-src-exts >= 1.21.0
 
   GHC-Options:       -Wall -fwarn-tabs -fno-warn-unused-do-bind

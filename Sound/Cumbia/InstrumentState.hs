@@ -1,4 +1,4 @@
-module InstrumentState where
+module Sound.Cumbia.InstrumentState where
 
 --this is about what do I need to keep track of ? -- better to keep it empty for now
 

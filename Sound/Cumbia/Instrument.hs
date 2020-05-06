@@ -1,4 +1,4 @@
-module Instrument where
+module Sound.Cumbia.Instrument where
 
 import Data.Tempo
 import Data.Time
@@ -8,10 +8,10 @@ import Control.Monad.State
 import qualified Sound.Tidal.Context as Tidal
 import qualified Data.List as List
 
-import InstrumentState
-import GlobalMaterial
-import Style
-import Harmony
+import Sound.Cumbia.InstrumentState
+import Sound.Cumbia.GlobalMaterial
+import Sound.Cumbia.Style
+import Sound.Cumbia.Harmony
 
 --set the project as a cabal library (not hackage)-- look at tempi
 -- look at tempi.cabal in github
