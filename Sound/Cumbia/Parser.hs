@@ -1,4 +1,4 @@
-module Sound.Cumbia.Parser (parseLang) where
+module Sound.Cumbia.Parser (parseLang, render) where
 
 import Sound.Cumbia.Program
 import Sound.Cumbia.GlobalMaterial

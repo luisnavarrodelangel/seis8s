@@ -55,7 +55,8 @@ cumbia = Style {
 rhythmicPattern :: RhythmicPattern -> (Tempo -> UTCTime -> UTCTime ->  [Rational])
 rhythmicPattern xs t iw ew  = Data.List.sort $ concat $ fmap (\(x, y) -> findBeats t iw ew x y) xs
 
-
+--webdirt uses end uses the % dependant on the length of the sample, cut is used for drums (might be useful)
+--we might need to add the duration parameters
 
 --test functions
 -- myTempo  = Tempo {freq = 1, time = myTime 0, count = 0}
