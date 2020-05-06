@@ -28,12 +28,14 @@ parseLang = f . parseExp
 
 myParser:: H Program
 myParser = do
-    reserved "test"
+    reserved "piano"
     return (defaultGlobalMaterial,cumbia,piano)
 
 --   getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State InstrumentState [Event]
 -- render :: (GlobalMaterial,Style,Instrument) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Tidal.ControlMap)]
 -- runState :: State s a -> s -> (a, s) -- as soon as the state is meaningful I should stop discarding it.
+--check Tidal.params for looking at the available params for webdirt
+
 render :: Program -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Tidal.ControlMap)]
 render (gmm, style, inst) tempo iw ew = fst $ runState x emptyInstrumentState --this should be another argument to my render function
   where

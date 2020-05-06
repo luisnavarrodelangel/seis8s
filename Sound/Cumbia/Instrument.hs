@@ -50,7 +50,7 @@ pianoEvents gmm style tempo iw ew = do
 
 testgmm = GlobalMaterial {harmony = myHarmony }
 
-myHarmony = [Harmony (Chord 60 major) (2, 0) (2, 1), Harmony (Chord 62 minor) (2, 1) (2, 2)]
+myHarmony = [Harmony (Chord 0 major) (2, 0) (2, 1), Harmony (Chord 2 minor) (2, 1) (2, 2)]
 myTempo  = Tempo {freq = 1, time = myTime 0, count = 0}
 
 myDay :: Day
