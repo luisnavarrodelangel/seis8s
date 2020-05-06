@@ -1,7 +1,7 @@
-module Parser where
+module Parser (parseLang) where
 
 import Program
-import GlobalMusicalMaterial
+import GlobalMaterial
 import Style
 import Instrument
 
@@ -16,7 +16,7 @@ import qualified Sound.Tidal.Context as Tidal
 
 type H = Haskellish ()
 
--- type Program = (GlobalMusicalMaterial,Style, Instrument)
+-- type Program = (GlobalMaterial,Style, Instrument)
 
 parseLang :: String -> Either String Program
 parseLang = f . parseExp
@@ -29,6 +29,6 @@ myParser = do
     reserved "test"
     return (defaultGlobalMaterial,cumbia,piano)
 
--- render :: (GlobalMusicalMaterial,Style,Instrument) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Tidal.ControlMap)]
+-- render :: (GlobalMaterial,Style,Instrument) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Tidal.ControlMap)]
 render :: Program -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Tidal.ControlMap)]
 render (gmm, style, inst) tempo iw ew = (pianoEvents gmm style tempo iw ew) inst

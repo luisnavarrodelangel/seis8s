@@ -4,7 +4,7 @@ module Style where
 import Generic
 import Harmony
 import Rhythm
--- import GlobalMusicalMaterial
+-- import GlobalMaterial
 
 import Data.Maybe
 import Data.Tempo

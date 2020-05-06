@@ -9,7 +9,7 @@ import qualified Sound.Tidal.Context as Tidal
 import qualified Data.List as List
 
 import InstrumentState
-import GlobalMusicalMaterial
+import GlobalMaterial
 import Style
 import Harmony
 
@@ -27,7 +27,7 @@ import Harmony
 
 -- what can be transformed from the instrument based on the Global and Instrument material
 data Instrument = Instrument {
-  getEvents :: GlobalMusicalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State InstrumentState [Event]
+  getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State InstrumentState [Event]
 }
 
 
@@ -48,7 +48,7 @@ pianoEvents gmm style tempo iw ew = do
   let events = zip time cmap -- [(UTCTime, Tidal.ControlMap)]
   return events
 
-testgmm = GlobalMusicalMaterial {harmony = myHarmony }
+testgmm = GlobalMaterial {harmony = myHarmony }
 
 myHarmony = [Harmony (Chord 60 major) (2, 0) (2, 1), Harmony (Chord 62 minor) (2, 1) (2, 2)]
 myTempo  = Tempo {freq = 1, time = myTime 0, count = 0}
