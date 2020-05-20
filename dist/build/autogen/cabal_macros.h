@@ -35,6 +35,13 @@
   (major1) == 0 && (major2) <  2 || \
   (major1) == 0 && (major2) == 2 && (minor) <= 0)
 
+/* package hosc-0.17 */
+#define VERSION_hosc "0.17"
+#define MIN_VERSION_hosc(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  17 || \
+  (major1) == 0 && (major2) == 17 && (minor) <= 0)
+
 /* package mtl-2.2.2 */
 #define VERSION_mtl "2.2.2"
 #define MIN_VERSION_mtl(major1,major2,minor) (\
@@ -49,12 +56,12 @@
   (major1) == 1 && (major2) <  0 || \
   (major1) == 1 && (major2) == 0 && (minor) <= 1)
 
-/* package tidal-1.4.9 */
-#define VERSION_tidal "1.4.9"
-#define MIN_VERSION_tidal(major1,major2,minor) (\
+/* package text-1.2.4.0 */
+#define VERSION_text "1.2.4.0"
+#define MIN_VERSION_text(major1,major2,minor) (\
   (major1) <  1 || \
-  (major1) == 1 && (major2) <  4 || \
-  (major1) == 1 && (major2) == 4 && (minor) <= 9)
+  (major1) == 1 && (major2) <  2 || \
+  (major1) == 1 && (major2) == 2 && (minor) <= 4)
 
 /* package time-1.8.0.4 */
 #define VERSION_time "1.8.0.4"
@@ -126,7 +133,7 @@
   (major1) == 2 && (major2) <  30 || \
   (major1) == 2 && (major2) == 30 && (minor) <= 0)
 
-#define CURRENT_COMPONENT_ID "cumbia-0.0.0.1-BQecAkBoB0cDrkwJJXYWbO"
+#define CURRENT_COMPONENT_ID "cumbia-0.0.0.1-DWRhSHI9y5m9uxGEW8mG7S"
 
-#define CURRENT_PACKAGE_KEY "cumbia-0.0.0.1-BQecAkBoB0cDrkwJJXYWbO"
+#define CURRENT_PACKAGE_KEY "cumbia-0.0.0.1-DWRhSHI9y5m9uxGEW8mG7S"
 

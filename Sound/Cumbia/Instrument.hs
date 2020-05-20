@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Sound.Cumbia.Instrument where
 
 import Data.Tempo
@@ -5,60 +7,73 @@ import Data.Time
 import Data.Map as Map
 import Data.Fixed
 import Control.Monad.State
-import qualified Sound.Tidal.Context as Tidal
+import Sound.OSC as H
+import Data.Text as T
 import qualified Data.List as List
 
 import Sound.Cumbia.InstrumentState
 import Sound.Cumbia.GlobalMaterial
 import Sound.Cumbia.Style
 import Sound.Cumbia.Harmony
+import Sound.Cumbia.Generic
 
---set the project as a cabal library (not hackage)-- look at tempi
--- look at tempi.cabal in github
--- Haskell versioning
--- - Build-depends:
---       base >=4.8 && <5,
---       time >=1.8.0.2 && <1.9
---       tempi >= 1.0.2.0 && < 1.10
-
--- for my version use 0.0.1
-
--- 2. parsing and rendering
 
 -- what can be transformed from the instrument based on the Global and Instrument material
 data Instrument = Instrument {
   getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State InstrumentState [Event]
 }
 
-
 type BeginWindowTime = UTCTime
 type EndWindowTime = UTCTime
-type Event = (UTCTime, Tidal.ControlMap)
+-- type Event = (UTCTime, Map Text Datum)
+type Event = (UTCTime, Map Text Datum)
+
+emptyInstrument :: Instrument
+emptyInstrument = Instrument {getEvents = emptyEvents}
+
+emptyEvents _ _ _ _ _ = do
+  return $ []
 
 -- function that generates an instrument
 piano :: Instrument
 piano = Instrument { getEvents = pianoEvents}
+
+bajo :: Instrument
+bajo = Instrument {getEvents = bajoEvents}
+
+guira :: Instrument
+guira = Instrument {getEvents = guiraEvents}
 
 pianoEvents gmm style tempo iw ew = do
   let attacks = rhythmicPattern (pianoRhythmPattern0 style) tempo iw ew  -- [Rational] [(1, 0), (1, 0.5)]
   let chordPattern = generatechords attacks (harmony gmm) -- [(Rational, [Pitch])]
   let pitchPattern = concatChords chordPattern -- [(Rational, Pitch)]
   let time = fmap (\c -> countToTime tempo (fst c)) pitchPattern  -- [UTCTime]
-  let cmap =  fmap (\p -> fromList [("sample_name", Tidal.VS "piano"), ("note", Tidal.VF $ snd p)]) pitchPattern --Tidal.ControlMap
-  let events = zip time cmap -- [(UTCTime, Tidal.ControlMap)]
+  let instCmap = fmap (\p -> cmap "piano" (snd p)) pitchPattern --Map Text Datum
+  let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
 
-testgmm = GlobalMaterial {harmony = myHarmony }
+bajoEvents gmm style tempo iw ew = do
+  let pat = List.zip (bassRhythmPattern0 style) (bassPitchPattern0 style) --[(RhythmicPattern, Double)]
+  let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
+  let bassline = generateLine pitchPat (harmony gmm) -- [(Rational, [Pitch])]
+  let time = fmap (\c -> countToTime tempo (fst c)) bassline  -- [UTCTime]
+  let instCmap = fmap (\p -> cmap "bajo" (snd p)) bassline --Map Text Datum
+  let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
+  return events
 
-myHarmony = [Harmony (Chord 0 major) (2, 0) (2, 1), Harmony (Chord 2 minor) (2, 1) (2, 2)]
-myTempo  = Tempo {freq = 1, time = myTime 0, count = 0}
+guiraEvents gmm style tempo iw ew = do
+  let pat = List.zip (guiraRhythmPattern0 style) (guiraSampleNPattern0 style) --[(RhythmicPattern, Double)]
+  let hitPat = percHitsPattern pat tempo iw ew --[(Rational, Int)]
+  let time = fmap (\c -> countToTime tempo (fst c)) hitPat  -- [UTCTime]
+  let instCmap = fmap (\p -> cmap' "guira" (snd p) 60) hitPat --Map Text Datum
+  let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
+  return events
 
-myDay :: Day
-myDay = fromGregorian 2020 4 4
+cmap' :: String -> Int -> Pitch -> Map Text Datum
+cmap' sampleName sampleIndex pitch = fromList [("s", string sampleName), ("n", int32 sampleIndex), ("note", double pitchAdjustedOctave)]
+  where pitchAdjustedOctave = pitch - 60
 
-myTime :: Rational -> UTCTime
-myTime s = UTCTime myDay (realToFrac s)
-
-
--- --piano mg cumbia
--- -- someParser
+cmap :: String -> Pitch -> Map Text Datum
+cmap sampleName pitch = fromList [("s", string sampleName), ("note", double pitchAdjustedOctave)]
+  where pitchAdjustedOctave = pitch - 60

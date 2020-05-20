@@ -13,9 +13,12 @@ data GlobalMaterial = GlobalMaterial {
 } deriving (Show)
 
 defaultGlobalMaterial = GlobalMaterial {
-  harmony = [Harmony (Chord 60 major) (2, 0) (2, 1), Harmony (Chord 67 major) (2, 1) (2, 2)]
+  harmony = [Harmony (Chord 60 major) (1, 0) (1, 1)]
 }
 
+newGlobalMaterial = GlobalMaterial {
+  harmony = [Harmony (Chord 67 major) (1, 0) (1, 1)]
+}
 
 -- myTempo  = Tempo {freq = 1, time = myTime 0, count = 0}
 -- tempo is provided by Estuary in this case.

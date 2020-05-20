@@ -30,7 +30,7 @@ version = Version [0,0,0,1] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/home/lui/.cabal/bin"
-libdir     = "/home/lui/.cabal/lib/x86_64-linux-ghc-8.0.2/cumbia-0.0.0.1-BQecAkBoB0cDrkwJJXYWbO"
+libdir     = "/home/lui/.cabal/lib/x86_64-linux-ghc-8.0.2/cumbia-0.0.0.1-DWRhSHI9y5m9uxGEW8mG7S"
 dynlibdir  = "/home/lui/.cabal/lib/x86_64-linux-ghc-8.0.2"
 datadir    = "/home/lui/.cabal/share/x86_64-linux-ghc-8.0.2/cumbia-0.0.0.1"
 libexecdir = "/home/lui/.cabal/libexec"
