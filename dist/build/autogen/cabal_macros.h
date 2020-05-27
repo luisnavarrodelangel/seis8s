@@ -70,6 +70,13 @@
   (major1) == 1 && (major2) <  8 || \
   (major1) == 1 && (major2) == 8 && (minor) <= 0)
 
+/* package tuple-0.3.0.2 */
+#define VERSION_tuple "0.3.0.2"
+#define MIN_VERSION_tuple(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  3 || \
+  (major1) == 0 && (major2) == 3 && (minor) <= 0)
+
 /* tool gcc-7 */
 #define TOOL_VERSION_gcc "7"
 #define MIN_TOOL_VERSION_gcc(major1,major2,minor) (\
@@ -133,7 +140,7 @@
   (major1) == 2 && (major2) <  30 || \
   (major1) == 2 && (major2) == 30 && (minor) <= 0)
 
-#define CURRENT_COMPONENT_ID "cumbia-0.0.0.1-DWRhSHI9y5m9uxGEW8mG7S"
+#define CURRENT_COMPONENT_ID "cumbia-0.0.0.1-JFHr7Gi6989AupJCGfkJpK"
 
-#define CURRENT_PACKAGE_KEY "cumbia-0.0.0.1-DWRhSHI9y5m9uxGEW8mG7S"
+#define CURRENT_PACKAGE_KEY "cumbia-0.0.0.1-JFHr7Gi6989AupJCGfkJpK"
 

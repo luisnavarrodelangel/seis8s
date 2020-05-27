@@ -16,12 +16,13 @@ extra-source-files:
 Library
   hs-source-dirs:    .
   Build-Depends:
+      mtl,
       base,
       time,
-      tempi,
       hosc,
       text,
-      mtl,
+      tempi,
+      tuple,
       containers,
       haskellish >= 0.2.0 && <0.3,
       haskell-src-exts >= 1.21.0

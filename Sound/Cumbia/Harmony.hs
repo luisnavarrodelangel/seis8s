@@ -15,7 +15,7 @@ data Harmony = Harmony Chord RhythmicPosition RhythmicPosition deriving (Show)--
 type Progression = [Harmony]
 
 generateLine :: [(Rational, Int)] -> [Harmony] -> [(Rational, Pitch)]
-generateLine attacksAndIntervals chords = concat $ fmap (generateNotesFromChord attacksAndIntervals) chords
+generateLine attacksAndIntervals chords =  concat $ fmap (generateNotesFromChord attacksAndIntervals) chords
 
 generateNotesFromChord :: [(Rational, Int)] -> Harmony -> [(Rational, Pitch)]
 generateNotesFromChord attacksAndIntervals chord = concat $ fmap (\x -> generateSingleNoteFromChord x chord) attacksAndIntervals

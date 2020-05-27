@@ -15,7 +15,6 @@ myDay = fromGregorian 2020 4 4
 mytime :: Rational -> UTCTime
 mytime s = UTCTime myDay (realToFrac s)
 
--- myharmony = [Harmony (Chord 60 major) (2, 0) (2, 1), Harmony (Chord 62 minor) (2, 1) (2, 2)]
 --
 -- testgmm = GlobalMaterial {harmony = myharmony }
 --
