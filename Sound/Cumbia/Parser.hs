@@ -44,31 +44,32 @@ layers :: H [Layer]
 layers =  listOfDoStatements statement
 
 statement :: H Layer
-statement =  parseLayer <|> globalStatement -- programaLiteral <|> programaConEstiloEInst
+statement =  parseLayer <|> globalStatement <|> silencio -- programaLiteral <|> programaConEstiloEInst
 
 -- GlobalMaterial
 -- e.g. clave dosTres --gets parsed 1st that changes the state
 -- then harmony Cmaj Emin -- 2nd, and changes the state
 -- then clave tresDos -- 3rd -- and changes the state
 
--- globalStatement :: H Layer -- should return []?
--- globalStatement = do
---   f <-  globalMaterialFunctions
---   st <- get
---   let newState = f st
---   put newState
---   return emptyLayer
-
 globalStatement :: H Layer
 globalStatement = do
-  f <- progressionToGm -- globalMaterialFunctions --
+  f <- globalMaterialFunctions -- progressionToGm
   st <- get
-  let newState = f -- f st
+  let newState = f st
   put newState
   return emptyLayer
 
--- globalMaterialFunctions :: H (GlobalMaterial -> GlobalMaterial)
--- globalMaterialFunctions gm = progressionToGm ?
+silencio :: H Layer
+silencio = emptyLayer <$ reserved "silencio"
+
+globalMaterialFunctions :: H (GlobalMaterial -> GlobalMaterial)
+globalMaterialFunctions = parseSetChordProg
+
+parseSetChordProg :: H (GlobalMaterial -> GlobalMaterial)
+parseSetChordProg = (reserved "harmonia" >> return setChordProg) <*> progressionParser
+
+setChordProg :: [Harmony] -> GlobalMaterial -> GlobalMaterial
+setChordProg hs gm = gm { harmony = hs }
 
 progressionToGm :: H GlobalMaterial
 progressionToGm = progressionToGm' <*> progressionParser
@@ -108,49 +109,64 @@ setHarmony' metre (p, t, s, e) = Harmony (Chord p t) (metre, s) (metre, e)
 
 pitchParser :: H Pitch
 pitchParser =
-  c <$ reserved "c"     <|>
-  cs <$ reserved "c'"   <|>
-  cs <$ reserved "db"   <|>
-  d <$ reserved "d"     <|>
-  ds <$ reserved "d'"   <|>
-  ds <$ reserved "eb"   <|>
-  e <$ reserved "e"     <|>
-  f <$ reserved "f"     <|>
-  fs <$ reserved "f'"   <|>
-  fs <$ reserved "gb"   <|>
-  g <$ reserved "g"     <|>
-  gs <$ reserved "g'"   <|>
-  gs <$ reserved "ab"   <|>
-  a <$ reserved "a"     <|>
-  as <$ reserved "a'"   <|>
-  as <$ reserved "bb"   <|>
-  b <$ reserved "b"
+               c <$ reserved "c"
+           <|> cs <$ reserved "c'"
+           <|> cs <$ reserved "db"
+           <|> d <$ reserved "d"
+           <|> ds <$ reserved "d'"
+           <|> ds <$ reserved "eb"
+           <|> e <$ reserved "e"
+           <|> f <$ reserved "f"
+           <|> fs <$ reserved "f'"
+           <|> fs <$ reserved "gb"
+           <|> g <$ reserved "g"
+           <|> gs <$ reserved "g'"
+           <|> gs <$ reserved "ab"
+           <|> a <$ reserved "a"
+           <|> as <$ reserved "a'"
+           <|> as <$ reserved "bb"
+           <|> b <$ reserved "b"
 
 chordTypeParser :: H ChordType
 chordTypeParser =
-  major <$ reserved "maj"      <|> -- no capital letters?
-  minor <$ reserved "min"      <|>
-  major7 <$ reserved "maj7"    <|>
-  minor7 <$ reserved "min7"    <|>
-  dom <$ reserved "dom"        <|>
-  fifths <$ reserved "quintas" <|>
-  sus4 <$ reserved "sus4"      <|>
-  sus2 <$ reserved "sus2"      <|>
-  aug <$ reserved "aug"        <|>
-  dim <$ reserved "dim"
+                  major <$ reserved "maj"
+              <|> minor <$ reserved "min"
+              <|> major7 <$ reserved "maj7"
+              <|> minor7 <$ reserved "min7"
+              <|> dom <$ reserved "dom"
+              <|> fifths <$ reserved "quintas"
+              <|> sus4 <$ reserved "sus4"
+              <|> sus2 <$ reserved "sus2"
+              <|> aug <$ reserved "aug"
+              <|> dim <$ reserved "dim"
+              <|> dim7 <$ reserved "dim7"
+              <|> semidim <$ reserved "sdim"
 
 parseLayer :: H Layer
-parseLayer = parseStyleInstAsLayer <|> parseInstAsLayer
+parseLayer =  parseInstAsLayer
+          <|> transformadoresDeLayer
+
+transformadoresDeLayer :: H Layer
+transformadoresDeLayer =  parseSeleccionarEstilo
+                      <|> parseSeleccionarSample
+                      <|> parseSeleccionarSamples
+                      <|> parseTonicaYquinta
+                      <|> parseCambiarNota
+                      <|> parseCambiarNotas
+                      <|> parseCambiarRitmo
+                      <|> parseCambiarRitmos
+                      <|> parseCambiarIntervalo
+                      <|> parsePreset
 
 inst :: H Instrument
 inst =
-  piano <$ reserved "piano" <|>
-  bajo <$ reserved "bajo" <|>
-  guira <$ reserved "guira" <|>
-  contras <$ reserved "contratiempos" <|>
-  cuerda <$ reserved "cuerda" <|>
-  tarola <$ reserved "tarola" <|>
-  efecto <$ reserved "efecto"
+        piano <$ reserved "piano"
+    <|> bajo <$ reserved "bajo"
+    <|> guira <$ reserved "guira"
+    <|> contras <$ reserved "contratiempos"
+    <|> cuerda <$ reserved "cuerda"
+    <|> tarola <$ reserved "tarola"
+    <|> efecto <$ reserved "efecto"
 
 parseInstAsLayer :: H Layer
 parseInstAsLayer = do
@@ -162,109 +178,199 @@ instAsLayer :: Instrument -> Layer
 instAsLayer i = Layer (defaultStyle, i)
 
 --or
-parseStyleInstAsLayer :: H Layer
-parseStyleInstAsLayer = parseStyleAsFunction <*> inst
+-- parseStyleInstAsLayer :: H Layer
+-- parseStyleInstAsLayer = parseStyleAsFunction <*> inst
 
 estilo :: H S.Style
 estilo = cumbia <$ reserved "cumbia"
-      <|> transformadoresDeEstilo
 
-transformadoresDeEstilo :: H S.Style
-transformadoresDeEstilo = parseSeleccionarSample
-                      <|> parseTonicaYquinta
-                      <|> parseCambiarNota
-                      <|> parseCambiarRitmo
-                      <|> parsePreset
+-- a function to change the style of the layer
+parseSeleccionarEstilo :: H Layer
+parseSeleccionarEstilo = parseSeleccionarEstilo' <*> parseLayer
 
--- provide that missing function similar to asignarEstiloEInst
-parseStyleAsFunction :: H (Instrument -> Layer)
-parseStyleAsFunction = do
+parseSeleccionarEstilo' :: H (Layer -> Layer)
+parseSeleccionarEstilo' = do
   s <- estilo
-  return $ \i -> styleAndInstrumentToLayer s i
+  return $ \l -> seleccionarEstilo s l
 
-styleAndInstrumentToLayer ::  S.Style -> Instrument -> Layer
-styleAndInstrumentToLayer s i = Layer (s, i)
+seleccionarEstilo :: S.Style -> Layer -> Layer
+seleccionarEstilo st (Layer (s, i)) = Layer (st, i)
 
--- a function for selecting a different sample n, e.g. (seleccionarSample [2] cumbia) piano
-parseSeleccionarSample  :: H S.Style
-parseSeleccionarSample = parseSeleccionarSample' <*> estilo
+--
+-- parseStyleAsFunction :: H (Instrument -> Layer)
+-- parseStyleAsFunction = do
+--   s <- estilo
+--   return $ \i -> styleAndInstrumentToLayer s i
+--
+-- styleAndInstrumentToLayer ::  S.Style -> Instrument -> Layer
+-- styleAndInstrumentToLayer s i = Layer (s, i)
 
-parseSeleccionarSample' :: H (S.Style -> S.Style)
-parseSeleccionarSample' = parseSeleccionarSample'' <*> intList
+-- a function for selecting a different sample n, e.g. (sample [2] cumbia) piano
+parseSeleccionarSamples :: H Layer
+parseSeleccionarSamples = parseSeleccionarSamples' <*> parseLayer
 
-parseSeleccionarSample'' :: H ([Int] -> S.Style -> S.Style)
-parseSeleccionarSample'' = seleccionarSample <$ reserved "seleccionarSample"
+parseSeleccionarSamples' :: H (Layer -> Layer)
+parseSeleccionarSamples' = parseSeleccionarSamples'' <*> intList
 
-rationalList :: H [Rational]
-rationalList = list $ rationalOrInteger
+parseSeleccionarSamples'' :: H ([Int] -> Layer -> Layer)
+parseSeleccionarSamples'' = seleccionarSamples <$ reserved "sample"
 
-intList :: H [Int]
-intList = list $ fromIntegral <$> integer
+seleccionarSamples :: [Int] -> Layer -> Layer
+seleccionarSamples is (Layer (s, i)) =  Layer (nuevoE, i)
+  where nuevoE = s {
+                   cuerdaSampleNPattern0 = is,
+                   pianoSampleNPattern0 =  is,
+                   bassSampleNPattern0 =  is,
+                   guiraSampleNPattern0 = is,
+                   contrasSampleNPattern0 = is,
+                   tarolaSampleNPattern0 = is,
+                   efectoSampleNPattern0 = is
+                  }
 
-int :: H Int
-int = fromIntegral <$> integer
+-- a function to select a new sample from the folder
+parseSeleccionarSample :: H Layer
+parseSeleccionarSample = parseSeleccionarSample' <*> parseLayer
 
--- selects other samples for the instrument folder
-seleccionarSample :: [Int] -> S.Style -> S.Style
-seleccionarSample is s =  s {
-                             cuerdaSampleNPattern0 = is,
-                             pianoSampleNPattern0 =  is,
-                             bassSampleNPattern0 =  is,
-                             guiraSampleNPattern0 = is,
-                             contrasSampleNPattern0 = is,
-                             tarolaSampleNPattern0 = is,
-                             efectoSampleNPattern0 = is
-                            }
+parseSeleccionarSample' :: H (Layer -> Layer)
+parseSeleccionarSample' = parseSeleccionarSample'' <*> int
+
+parseSeleccionarSample'' :: H (Int -> Layer -> Layer)
+parseSeleccionarSample'' = seleccionarSample <$ reserved "sample"
+
+seleccionarSample :: Int -> Layer -> Layer
+seleccionarSample index (Layer (s, i)) =  Layer (nuevoE, i)
+   where nuevoE = s {
+                     cuerdaSampleNPattern0 = [index],
+                     pianoSampleNPattern0 =  [index],
+                     bassSampleNPattern0 =  [index],
+                     guiraSampleNPattern0 = [index],
+                     contrasSampleNPattern0 = [index],
+                     tarolaSampleNPattern0 = [index],
+                     efectoSampleNPattern0 = [index]
+                    }
 
 -- transforms the preset bass to just fundamental and fifth of the chord
 -- e.g  (tonicaYquinta cumbia) bajo
-parseTonicaYquinta :: H S.Style
-parseTonicaYquinta = parseTonicaYquinta' <*> estilo
+parseTonicaYquinta :: H Layer
+parseTonicaYquinta = parseTonicaYquinta' <*> parseLayer
 
-parseTonicaYquinta' :: H (S.Style -> S.Style) -- (tonicaYquinta cumbia) bajo
+parseTonicaYquinta' :: H (Layer -> Layer) -- (tonicaYquinta cumbia) bajo
 parseTonicaYquinta' = tonicaYquinta <$ reserved "tonicaYquinta"
 
 -- una función que devuelve a tonica y la quinta del bajo
-tonicaYquinta :: S.Style -> S.Style -- ?
-tonicaYquinta s = s {
-                bassPitchPattern0 =  [0, 2], -- index from list of pitches i.e. [60, 67]
-                bassRhythmPattern0 = [(1, 0), (1, 0.5)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
-              }
+tonicaYquinta :: Layer -> Layer -- ?
+tonicaYquinta (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                    bassPitchPattern0 =  ("intervalo", [(intervalo "unisono"), (intervalo "5a")]), -- index from list of pitches i.e. [60, 67]
+                    bassRhythmPattern0 = [(1, 0), (1, 0.5)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
+                    }
 
 -- a function for changing the preset pitch pattern provided by the style
-parseCambiarNota :: H S.Style
-parseCambiarNota = parseCambiarNota' <*> estilo
+parseCambiarNotas :: H Layer
+parseCambiarNotas = parseCambiarNotas' <*> parseLayer
 
-parseCambiarNota' :: H (S.Style -> S.Style)
-parseCambiarNota' = parseCambiarNota'' <*>  intList
+parseCambiarNotas' :: H (Layer -> Layer)
+parseCambiarNotas' = parseCambiarNotas'' <*>  doubleList
 
-parseCambiarNota'' :: H ([Int] -> S.Style -> S.Style)
+parseCambiarNotas'' :: H ([Double] -> Layer -> Layer)
+parseCambiarNotas'' = cambiarNotas <$ reserved "nota"
+
+cambiarNotas :: [Double] -> Layer -> Layer
+cambiarNotas ps (Layer (s, i)) = Layer (st, i)
+  where st = s {
+                cuerdaPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                pianoPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                bassPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                efectoPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps)
+                }
+
+listDeNotasConRelacion :: Relacion -> [Double] -> [(Relacion, Double)]
+listDeNotasConRelacion r ns = fmap (\n -> (r, n)) ns
+
+-- cambia una sola nota
+parseCambiarNota :: H Layer
+parseCambiarNota = parseCambiarNota' <*> parseLayer
+
+parseCambiarNota' :: H (Layer -> Layer)
+parseCambiarNota' = parseCambiarNota'' <*>  double
+
+parseCambiarNota'' :: H (Double -> Layer -> Layer)
 parseCambiarNota'' = cambiarNota <$ reserved "nota"
 
-cambiarNota :: [Int] -> S.Style -> S.Style
-cambiarNota ps s = s {
-                  cuerdaPitchPattern0 = ps,
-                  pianoPitchPattern = ps,
-                  bassPitchPattern0 = ps,
-                  efectoPitchPattern0 = ps
+cambiarNota :: Double -> Layer -> Layer
+cambiarNota ps (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                  cuerdaPitchPattern0 = ("midinote", [("mn", ps)]),
+                  pianoPitchPattern0 = ("midinote", [("mn", ps)]),
+                  bassPitchPattern0= ("midinote", [("mn", ps)]),
+                  efectoPitchPattern0 = ("midinote", [("mn", ps)])
                    }
 
+-- provee el intervalo con respecto a la tonica y cualidad del acorde
+parseCambiarIntervalo :: H Layer
+parseCambiarIntervalo = parseCambiarIntervalo' <*> parseLayer
+
+parseCambiarIntervalo' :: H (Layer -> Layer)
+parseCambiarIntervalo' = parseCambiarIntervalo'' <*> string
+
+parseCambiarIntervalo'' :: H (String -> Layer -> Layer)
+parseCambiarIntervalo'' = cambiarIntervalo <$ reserved "intervalo"
+
+cambiarIntervalo :: String -> Layer -> Layer
+cambiarIntervalo index (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                    cuerdaPitchPattern0 = ("intervalo", [intervalo index]),
+                    pianoPitchPattern0 = ("intervalo", [intervalo index]),
+                    bassPitchPattern0= ("intervalo", [intervalo index]),
+                    efectoPitchPattern0 = ("intervalo", [intervalo index])
+                    }
+
 -- type RhythmicPattern = [(Rational,Rational)]
--- ritmo [1, 2] cumbia cuerda
-parseCambiarRitmo :: H S.Style
-parseCambiarRitmo =  parseCambiarRitmo' <*> estilo
+-- ritmo 0.5 cumbia cuerda
+parseCambiarRitmo :: H Layer
+parseCambiarRitmo =  parseCambiarRitmo' <*> parseLayer
 
-parseCambiarRitmo' :: H (S.Style -> S.Style)
-parseCambiarRitmo' =  parseCambiarRitmo'' <*> rationalList
+parseCambiarRitmo' :: H (Layer -> Layer)
+parseCambiarRitmo' =  parseCambiarRitmo'' <*> rationalOrInteger
 
-parseCambiarRitmo'' :: H ([Rational] -> S.Style -> S.Style)
+parseCambiarRitmo'' :: H (Rational -> Layer -> Layer)
 parseCambiarRitmo'' = parseCambiarRitmo''' <*> rationalOrInteger
 
-parseCambiarRitmo''' :: H (Rational -> [Rational] -> S.Style -> S.Style)
+parseCambiarRitmo''' :: H (Rational -> Rational -> Layer -> Layer)
 parseCambiarRitmo''' = cambiarRitmo <$ reserved "ritmo"
 
-cambiarRitmo :: Rational -> [Rational] -> S.Style -> S.Style
-cambiarRitmo metre attacks s = s {
+cambiarRitmo :: Rational -> Rational -> Layer -> Layer
+cambiarRitmo metre attacks (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                    cuerdaRhythmPattern0 = [cambiarRitmo' metre attacks],
+                    pianoRhythmPattern0 = [cambiarRitmo' metre attacks],
+                    bassRhythmPattern0 = [cambiarRitmo' metre attacks],
+                    guiraRhythmPattern0 = [cambiarRitmo' metre attacks],
+                    contrasRhythmPattern0 = [cambiarRitmo' metre attacks],
+                    tarolaRhythmPattern0 = [cambiarRitmo' metre attacks],
+                    efectoRhythmPattern0 = [cambiarRitmo' metre attacks]
+                    }
+
+cambiarRitmo' :: Rational -> Rational -> (Rational, Rational)
+cambiarRitmo' metre attack = (metre, attack)
+
+
+-- ritmo [0.125, 0.25] cumbia cuerda
+parseCambiarRitmos :: H Layer
+parseCambiarRitmos =  parseCambiarRitmos' <*> parseLayer
+
+parseCambiarRitmos' :: H (Layer -> Layer)
+parseCambiarRitmos' =  parseCambiarRitmos'' <*> rationalList
+
+parseCambiarRitmos'' :: H ([Rational] -> Layer -> Layer)
+parseCambiarRitmos'' = parseCambiarRitmos''' <*> rationalOrInteger
+
+parseCambiarRitmos''' :: H (Rational -> [Rational] -> Layer -> Layer)
+parseCambiarRitmos''' = cambiarRitmos <$ reserved "ritmo"
+
+cambiarRitmos :: Rational -> [Rational] -> Layer -> Layer
+cambiarRitmos metre attacks (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
                     cuerdaRhythmPattern0 = cambiarRitmo'' metre attacks,
                     pianoRhythmPattern0 = cambiarRitmo'' metre attacks,
                     bassRhythmPattern0 = cambiarRitmo'' metre attacks,
@@ -277,64 +383,83 @@ cambiarRitmo metre attacks s = s {
 cambiarRitmo'' :: Rational -> [Rational] -> [(Rational, Rational)]
 cambiarRitmo'' metre attacks = fmap (cambiarRitmo' metre) attacks
 
-cambiarRitmo' :: Rational -> Rational -> (Rational, Rational)
-cambiarRitmo' metre attack = (metre, attack)
 
 -- a function that allows switching between presets
 -- e.g: preset 1 cumbia bajo
-parsePreset :: H S.Style
-parsePreset = parsePreset' <*> estilo
+parsePreset :: H Layer
+parsePreset = parsePreset' <*> parseLayer
 
-parsePreset' :: H (S.Style -> S.Style)
+parsePreset' :: H (Layer -> Layer)
 parsePreset' = parsePreset'' <*> int
 
-parsePreset'' :: H (Int -> S.Style -> S.Style)
+parsePreset'' :: H (Int -> Layer -> Layer)
 parsePreset'' = preset <$ reserved "preset"
 
-preset :: Int -> S.Style -> S.Style
-preset 0 s = s {
-    pianoRhythmPattern0 = pianoRhythmPattern0 s, -- ie.  [𝄽  𝄽  𝄽  ♩],
-    pianoSampleNPattern0 = pianoSampleNPattern0 s,
+preset :: Int -> Layer -> Layer
+preset 0 (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                    pianoRhythmPattern0 = pianoRhythmPattern0 s, -- ie.  [𝄽  𝄽  𝄽  ♩],
+                    pianoSampleNPattern0 = pianoSampleNPattern0 s,
 
-    cuerdaRhythmPattern0 = cuerdaRhythmPattern0 s,
-    cuerdaSampleNPattern0 = cuerdaSampleNPattern0 s,
-    cuerdaPitchPattern0 = cuerdaPitchPattern0 s, -- or double? (nota [0, 2, 3] cumbia) cuerda
+                    cuerdaRhythmPattern0 = cuerdaRhythmPattern0 s,
+                    cuerdaSampleNPattern0 = cuerdaSampleNPattern0 s,
+                    cuerdaPitchPattern0 = cuerdaPitchPattern0 s, -- or double? (nota [0, 2, 3] cumbia) cuerda
 
-    bassRhythmPattern0 = bassRhythmPattern0 s,  --i.e. [♩ 𝄽  ♩ ♩],
-    bassSampleNPattern0 = bassSampleNPattern0 s,
-    bassPitchPattern0 = bassPitchPattern0 s, -- index from list of pitches i.e. [60, 64, 67]
+                    bassRhythmPattern0 = bassRhythmPattern0 s,  --i.e. [♩ 𝄽  ♩ ♩],
+                    bassSampleNPattern0 = bassSampleNPattern0 s,
+                    bassPitchPattern0 = bassPitchPattern0 s, -- index from list of pitches i.e. [60, 64, 67]
 
-    guiraRhythmPattern0 = guiraRhythmPattern0 s, --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
-    guiraSampleNPattern0 = guiraSampleNPattern0 s,
+                    guiraRhythmPattern0 = guiraRhythmPattern0 s, --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
+                    guiraSampleNPattern0 = guiraSampleNPattern0 s,
 
-    contrasRhythmPattern0 = contrasRhythmPattern0 s,
-    contrasSampleNPattern0 = contrasSampleNPattern0 s,
+                    contrasRhythmPattern0 = contrasRhythmPattern0 s,
+                    contrasSampleNPattern0 = contrasSampleNPattern0 s,
 
-    tarolaRhythmPattern0 = tarolaRhythmPattern0 s,
-    tarolaSampleNPattern0 =tarolaSampleNPattern0 s,
+                    tarolaRhythmPattern0 = tarolaRhythmPattern0 s,
+                    tarolaSampleNPattern0 =tarolaSampleNPattern0 s,
 
-    efectoRhythmPattern0 = efectoRhythmPattern0 s,
-    efectoSampleNPattern0 = efectoSampleNPattern0 s,
-    efectoPitchPattern0 = efectoPitchPattern0 s
-  }
+                    efectoRhythmPattern0 = efectoRhythmPattern0 s,
+                    efectoSampleNPattern0 = efectoSampleNPattern0 s,
+                    efectoPitchPattern0 = efectoPitchPattern0 s
+                  }
 
-preset 1 s = s {
-    pianoRhythmPattern0 = pianoRhythmPattern1 s, -- ie. [𝄽 ♩ 𝄽 ♩],
-    pianoSampleNPattern0 = pianoSampleNPattern1 s,
+preset 1 (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                    pianoRhythmPattern0 = pianoRhythmPattern1 s, -- ie. [𝄽 ♩ 𝄽 ♩],
+                    pianoSampleNPattern0 = pianoSampleNPattern0 s,
 
-    bassRhythmPattern0 = bassRhythmPattern1 s,  --i.e. [♩ 𝄽  ♩ 𝄽 ],
-    bassSampleNPattern0 = bassSampleNPattern1 s,
-    bassPitchPattern0 = bassPitchPattern1 s
-  }
+                    bassRhythmPattern0 = bassRhythmPattern1 s,  --i.e. [♩ 𝄽  ♩ 𝄽 ],
+                    bassSampleNPattern0 = pianoSampleNPattern0 s,
+                    bassPitchPattern0 = bassPitchPattern1 s
+                  }
 
-preset 2 s = s {
-    bassRhythmPattern0 = bassRhythmPattern2 s,  --i.e. [♩ 𝄽  ♩ 𝄽 ],
-    bassSampleNPattern0 = bassSampleNPattern2 s,
-    bassPitchPattern0 = bassPitchPattern2 s
-  }
+preset 2 (Layer (s, i)) = Layer (nuevoE, i)
+   where nuevoE = s {
+                    bassRhythmPattern0 = bassRhythmPattern2 s,  --i.e. [♩ 𝄽  ♩ 𝄽 ],
+                    bassSampleNPattern0 = pianoSampleNPattern0 s,
+                    bassPitchPattern0 = bassPitchPattern2 s
+                    }
 
-preset _ s = preset 0 s
+preset _ (Layer (s, i)) = preset 0 (Layer (s, i)) -->
 
+-- heper functions
+
+rationalList :: H [Rational]
+rationalList = list $ rationalOrInteger
+
+intList :: H [Int]
+intList = list $ fromIntegral <$> integer
+
+int :: H Int
+int = fromIntegral <$> integer
+
+double :: H Double
+double = fromRational <$> rationalOrInteger
+
+doubleList :: H [Double]
+doubleList = list double
+
+-- the renderer
 --   getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State InstrumentState [Event]
 -- render :: (GlobalMaterial,Style,Instrument) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Map Text Datum)]
 -- runState :: State s a -> s -> (a, s) -- as soon as the state is meaningful I should stop discarding it.

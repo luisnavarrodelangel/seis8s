@@ -12,42 +12,45 @@ import qualified Data.List
 -- style should be a collection of individual records that might be accessed or not by the context.
 -- The style could have many different fields to access at a time. pianoRhythmPattern4 -- they are defined but no universal. The style is the rhythm (and other stuff) of all the instruments
 -- 1) A style is a library of musical information, a style has a pianoRhyhtmPattern
-type NIndex = Int
-type ChordIndex = Int
+type Relacion = String -- "segunda" "absoluto"
+type Note = (Relacion, Double)
+type PitchType = String -- intervalo o midinote
+type NPattern = [Int]
+type PitchPattern = (PitchType, [Note])
 
 data Style  = Style  {
- pianoSampleNPattern0 :: [NIndex],
- pianoSampleNPattern1 :: [NIndex],
- pianoPitchPattern :: [ChordIndex],
+ pianoSampleNPattern0 :: NPattern,
+ pianoSampleNPattern1 :: NPattern,
+ pianoPitchPattern0 :: PitchPattern,
  pianoRhythmPattern0 :: RhythmicPattern, -- or could this be accompaniment (used for various instruments)?-- [(Rational, Rational)] -- not universal value, but semiuniversal values.
  pianoRhythmPattern1 :: RhythmicPattern,
 
  cuerdaRhythmPattern0 :: RhythmicPattern,
- cuerdaSampleNPattern0 :: [NIndex],
- cuerdaPitchPattern0 :: [ChordIndex],
+ cuerdaSampleNPattern0 :: NPattern,
+ cuerdaPitchPattern0 :: PitchPattern,
 
  efectoRhythmPattern0 :: RhythmicPattern,
- efectoSampleNPattern0 :: [NIndex],
- efectoPitchPattern0 :: [ChordIndex],
+ efectoSampleNPattern0 :: NPattern,
+ efectoPitchPattern0 :: PitchPattern,
 
- bassSampleNPattern0 :: [NIndex],
- bassSampleNPattern1 :: [NIndex],
- bassSampleNPattern2 :: [NIndex],
+ bassSampleNPattern0 :: NPattern,
+ bassSampleNPattern1 :: NPattern,
+ bassSampleNPattern2 :: NPattern,
  bassRhythmPattern0 ::  RhythmicPattern,
  bassRhythmPattern1 ::  RhythmicPattern,
  bassRhythmPattern2 ::  RhythmicPattern,
- bassPitchPattern0 :: [ChordIndex],  --index
- bassPitchPattern1 :: [ChordIndex],  --index
- bassPitchPattern2 :: [ChordIndex],  --index
+ bassPitchPattern0 :: PitchPattern,  --index
+ bassPitchPattern1 :: PitchPattern,  --index
+ bassPitchPattern2 :: PitchPattern,  --index
 
  guiraRhythmPattern0 :: RhythmicPattern,
- guiraSampleNPattern0 ::[NIndex], -- this should not take the harmony
+ guiraSampleNPattern0 ::NPattern, -- this should not take the harmony
 
  contrasRhythmPattern0 :: RhythmicPattern,
- contrasSampleNPattern0 :: [NIndex],
+ contrasSampleNPattern0 :: NPattern,
 
  tarolaRhythmPattern0 :: RhythmicPattern,
- tarolaSampleNPattern0 :: [NIndex]
+ tarolaSampleNPattern0 :: NPattern
 
  } deriving (Show)
 
@@ -62,19 +65,20 @@ defaultStyle = Style {
    pianoSampleNPattern0 = [0],
    pianoRhythmPattern0 = [(1, 0)], -- ie.  [𝄽  𝄽  𝄽  ♩],
    pianoRhythmPattern1 = [], -- ie. [𝄽 ♩ 𝄽 ♩],
-   pianoPitchPattern = [0],
+   pianoPitchPattern0 = ("intervalo", [("segunda" , 0.0)]),
 
    cuerdaRhythmPattern0 = [(1,0)],
    cuerdaSampleNPattern0 = [0],
-   cuerdaPitchPattern0 = [0], -- or double?
+   cuerdaPitchPattern0 = ("intervalo", [("unisono", 0)]),
+
    bassSampleNPattern0 = [0],
+   bassSampleNPattern2 = [],  --index
    bassRhythmPattern0 = [(1, 0)],  --i.e. [♩ 𝄽  ♩ 𝄽 ],
    bassRhythmPattern1 = [],  --i.e. [♩ 𝄽  ♩ ♩],
-   bassPitchPattern0 = [0, 1, 2], -- int
-   bassPitchPattern1 = [],  --interval
    bassRhythmPattern2 =  [],
-   bassSampleNPattern2 = [],  --index
-   bassPitchPattern2 = [],  --index
+   bassPitchPattern0 = ("intervalo", [("unisono", 0)]), -- int
+   bassPitchPattern1 = ("intervalo", [("unisono", 0)]),  --interval
+   bassPitchPattern2 = ("intervalo", [("unisono", 0)]),  --index
 
    guiraRhythmPattern0 = [(1,0)],
    guiraSampleNPattern0 = [0],
@@ -87,8 +91,7 @@ defaultStyle = Style {
 
    efectoRhythmPattern0 = [(1, 0)],
    efectoSampleNPattern0 = [0],
-   efectoPitchPattern0 = [0]
-
+   efectoPitchPattern0 = ("intervalo", [("unisono", 0)])
 }
 
 --hh
@@ -111,23 +114,25 @@ cumbia = Style {
     pianoSampleNPattern0 = [0],
     pianoRhythmPattern1 = [(1,0.25), (1, 0.75)], -- ie. [𝄽 ♩ 𝄽 ♩],
     pianoSampleNPattern1 = [0, 0],
-    pianoPitchPattern = [0, 1, 2], -- not used yet
+    pianoPitchPattern0 = ("intervalo", [intervalo "unisono", intervalo "3a", intervalo "5a"]), -- not used yet
 
     cuerdaRhythmPattern0 = [(1,0)],
     cuerdaSampleNPattern0 = [0],
-    cuerdaPitchPattern0 = [0], -- or double? (nota [0, 2, 3] cumbia) cuerda
+    cuerdaPitchPattern0 = ("intervalo", [intervalo "unisono"]), -- or double? (nota [0, 2, 3] cumbia) cuerda
 
     bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],  --i.e. [♩ 𝄽  ♩ ♩],
     bassSampleNPattern0 = [0, 0, 0],
-    bassPitchPattern0 = [0, 1, 2], -- index from list of pitches i.e. [60, 64, 67]
+    bassPitchPattern0 = ("intervalo", [intervalo "unisono", intervalo "3a", intervalo "5a"]), -- index from list of pitches i.e. [60, 64, 67]
     bassRhythmPattern1 = [(1, 0), (1, 0.5)],  --i.e. [♩ 𝄽  ♩ 𝄽 ],
     bassSampleNPattern1 = [0, 0],
-    bassPitchPattern1 = [0, 2],
+    bassPitchPattern1 = ("intervalo", [intervalo "unisono", intervalo "5a"]),
 
-    bassRhythmPattern2 = [(8, 0), (8, 0.5), (8, 0.75), (8, 1), (8, 1.5), (8, 1.75), (8, 2), (1, 2.5), (8, 2.75), (8, 3), (8, 3.5), (8, 3.75), (8, 4), (8, 4.5), (8, 4.75), (8, 5), (8, 5.5), (8, 5.75), (8, 6), (8, 6.5), (8, 6.75), (8, 7), (8, 7.25), (8, 7.5), (8, 7.75)],  --i.e. [♩ 𝄽  ♩ 𝄽
-    bassSampleNPattern2 = take 25 $ cycle [0],
-    bassPitchPattern2 = [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 2, 0, 2],
-
+    -- bassRhythmPattern2 = [(8, 0), (8, 0.5), (8, 0.75), (8, 1), (8, 1.5), (8, 1.75), (8, 2), (1, 2.5), (8, 2.75), (8, 3), (8, 3.5), (8, 3.75), (8, 4), (8, 4.5), (8, 4.75), (8, 5), (8, 5.5), (8, 5.75), (8, 6), (8, 6.5), (8, 6.75), (8, 7), (8, 7.25), (8, 7.5), (8, 7.75)],  --i.e. [♩ 𝄽  ♩ 𝄽
+    -- bassSampleNPattern2 = take 25 $ cycle [0],
+    -- bassPitchPattern2 = [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 2, 0, 2],
+    bassRhythmPattern2 = [(4, 0), (4, 0.5), (4, 0.75), (4, 1), (4, 1.5), (4, 1.75), (4, 2), (4, 2.5), (4, 2.75), (4, 3), (4, 3.25), (4, 3.5), (4, 3.75)],
+    bassSampleNPattern2 = take 13 $ cycle [0],
+    bassPitchPattern2 = ("intervalo", [intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "5a", intervalo "unisono", intervalo "5a"]),
 
     guiraRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.375), (1, 0.5), (1, 0.75), (1, 0.875)], --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
     guiraSampleNPattern0 = [0, 1, 2, 0, 1, 2],
@@ -140,9 +145,7 @@ cumbia = Style {
 
     efectoRhythmPattern0 = [(1, 0)],
     efectoSampleNPattern0 = [0],
-    efectoPitchPattern0 = [0]
-
-
+    efectoPitchPattern0 = ("intervalo", [intervalo "unisono"])
   }
 
 
@@ -159,11 +162,11 @@ samplePattern' (xs, sampleNumber) t iw ew  = fmap (\attack -> (attack, sampleNum
   where
     attacks = findBeats t iw ew (fst xs) (snd xs)
 
-pitchPattern :: [(RhythmicPosition, Int)] -> Tempo -> UTCTime -> UTCTime -> [(Rational, Int)]
+pitchPattern :: [(RhythmicPosition, Note)] -> Tempo -> UTCTime -> UTCTime -> [(Rational, Note)]
 pitchPattern xs t iw ew =  Data.List.sort $ concat $ fmap (\x -> pitchPattern' x t iw ew) xs
 
-pitchPattern' :: (RhythmicPosition, Int) -> Tempo -> UTCTime -> UTCTime -> [(Rational, Int)]
-pitchPattern' (xs, interval) t iw ew  = fmap (\attack -> (attack, interval)) attacks
+pitchPattern' :: (RhythmicPosition, Note) -> Tempo -> UTCTime -> UTCTime -> [(Rational, Note)]
+pitchPattern' (xs, (relacion, midiOintervalo)) t iw ew  = fmap (\attack -> (attack, (relacion, midiOintervalo))) attacks
   where
     attacks = findBeats t iw ew (fst xs) (snd xs)
 

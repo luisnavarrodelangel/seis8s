@@ -44,7 +44,7 @@ piano = Instrument { getEvents = pianoEvents}
 
 bajo :: Instrument
 bajo = Instrument {getEvents = bajoEvents}
-
+--
 guira :: Instrument
 guira = Instrument {getEvents = guiraEvents}
 
@@ -58,19 +58,22 @@ efecto :: Instrument
 efecto = Instrument {getEvents = efectoEvents}
 
 cuerdaEvents gmm style tempo iw ew = do
-  let equateLists' = equateLists (cuerdaRhythmPattern0 style) (cuerdaSampleNPattern0 style) (cuerdaPitchPattern0 style)
+  let pitchType = (fst $ cuerdaPitchPattern0 style)
+  let equateLists' = equateLists (cuerdaRhythmPattern0 style) (cuerdaSampleNPattern0 style) (snd $ cuerdaPitchPattern0 style)
   let cuerdaRhythmPattern = sel1 equateLists'
   let cuerdaSampleNPattern = sel2 equateLists'
   let cuerdaPitchPattern = sel3 equateLists'
   let nPat = List.zip cuerdaRhythmPattern cuerdaSampleNPattern --[(RhythmicPattern, Int)]
   let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
-  let pat = List.zip cuerdaRhythmPattern cuerdaPitchPattern --[(RhythmicPattern, Int)]
-  let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
-  let cuerdaline = generateLine pitchPat (harmony gmm) -- [(Rational, [Pitch])]
+  let pat = List.zip cuerdaRhythmPattern cuerdaPitchPattern -- [(RhythmicPosition, (String, Double))]
+  let pitchPat = pitchPattern pat tempo iw ew --[(Rational, (String, Double))]
+  let cuerdaline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLine' pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) cuerdaline  -- [UTCTime]
-  let instCmap = cmap'' "cuerdas" samplePat cuerdaline--Map Text Datum
+  let instCmap = cmap'' "cuerdas" samplePat cuerdaline --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
+
+-- generateLine :: [(Rational, (String, Double))] -> [Harmony] -> [(Rational, Pitch)]
 
 
 pianoEvents gmm style tempo iw ew = do
@@ -84,11 +87,12 @@ pianoEvents gmm style tempo iw ew = do
   let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
 
--- myharmony = [Harmony (Chord 60 major) (2, 0) (2, 1), Harmony (Chord 62 minor) (2, 1) (2, 2)]
--- testgmm = GlobalMaterial {harmony = myharmony }
+myharmony = [Harmony (Chord 60 major) (2, 0) (2, 1), Harmony (Chord 62 minor) (2, 1) (2, 2)]
+testgmm = GlobalMaterial {harmony = myharmony }
 
 bajoEvents gmm style tempo iw ew = do
-  let equateLists' = equateLists (bassRhythmPattern0 style) (bassSampleNPattern0 style) (bassPitchPattern0 style)
+  let pitchType = (fst $ bassPitchPattern0 style)
+  let equateLists' = equateLists (bassRhythmPattern0 style) (bassSampleNPattern0 style) (snd $ bassPitchPattern0 style)
   let bassRhythmPattern = sel1 equateLists'
   let bassSampleNPattern = sel2 equateLists'
   let bassPitchPattern = sel3 equateLists'
@@ -96,7 +100,7 @@ bajoEvents gmm style tempo iw ew = do
   let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
   let pat = List.zip bassRhythmPattern bassPitchPattern --[(RhythmicPattern, Double)]
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
-  let bassline = generateLine pitchPat (harmony gmm) -- [(Rational, [Pitch])]
+  let bassline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLine' pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) bassline  -- [UTCTime]
   let instCmap = cmap'' "bajo" samplePat bassline--Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
@@ -127,7 +131,8 @@ tarolaEvents gmm style tempo iw ew = do
   return events
 
 efectoEvents gmm style tempo iw ew = do
-  let equateLists' = equateLists (efectoRhythmPattern0 style) (efectoSampleNPattern0 style) (efectoPitchPattern0 style)
+  let pitchType = fst $ efectoPitchPattern0 style
+  let equateLists' = equateLists (efectoRhythmPattern0 style) (efectoSampleNPattern0 style) (snd $ efectoPitchPattern0 style)
   let efectoRhythmPattern = sel1 equateLists'
   let efectoSampleNPattern = sel2 equateLists'
   let efectoPitchPattern = sel3 equateLists'
@@ -135,15 +140,14 @@ efectoEvents gmm style tempo iw ew = do
   let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
   let pat = List.zip efectoRhythmPattern efectoPitchPattern --[(RhythmicPattern, Int)]
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
-  let cuerdaline = generateLine pitchPat (harmony gmm) -- [(Rational, [Pitch])]
-  let time = fmap (\c -> countToTime tempo (fst c)) cuerdaline  -- [UTCTime]
-  let instCmap = cmap'' "efecto" samplePat cuerdaline--Map Text Datum
+  let efectoline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLine' pitchPat) -- [(Rational, [Pitch])]
+  let time = fmap (\c -> countToTime tempo (fst c)) efectoline  -- [UTCTime]
+  let instCmap = cmap'' "efecto" samplePat efectoline--Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
 
 
-
-cmap'' :: String -> [(Rational, Int)] ->  [(Rational, Pitch)] -> [M.Map T.Text Datum]
+cmap'' :: String -> [(Rational, Int)] -> [(Rational, Pitch)] -> [M.Map T.Text Datum]
 cmap'' sampleName is ps = do
   let is' = fmap (\i -> snd i) is
   let ps' = fmap (\p -> snd p) ps
@@ -158,15 +162,18 @@ cmap sampleName pitch = M.fromList [("s", string sampleName), ("note", double pi
   where pitchAdjustedOctave = pitch - 60
 
 -- returns the the rhythm, pitch and n lists with equal number of indices
-equateLists :: [(Rational, Rational)] -> [Int] -> [Int] -> ([(Rational, Rational)], [Int], [Int])
+equateLists :: [(Rational, Rational)] -> [Int] -> [(String, Double)] -> ([(Rational, Rational)], [Int], [(String, Double)])
 equateLists attacks ns chi
   | (length attacks == length ns) && (length ns == length chi) = (attacks, ns, chi)
   | (length attacks > length ns) && (length attacks == length chi) = (attacks, take (length attacks) $ cycle ns, chi)
-  | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, take (length attacks) $ cycle chi)
+  -- | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, take (length attacks) $ cycle chi)
+  | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, chi)
+  | (length attacks > length ns) && (length attacks < length chi) = (attacks, take (length attacks) $ cycle ns, chi)
   | (length attacks == length ns) && (length ns > length chi)  = (attacks, ns, take (length ns) $ cycle chi)
   | (length attacks < length ns) && (length ns == length chi)  = (take (length ns) $ cycle attacks, ns, chi)
-  | (length attacks < length ns) && (length ns > length chi) = (take (length ns) $ cycle attacks, ns, take (length ns) $ cycle chi)
-  | (length attacks == length ns) && (length ns < length chi) = (take (length chi) $ cycle attacks, take (length chi) $ cycle ns, chi)
+  -- | (length attacks < length ns) && (length ns > length chi) = (take (length ns) $ cycle attacks, ns, take
+  | (length attacks < length ns) && (length ns > length chi) =  (attacks, ns, chi)
+  | (length attacks == length ns) && (length ns < length chi) = (take (length chi) $ cycle attacks, take (length chi) $ cycle ns, chi) -- genera acordes
   | otherwise = error "case not expected"
 -- [0.5, 0.25] [1, 1] [0,1]
 -- [0.5, 0.25] [1] [0,1]
@@ -174,4 +181,8 @@ equateLists attacks ns chi
 -- [0.25, 0.25] [1,1] [0]
 -- [0.5] [1, 1] [0, 1]
 -- [0.5] [1, 1] [0]
--- [0.5] [1] [0,1]
+-- [0.5] [1] [0,1] -- genera acordes
+-- [0,  0.125] [1] [0,1, 2]
+-- bassSampleNPattern0 = [1]
+-- bassRhythmPattern0 = [(1/1, 0/1), (1/1, 1/8)]
+--bassPitchPattern0 = [0, 1, 2]
