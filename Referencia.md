@@ -43,31 +43,36 @@ nota 60 $ ritmo 0.25 $ piano
 
 Para evitar lo anterior y lograr cambios significativos a nuestro código, en seis8s las funciones o comandos también están conectadas con el conocimiento individual de los estilos. Por ejemplo, en la cumbia, una variación común del bajo, es tocar la tónica y la quinta del acorde. Esto se puede conseguir con la siguiente funcion:
 
-``` tonicayquinta $ cumbia bajo
+```
+tonicayquinta $ cumbia bajo
 ```
 
 > En este ejemplo, escucharás dos notas distintas, en vez de las tres originales que se escuchan en "cumbia bajo".
 
 En seis8s podemos explorar la tónica y la quinta individualmente con el siguiente comando:
 
-``` intervalo "tónica" $ cumbia quinta
+```
+intervalo "tónica" $ cumbia quinta
 ```
 > ahora intentalo con intervalo "5a"
 
 Otras funciones del bajo son dentro del estilo de cumbia son:
 
-```tonicayquinta2 $ cumbia bajo
+```
+tonicayquinta2 $ cumbia bajo
 ```
 >  Aqui, escucharás tres notas distinas, la tónica, la quinta y la quinta una octava abajo (i.e. más grave).
 
-```tonicaQtonica $ cumbia bajo
+```
+tonicaQtonica $ cumbia bajo
 ```
 > Arriba, el bajo toca la tónica, la quinta y la octava alta de la tónica.
 
 <!-- ```tucanes $ cumbia bajo
 ``` -->
 
-```tonicaQtercera  $ cumbia bajo
+```
+tonicaQtercera  $ cumbia bajo
 ```
 > En este ejemplo, el bajo toca la tónica, la quinta y la tercer del acorde.
 
@@ -77,13 +82,15 @@ Otras funciones del bajo son dentro del estilo de cumbia son:
 
 Otra característica importante en seis8s es la de poder combinar funciones.
 
-```cada 2 (tonicayquinta) $ cumbia bajo
+```
+cada 2 (tonicayquinta) $ cumbia bajo
 ```
 > En el ejemplo arriba, estamos alternando entre el patrón de tres notas y el de tónica y quinta, que contiene dos notas.
 
 Por lo tanto, el siguiente ejemplo también sería posible:
 
-```cada 2 (tónicayquinta2) $ tonicayquinta $ cumbia bajo
+```
+cada 2 (tónicayquinta2) $ tonicayquinta $ cumbia bajo
 ```
 
 
