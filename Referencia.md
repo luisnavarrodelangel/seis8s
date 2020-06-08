@@ -5,7 +5,7 @@ La premisa detrás de seis8s es el poder interactuar con colecciones de conocimi
 
 Dicho estilo necesita de un "cuerpo" para volverse tangible/visible (i.e. audible en este caso). Por ejemplo un piano.
 
-```javascript
+```
 cumbia piano
 
 ```
@@ -16,11 +16,8 @@ Otra idea fundamental en seis8s es la idea de "capa". En seis8s una capa se refi
 cumbia piano;
 cumbia bajo;
 ```
+> Aqui, el conocimiento musical embebido en el estilo de música cumbia es aplicado a cada uno de los instrumentos individualmente, pero con el fin de que tengan un significado audible en lo colectivo.
 
-<pre><code style="color:purple;">
-cumbia piano -- Aqui, el conocimiento musical embebido en el estilo de música cumbia es aplicado a cada uno de los instrumentos individualmente, pero con el fin de que tengan un significado audible en lo colectivo.
-</code></pre>
->
 Otras capas que se pueden agregar son capas de instrumentos percusivos.
 
 ```
