@@ -18,9 +18,8 @@ cumbia bajo;
 ```
 
 <pre><code>
-cumbia piano  <style= "color:pink">
--- Aqui, el conocimiento musical embebido en el estilo de música cumbia es aplicado a cada uno de los instrumentos individualmente, pero con el fin de que tengan un significado audible en lo colectivo.
-</style>
+cumbia piano  <span style="color:pink">
+-- Aqui, el conocimiento musical embebido en el estilo de música cumbia es aplicado a cada uno de los instrumentos individualmente, pero con el fin de que tengan un significado audible en lo colectivo.</span>
 </code></pre>
 >
 Otras capas que se pueden agregar son capas de instrumentos percusivos.
