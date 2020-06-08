@@ -7,7 +7,10 @@ Dicho estilo necesita de un "cuerpo" para volverse tangible/visible (i.e. audibl
 
 ```
 cumbia piano
+
 ```
+<pre><code>cumbia piano
+</code></pre>
 
 Otra idea fundamental en seis8s es la idea de "capa". En seis8s una capa se refiere a la adición de cuerpos (sonoros) con el fin de enriquecer la textura.
 
