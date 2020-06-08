@@ -5,7 +5,7 @@ La premisa detrás de seis8s es el poder interactuar con colecciones de conocimi
 
 Dicho estilo necesita de un "cuerpo" para volverse tangible/visible (i.e. audible en este caso). Por ejemplo un piano.
 
-```haskell
+```javascript
 cumbia piano
 
 ```
