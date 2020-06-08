@@ -1,9 +1,7 @@
 # seis8s
 
-seis8s (pronunciado "seis octavos") es un lenguaje de programación que permite la interacción en tiempo real con audio digital y
-conocimiento musical localizado, particularmente de músicas de Latinoamérica. 
+seis8s (pronunciado "seis octavos") es un lenguaje de programación que permite la interacción en tiempo real con audio digital y conocimiento musical localizado, particularmente de músicas de Latinoamérica. 
 
-seis8s pretende ser un proyecto reciente y colaborativo, el cual pretene nutrirse con conocimiento musical consensuado y desde
-las diferentes fronteras personales y colectivas que existen en Latinoamérica.
+seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nutrirse con conocimiento musical consensuado y desde las diferentes fronteras personales y colectivas que existen en Latinoamérica.
 
 <a href=""> ¿Cómo usar sesi8s? </a>
