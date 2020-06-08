@@ -9,8 +9,6 @@ Dicho estilo necesita de un "cuerpo" para volverse tangible/visible (i.e. audibl
 cumbia piano
 
 ```
-<pre><code>cumbia piano
-</code></pre>
 
 Otra idea fundamental en seis8s es la idea de "capa". En seis8s una capa se refiere a la adición de cuerpos (sonoros) con el fin de enriquecer la textura.
 
@@ -18,8 +16,13 @@ Otra idea fundamental en seis8s es la idea de "capa". En seis8s una capa se refi
 cumbia piano;
 cumbia bajo;
 ```
-> Aqui, el conocimiento musical embebido en el estilo de música cumbia es aplicado a cada uno de los instrumentos individualmente, pero con el fin de que tengan un significado audible en lo colectivo.
 
+<pre><code>
+cumbia piano  <style= "color:pink">
+-- Aqui, el conocimiento musical embebido en el estilo de música cumbia es aplicado a cada uno de los instrumentos individualmente, pero con el fin de que tengan un significado audible en lo colectivo.
+</style>
+</code></pre>
+>
 Otras capas que se pueden agregar son capas de instrumentos percusivos.
 
 ```
