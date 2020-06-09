@@ -151,6 +151,9 @@ transformadoresDeLayer =  parseSeleccionarEstilo
                       <|> parseSeleccionarSample
                       <|> parseSeleccionarSamples
                       <|> parseTonicaYquinta
+                      <|> parseTonicaYquinta2
+                      <|> parseTonicaQoctava
+                      <|> parseTonicaQtercera
                       <|> parseCambiarNota
                       <|> parseCambiarNotas
                       <|> parseCambiarRitmo
@@ -255,15 +258,58 @@ parseTonicaYquinta :: H Layer
 parseTonicaYquinta = parseTonicaYquinta' <*> parseLayer
 
 parseTonicaYquinta' :: H (Layer -> Layer) -- (tonicaYquinta cumbia) bajo
-parseTonicaYquinta' = tonicaYquinta <$ reserved "tonicaYquinta"
+parseTonicaYquinta' = tonicaYquinta <$ reserved "tonicayquinta"
 
 -- una función que devuelve a tonica y la quinta del bajo
 tonicaYquinta :: Layer -> Layer -- ?
 tonicaYquinta (Layer (s, i)) = Layer (nuevoE, i)
   where nuevoE = s {
-                    bassPitchPattern0 =  ("intervalo", [(intervalo "unisono"), (intervalo "5a")]), -- index from list of pitches i.e. [60, 67]
+                    bassPitchPattern0 =  ("intervalo", [(intervalo "unisono" 0), (intervalo "5a" 0)]), -- index from list of pitches i.e. [60, 67]
                     bassRhythmPattern0 = [(1, 0), (1, 0.5)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
                     }
+
+-- Arriba, el bajo toca la tónica, la quinta y la quinta una octava más alta.
+parseTonicaYquinta2 :: H Layer
+parseTonicaYquinta2 = parseTonicaYquinta2' <*> parseLayer
+
+parseTonicaYquinta2' :: H (Layer -> Layer)
+parseTonicaYquinta2' = tonicaYquinta2 <$ reserved "tonicayquinta2"
+
+tonicaYquinta2 :: Layer -> Layer
+tonicaYquinta2 (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                    bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
+                    bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "5a" (-1)]) -- index from list of pitches i.e. [60, 64, 67]
+                  }
+
+--tonicaQtonica $ cumbia bajo, el bajo toca la tónica, la quinta y la octava alta de la tónica.
+parseTonicaQoctava :: H Layer
+parseTonicaQoctava = parseTonicaQoctava' <*> parseLayer
+
+parseTonicaQoctava' :: H (Layer -> Layer)
+parseTonicaQoctava' = tonicaQoctava <$ reserved "tonicayquinta2"
+
+tonicaQoctava :: Layer -> Layer
+tonicaQoctava (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                    bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
+                    bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "8a" 1]) -- index from list of pitches i.e. [60, 64, 67]
+                  }
+
+-- tonicaQtercera  $ cumbia bajo, el bajo toca la tónica, la quinta y la tercer del acorde.
+parseTonicaQtercera :: H Layer
+parseTonicaQtercera = parseTonicaQtercera' <*> parseLayer
+
+parseTonicaQtercera' :: H (Layer -> Layer)
+parseTonicaQtercera' = tonicaQtercera <$ reserved "tonicayquinta2"
+
+tonicaQtercera :: Layer -> Layer
+tonicaQtercera (Layer (s, i)) = Layer (nuevoE, i)
+  where nuevoE = s {
+                    bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
+                    bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "3a" 0]) -- index from list of pitches i.e. [60, 64, 67]
+                  }
+
 
 -- a function for changing the preset pitch pattern provided by the style
 parseCambiarNotas :: H Layer
@@ -284,8 +330,8 @@ cambiarNotas ps (Layer (s, i)) = Layer (st, i)
                 efectoPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps)
                 }
 
-listDeNotasConRelacion :: Relacion -> [Double] -> [(Relacion, Double)]
-listDeNotasConRelacion r ns = fmap (\n -> (r, n)) ns
+listDeNotasConRelacion :: Relacion -> [Double] -> [(Relacion, Octava, Double)]
+listDeNotasConRelacion r ns = fmap (\n -> (r, 0, n)) ns
 
 -- cambia una sola nota
 parseCambiarNota :: H Layer
@@ -300,10 +346,10 @@ parseCambiarNota'' = cambiarNota <$ reserved "nota"
 cambiarNota :: Double -> Layer -> Layer
 cambiarNota ps (Layer (s, i)) = Layer (nuevoE, i)
   where nuevoE = s {
-                  cuerdaPitchPattern0 = ("midinote", [("mn", ps)]),
-                  pianoPitchPattern0 = ("midinote", [("mn", ps)]),
-                  bassPitchPattern0= ("midinote", [("mn", ps)]),
-                  efectoPitchPattern0 = ("midinote", [("mn", ps)])
+                  cuerdaPitchPattern0 = ("midinote", [("mn", ps, 0)]),
+                  pianoPitchPattern0 = ("midinote", [("mn", ps, 0)]),
+                  bassPitchPattern0= ("midinote", [("mn", ps, 0)]),
+                  efectoPitchPattern0 = ("midinote", [("mn", ps, 0)])
                    }
 
 -- provee el intervalo con respecto a la tonica y cualidad del acorde
@@ -319,10 +365,10 @@ parseCambiarIntervalo'' = cambiarIntervalo <$ reserved "intervalo"
 cambiarIntervalo :: String -> Layer -> Layer
 cambiarIntervalo index (Layer (s, i)) = Layer (nuevoE, i)
   where nuevoE = s {
-                    cuerdaPitchPattern0 = ("intervalo", [intervalo index]),
-                    pianoPitchPattern0 = ("intervalo", [intervalo index]),
-                    bassPitchPattern0= ("intervalo", [intervalo index]),
-                    efectoPitchPattern0 = ("intervalo", [intervalo index])
+                    cuerdaPitchPattern0 = ("intervalo", [intervalo index 0]),
+                    pianoPitchPattern0 = ("intervalo", [intervalo index 0]),
+                    bassPitchPattern0= ("intervalo", [intervalo index 0]),
+                    efectoPitchPattern0 = ("intervalo", [intervalo index 0])
                     }
 
 -- type RhythmicPattern = [(Rational,Rational)]
@@ -440,7 +486,7 @@ preset 2 (Layer (s, i)) = Layer (nuevoE, i)
                     bassPitchPattern0 = bassPitchPattern2 s
                     }
 
-preset _ (Layer (s, i)) = preset 0 (Layer (s, i)) -->
+preset _ (Layer (s, i)) = preset 0 (Layer (s, i))
 
 -- heper functions
 

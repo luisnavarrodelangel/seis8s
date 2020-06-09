@@ -4,6 +4,7 @@ module Sound.Cumbia.Generic where
 import Data.Tempo
 import Data.Time
 
+fract :: RealFrac a => a -> a
 fract x = x - (realToFrac $ floor x)
 
 -- test functions

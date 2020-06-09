@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE NoRebindableSyntax #-}
 {-# OPTIONS_GHC -fno-warn-missing-import-lists #-}
-{-# OPTIONS_GHC -fno-warn-implicit-prelude #-}
 module Paths_cumbia (
     version,
     getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir,
@@ -30,10 +30,10 @@ version = Version [0,0,0,1] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/home/lui/.cabal/bin"
-libdir     = "/home/lui/.cabal/lib/x86_64-linux-ghc-8.0.2/cumbia-0.0.0.1-JFHr7Gi6989AupJCGfkJpK"
-dynlibdir  = "/home/lui/.cabal/lib/x86_64-linux-ghc-8.0.2"
-datadir    = "/home/lui/.cabal/share/x86_64-linux-ghc-8.0.2/cumbia-0.0.0.1"
-libexecdir = "/home/lui/.cabal/libexec"
+libdir     = "/home/lui/.cabal/lib/x86_64-linux-ghc-8.6.5/cumbia-0.0.0.1-AgRXiMkQz1oF2W2stveRXb"
+dynlibdir  = "/home/lui/.cabal/lib/x86_64-linux-ghc-8.6.5"
+datadir    = "/home/lui/.cabal/share/x86_64-linux-ghc-8.6.5/cumbia-0.0.0.1"
+libexecdir = "/home/lui/.cabal/libexec/x86_64-linux-ghc-8.6.5/cumbia-0.0.0.1"
 sysconfdir = "/home/lui/.cabal/etc"
 
 getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir :: IO FilePath
