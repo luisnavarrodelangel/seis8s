@@ -92,8 +92,6 @@ Por lo tanto, el siguiente ejemplo también sería posible:
 ```
 cada 2 (tónicayquinta2) $ tonicayquinta $ cumbia bajo
 ```
-
-
 > En el ejemplo arriba, alternamos entre tonicaYquinta y tonicayquinta2
 
 

@@ -12,12 +12,9 @@ import qualified Data.List
 -- style should be a collection of individual records that might be accessed or not by the context.
 -- The style could have many different fields to access at a time. pianoRhythmPattern4 -- they are defined but no universal. The style is the rhythm (and other stuff) of all the instruments
 -- 1) A style is a library of musical information, a style has a pianoRhyhtmPattern
-type Relacion = String -- "segunda" "absoluto"
-type Octava = Double
-type Note = (Relacion, Double, Octava)
-type PitchType = String -- intervalo o midinote
+
 type NPattern = [Int]
-type PitchPattern = (PitchType, [Note])
+
 
 data Style  = Style  {
  pianoSampleNPattern0 :: NPattern,

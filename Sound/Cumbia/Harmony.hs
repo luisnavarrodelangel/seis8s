@@ -10,6 +10,12 @@ import Data.Maybe
 import Data.List
 import Data.Tuple.Select
 
+type Relacion = String -- "segunda" "absoluto"
+type Octava = Double
+type Note = (Relacion, Double, Octava)
+type PitchType = String -- intervalo o midinote
+type PitchPattern = (PitchType, [Note])
+
 data Chord = Chord Pitch ChordType deriving (Show)
 type Pitch = Double
 type ChordType = [Double]
@@ -22,13 +28,13 @@ generateLineFromMidi xs = fmap generateLineFromMidi' xs
 generateLineFromMidi' :: (Rational, (String, Double, Double)) -> (Rational, Pitch)
 generateLineFromMidi' (attack, (midiIdentifier, midinote, octava)) = (attack, midinote)
 
-generateLine :: [(Rational, (String, Double, Double))] -> [Harmony] -> [(Rational, Pitch)]
+generateLine :: [(Rational, (String, Double, Octava))] -> [Harmony] -> [(Rational, Pitch)]
 generateLine attacksAndIntervals chords =  concat $ fmap (generateNotesFromChord attacksAndIntervals) chords
 
-generateNotesFromChord :: [(Rational, (String, Double, Double))] -> Harmony -> [(Rational, Pitch)]
+generateNotesFromChord :: [(Rational, (String, Double, Octava))] -> Harmony -> [(Rational, Pitch)]
 generateNotesFromChord attacksAndIntervals chord = concat $ fmap (\x -> generateSingleNoteFromChord x chord) attacksAndIntervals
 
-generateSingleNoteFromChord :: (Rational, (String, Double, Double)) -> Harmony ->  [(Rational, Pitch)]
+generateSingleNoteFromChord :: (Rational, (String, Double, Octava)) -> Harmony ->  [(Rational, Pitch)]
 generateSingleNoteFromChord (attack, (tipo, interval, octava)) (Harmony c start end)
   |compareRationalWChordRange attack start end = attackAndNote attack note
   | otherwise = []
@@ -39,7 +45,7 @@ attackAndNote :: Rational -> Maybe Pitch -> [(Rational, Pitch)]
 attackAndNote attack (Just note) = [(attack, note)]
 attackAndNote _ Nothing = []
 
-getNoteInChord :: Chord -> (String, Double, Double) -> Maybe Pitch
+getNoteInChord :: Chord -> (String, Double, Octava) -> Maybe Pitch
 getNoteInChord (Chord root chordType) (tipo, interval, octava)
        | tipo == "segunda" = (+) <$> Just root <*> ((+) <$> Just (12 * octava) <*> (intervaloDisponible chordType (tipo, interval, octava)))
        | tipo == "tercera" = (+) <$> Just root <*> ((+) <$> Just (12 * octava) <*> (intervaloDisponible chordType (tipo, interval, octava)))
@@ -53,7 +59,7 @@ getNoteInChord (Chord root chordType) (tipo, interval, octava)
        | otherwise = (+) <$> Just root <*> ((+) <$> Just (12 * octava) <*> Just interval)
 
  -- [Double]
-intervaloDisponible :: ChordType -> (String, Double, Double) -> Maybe Double
+intervaloDisponible :: ChordType -> (String, Double, Octava) -> Maybe Double
 intervaloDisponible cht (tipo, _, _)
       |cht == major && tipo == "segunda" = Just $ sel2 (intervalo "2M" 0)
       |cht == major7 && tipo == "segunda" = Just $ sel2 (intervalo "2M" 0)
@@ -294,67 +300,67 @@ dim7 = [0, 3, 6, 9]
 --intervalo "t" -1
 
 -- una lista de intervalos
-intervalo :: String -> Double -> (String, Double, Double)
-intervalo "unisono" octava = ("unisono", octava, 0)
+intervalo :: String -> Double -> (String, Double, Octava)
+intervalo "unisono" octava = ("unisono", 0, octava)
 
-intervalo "2a" octava = ("segunda", octava, 0)
+intervalo "2a" octava = ("segunda", 0, octava)
 
-intervalo "2m" octava = ("segundaMenor", octava,  1)
+intervalo "2m" octava = ("segundaMenor", 1, octava)
 
-intervalo "2M" octava = ("segundaMayor", octava,  2)
+intervalo "2M" octava = ("segundaMayor", 2,  octava)
 
-intervalo "3a" octava = ("tercera", octava, 0)
+intervalo "3a" octava = ("tercera", 0, octava)
 
-intervalo "3m" octava = ("terceraMenor", octava,  3)
+intervalo "3m" octava = ("terceraMenor", 3, octava)
 
-intervalo "3M" octava = ("terceraMayor", octava,  4)
+intervalo "3M" octava = ("terceraMayor", 4, octava)
 
-intervalo "4a" octava = ("cuarta", octava, 0)
+intervalo "4a" octava = ("cuarta", 0, octava)
 
-intervalo "4J" octava = ("cuartaJusta", octava,  5)
+intervalo "4J" octava = ("cuartaJusta", 5, octava)
 
-intervalo "4#" octava = ("cuartaAug", octava,  6)
+intervalo "4#" octava = ("cuartaAug", 6, octava)
 
-intervalo "5a" octava = ("quinta", octava, 0)
+intervalo "5a" octava = ("quinta", 0, octava)
 
-intervalo "5b" octava = ("quintaBemol", octava,  6)
+intervalo "5b" octava = ("quintaBemol", 6, octava)
 
-intervalo "5J" octava = ("quintaJusta", octava,  7)
+intervalo "5J" octava = ("quintaJusta", 7, octava)
 
-intervalo "5#" octava = ("quintaAug", octava,  8)
+intervalo "5#" octava = ("quintaAug", 8, octava)
 
-intervalo "6a" octava = ("sexta", octava, 0)
+intervalo "6a" octava = ("sexta", 0, octava)
 
-intervalo "6m" octava = ("sextaMenor", octava,  8)
+intervalo "6m" octava = ("sextaMenor", 8, octava)
 
-intervalo "6M" octava = ("sextaMayor", octava,  9)
+intervalo "6M" octava = ("sextaMayor", 9, octava)
 
-intervalo "7a" octava = ("septima", octava, 0)
+intervalo "7a" octava = ("septima", 0, octava)
 
-intervalo "7m" octava = ("septimaMenor", octava,  10)
+intervalo "7m" octava = ("septimaMenor", 10, octava)
 
-intervalo "7M" octava = ("septimaMayor", octava,  11)
+intervalo "7M" octava = ("septimaMayor", 11, octava)
 
-intervalo "8a" octava = ("octava", octava,  12)
+intervalo "8a" octava = ("octava", 12, octava)
 
-intervalo "9a" octava = ("novena", octava, 0)
+intervalo "9a" octava = ("novena", 0, octava)
 
-intervalo "9m" octava = ("novenaMenor", octava,  13)
+intervalo "9m" octava = ("novenaMenor", 13, octava)
 
-intervalo "9M" octava = ("novenaMayor", octava,  14)
+intervalo "9M" octava = ("novenaMayor", 14, octava)
 
-intervalo "11a" octava = ("oncena", octava, 0)
+intervalo "11a" octava = ("oncena",  0, octava)
 
-intervalo "11b" octava = ("oncenaBemol", octava,  16)
+intervalo "11b" octava = ("oncenaBemol", 16, octava)
 
-intervalo "11J" octava = ("oncenaJusta", octava,  17)
+intervalo "11J" octava = ("oncenaJusta", 17, octava)
 
-intervalo "11#" octava = ("oncenaAug", octava,  18)
+intervalo "11#" octava = ("oncenaAug", 18, octava)
 
-intervalo "13a" octava = ("trecena", octava, 0)
+intervalo "13a" octava = ("trecena", 0, octava)
 
-intervalo "13b" octava = ("trecenaBemol", octava,  20)
+intervalo "13b" octava = ("trecenaBemol", 20, octava)
 
-intervalo "13M" octava = ("trecenaMayor", octava,  21)
+intervalo "13M" octava = ("trecenaMayor", 21, octava)
 
-intervalo _ octava = ("nada", octava, 0)
+intervalo _ octava = ("nada", 0, octava)
