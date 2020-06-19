@@ -31,8 +31,8 @@ Library
   Exposed-modules:   Sound.Seis8s.Generic
                      Sound.Seis8s.GlobalMaterial
                      Sound.Seis8s.Harmony
-                     Sound.Seis8s.Instrument
-                     Sound.Seis8s.InstrumentState
+                     Sound.Seis8s.Layer
+                     Sound.Seis8s.LayerState
                      Sound.Seis8s.Parser
                      Sound.Seis8s.Program
                      Sound.Seis8s.Rhythm

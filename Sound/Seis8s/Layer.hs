@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Sound.Seis8s.Instrument where
+module Sound.Seis8s.Layer where
 
 import Data.Time
 import Data.Fixed
@@ -9,53 +9,100 @@ import Sound.OSC as H
 import qualified Data.Map as M
 import Data.Tuple.Select
 import Control.Monad.State
+-- import Control.Monad
 import qualified Data.Text  as T
 import qualified Data.List as List
 
 import Sound.Seis8s.Style
 import Sound.Seis8s.Harmony
 import Sound.Seis8s.Generic
-import Sound.Seis8s.InstrumentState
+import Sound.Seis8s.LayerState
 import Sound.Seis8s.GlobalMaterial
+
+--Layer type has to look like Instrument
+-- an instrument as a layer. layer should have been the fundamental type all along.
 
 
 -- what can be transformed from the instrument based on the Global and Instrument material
-data Instrument = Instrument {
-  getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State InstrumentState [Event]
+data Layer = Layer {
+  getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State LayerState [Event],
+  style :: Style
 }
+
+--I can make function s from layer to layer that tranform the output (i.e. like fmapping over the list of events)
+-- or also override the informayioni of the style. e.g every event louder
+--the style field is being prepared to later be an argument of getEvents.
+
+mapStyle :: (Style -> Style) -> Layer -> Layer
+mapStyle f x = x { style = f (style x)}
+
+mapEvents :: (Event -> Event) -> Layer -> Layer
+mapEvents f x = x {getEvents = g}
+  where
+    --a function calling the old function
+    g gm s t iw ew = fmap (fmap f) (getEvents x gm s t iw ew) -- State LayerState [Event]
+    --list of events as an empty list
+
+-- an event to event function could be one where makes all the events louder
+-- db :: Rational -> Layer -> Layer
+-- db gain = mapEvents (dbEvents gain)
+--
+-- forwardTime :: NominalDiffTime -> Layer -> Layer
+-- forwardTime n = mapEvents (efunc n)
+
+
+-- let l = alternar 2 seleccionarEstilo bajo
+  --  (runState  (getEvents l testgmm cumbia mytempo (mytime 0) (mytime 1)) emptyLayerStat)
+-- convert windows to metric position, and do calcs in metre posiion a convert to actual times.
+      -- if my condition is true i want to call the getEvents function of x and if its false call the getEvents
+      --of (f x)
+      -- the events could come from f0 or f1
+-- from where do i take the tempo?
+myEvent :: [Event]
+myEvent = [((mytime 3), M.fromList [("s", string "test")])]
+-- dbEvents :: Rational -> Event -> Event
+-- dbEvents gain x =  --uses dbamp (copy from musicW). call dbam on the gain to get a raw amplitude and
+-- multiply that by whatever ampltude is on the event to return a new event.
+  --
+-- where :: [Event] -> [Event]
+-- State LayerState [Event]-- is monad, when f map over it , you change the value of the last type like m a
+-- the style doesn't need to be provided in layer, bcs it's implicit in the layer
+-- now
+-- parse style as layer
+
 
 type BeginWindowTime = UTCTime
 type EndWindowTime = UTCTime
 -- type Event = (UTCTime, Map Text Datum)
 type Event = (UTCTime, M.Map T.Text Datum)
 
-emptyInstrument :: Instrument
-emptyInstrument = Instrument {getEvents = emptyEvents}
+emptyLayer :: Layer
+emptyLayer = Layer {getEvents = emptyEvents, style = defaultStyle}
 
 emptyEvents _ _ _ _ _ = do
   return $ []
 
 -- function that generates an instrument
-cuerda :: Instrument
-cuerda = Instrument {getEvents = cuerdaEvents}
+cuerda :: Layer
+cuerda = Layer {getEvents = cuerdaEvents, style = defaultStyle}
 
-piano :: Instrument
-piano = Instrument { getEvents = pianoEvents}
+piano :: Layer
+piano = Layer { getEvents = pianoEvents, style = defaultStyle}
 
-bajo :: Instrument
-bajo = Instrument {getEvents = bajoEvents}
+bajo :: Layer
+bajo = Layer {getEvents = bajoEvents, style = defaultStyle}
 --
-guira :: Instrument
-guira = Instrument {getEvents = guiraEvents}
+guira :: Layer
+guira = Layer {getEvents = guiraEvents, style = defaultStyle}
 
-contras :: Instrument
-contras = Instrument {getEvents = contrasEvents}
+contras :: Layer
+contras = Layer {getEvents = contrasEvents, style = defaultStyle}
 
-tarola :: Instrument
-tarola = Instrument {getEvents = tarolaEvents}
+tarola :: Layer
+tarola = Layer {getEvents = tarolaEvents, style = defaultStyle}
 
-efecto :: Instrument
-efecto = Instrument {getEvents = efectoEvents}
+efecto :: Layer
+efecto = Layer {getEvents = efectoEvents, style = defaultStyle}
 
 cuerdaEvents gmm style tempo iw ew = do
   let pitchType = (fst $ cuerdaPitchPattern0 style)
@@ -86,9 +133,6 @@ pianoEvents gmm style tempo iw ew = do
   let instCmap = cmap'' "piano" (cycle samplePat) pitchPattern--Map Text Datum
   let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
-
-myharmony = [Harmony (Chord 60 major) (2, 0) (2, 1), Harmony (Chord 62 minor) (2, 1) (2, 2)]
-testgmm = GlobalMaterial {harmony = myharmony }
 
 bajoEvents gmm style tempo iw ew = do
   let pitchType = (fst $ bassPitchPattern0 style)
