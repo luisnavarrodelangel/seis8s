@@ -12,11 +12,9 @@ data GlobalMaterial = GlobalMaterial {
   harmony :: Progression -- combination of a pitch and a chord type, e.g 60 major
 } deriving (Show)
 
-defaultGlobalMaterial = GlobalMaterial {
-  harmony = [Harmony (Chord 60 major) (1, 0) (1, 1)]
-}
+defaultGlobalMaterial = GlobalMaterial { harmony = Progression 1 [Chord 60 major (0, 1)]}
 
-myharmony = [Harmony (Chord 60 major) (2, 0) (2, 1), Harmony (Chord 62 minor) (2, 1) (2, 2)]
+myharmony = Progression 2 [Chord 60 major (0, 1), Chord 62 minor (1, 2)]
 testgmm = GlobalMaterial {harmony = myharmony }
 
 

@@ -16,11 +16,11 @@ type Note = (Relacion, Double, Octava)
 type PitchType = String -- intervalo o midinote
 type PitchPattern = (PitchType, [Note])
 
-data Chord = Chord Pitch ChordType deriving (Show)
+data Chord = Chord Pitch ChordType ChordPosition deriving (Show)
 type Pitch = Double
 type ChordType = [Double]
-data Harmony = Harmony Chord RhythmicPosition RhythmicPosition deriving (Show)-- :: (Rational,Rational)
-type Progression = [Harmony]
+-- data Harmony = Harmony Chord ChordPosition ChordPosition deriving (Show)-- :: (Rational,Rational)
+data Progression = Progression Metre [Chord] deriving (Show)
 
 generateLineFromMidi :: [(Rational, (String, Double, Double))] -> [(Rational, Pitch)]
 generateLineFromMidi xs = fmap generateLineFromMidi' xs
@@ -28,25 +28,25 @@ generateLineFromMidi xs = fmap generateLineFromMidi' xs
 generateLineFromMidi' :: (Rational, (String, Double, Double)) -> (Rational, Pitch)
 generateLineFromMidi' (attack, (midiIdentifier, midinote, octava)) = (attack, midinote)
 
-generateLine :: [(Rational, (String, Double, Octava))] -> [Harmony] -> [(Rational, Pitch)]
-generateLine attacksAndIntervals chords =  concat $ fmap (generateNotesFromChord attacksAndIntervals) chords
+generateLine :: [(Rational, (String, Double, Octava))] -> Progression -> [(Rational, Pitch)]
+generateLine attacksAndIntervals (Progression metre chords) =  concat $ fmap (generateNotesFromChord attacksAndIntervals metre) chords
 
-generateNotesFromChord :: [(Rational, (String, Double, Octava))] -> Harmony -> [(Rational, Pitch)]
-generateNotesFromChord attacksAndIntervals chord = concat $ fmap (\x -> generateSingleNoteFromChord x chord) attacksAndIntervals
+generateNotesFromChord :: [(Rational, (String, Double, Octava))] -> Metre -> Chord -> [(Rational, Pitch)]
+generateNotesFromChord attacksAndIntervals metre chord = concat $ fmap (\x -> generateSingleNoteFromChord x metre chord) attacksAndIntervals
 
-generateSingleNoteFromChord :: (Rational, (String, Double, Octava)) -> Harmony ->  [(Rational, Pitch)]
-generateSingleNoteFromChord (attack, (tipo, interval, octava)) (Harmony c start end)
-  |compareRationalWChordRange attack start end = attackAndNote attack note
+generateSingleNoteFromChord :: (Rational, (String, Double, Octava)) -> Rational -> Chord ->  [(Rational, Pitch)]
+generateSingleNoteFromChord (attack, (tipo, interval, octava)) metre (Chord p t (start, end))
+  |compareRationalWChordRange attack metre (start, end) = attackAndNote attack note
   | otherwise = []
   where
-    note = getNoteInChord c (tipo, interval, octava) -- Maybe Pitch
+    note = getNoteInChord (Chord p t (start, end)) (tipo, interval, octava) -- Maybe Pitch
 
 attackAndNote :: Rational -> Maybe Pitch -> [(Rational, Pitch)]
 attackAndNote attack (Just note) = [(attack, note)]
 attackAndNote _ Nothing = []
 
 getNoteInChord :: Chord -> (String, Double, Octava) -> Maybe Pitch
-getNoteInChord (Chord root chordType) (tipo, interval, octava)
+getNoteInChord (Chord root chordType (start, end)) (tipo, interval, octava)
        | tipo == "segunda" = (+) <$> Just root <*> ((+) <$> Just (12 * octava) <*> (intervaloDisponible chordType (tipo, interval, octava)))
        | tipo == "tercera" = (+) <$> Just root <*> ((+) <$> Just (12 * octava) <*> (intervaloDisponible chordType (tipo, interval, octava)))
        | tipo == "cuarta" = (+) <$> Just root <*> ((+) <$> Just (12 * octava) <*> (intervaloDisponible chordType (tipo, interval, octava)))
@@ -181,19 +181,19 @@ intervaloDisponible cht (tipo, _, _)
   -- (!!) (generateChord (Chord root chordType)) (round interval)
 
 -- generates a list of chords according to a given harmony and a given rhythm pattern
-generatechords :: [Rational] -> [Harmony] ->  [(Rational, [Pitch])]
-generatechords attacks chords = concat $ fmap (generateChordsFromRational chords) attacks
+generatechords :: [Rational] -> Progression ->  [(Rational, [Pitch])]
+generatechords attacks (Progression metre chords) = concat $ fmap (generateChordsFromRational (Progression metre chords)) attacks
 
-generateChordsFromRational :: [Harmony] -> Rational -> [(Rational, [Pitch])]
-generateChordsFromRational chords attack   = concat $ fmap (generateSingleChordFromRational attack) chords
+generateChordsFromRational :: Progression -> Rational -> [(Rational, [Pitch])]
+generateChordsFromRational (Progression metre chords) attack   = concat $ fmap (generateSingleChordFromRational metre attack) chords
 
-generateSingleChordFromRational :: Rational -> Harmony -> [(Rational, [Pitch])]
-generateSingleChordFromRational attack (Harmony c start end)
-  | compareRationalWChordRange attack start end = [(attack, generateChord c)]
+generateSingleChordFromRational :: Rational -> Metre -> Chord -> [(Rational, [Pitch])]
+generateSingleChordFromRational attack metre (Chord p chordType (start, end))
+  | compareRationalWChordRange attack metre (start, end) = [(attack, generateChord (Chord p chordType (start, end)))]
   | otherwise = []
 
-compareRationalWChordRange :: Rational -> RhythmicPosition -> RhythmicPosition -> Bool
-compareRationalWChordRange attack (metre,startOffset) (_,endOffset) = do
+compareRationalWChordRange :: Rational -> Metre -> ChordPosition -> Bool
+compareRationalWChordRange attack metre (startOffset, endOffset) = do
   let attackInMetre = attack / metre
   let attackInMetre' = fract attackInMetre
   let startInMetre = startOffset / metre
@@ -204,7 +204,7 @@ compareRationalWChordRange attack (metre,startOffset) (_,endOffset) = do
 
 -- return a list of pitches from one chord
 generateChord :: Chord -> [Pitch]
-generateChord (Chord root chordType)  = fmap ((+) root) chordType
+generateChord (Chord root chordType (start, end))  = fmap ((+) root) chordType
 
 concatChord :: (Rational, [Pitch]) -> [(Rational, Pitch)]
 concatChord (attack, ps) =  fmap (\p -> (attack, p)) (snd (attack, ps))

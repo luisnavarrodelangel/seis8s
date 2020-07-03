@@ -74,7 +74,11 @@ myEvent = [((mytime 3), M.fromList [("s", string "test")])]
 type BeginWindowTime = UTCTime
 type EndWindowTime = UTCTime
 -- type Event = (UTCTime, Map Text Datum)
+-- type Event = (UTCTime, M.Map T.Text Datum)
 type Event = (UTCTime, M.Map T.Text Datum)
+
+-- ev :: [Event']
+-- ev = [Event' (mytime 0, M.fromList [("n",Int32 {d_int32 = 1}),("note",Double {d_double = 0.0}),("s",ASCII_String {d_ascii_string = "piano"})])]
 
 emptyLayer :: Layer
 emptyLayer = Layer {getEvents = emptyEvents, style = defaultStyle}
@@ -124,13 +128,21 @@ cuerdaEvents gmm style tempo iw ew = do
 
 
 pianoEvents gmm style tempo iw ew = do
-  let nPat = List.zip (pianoRhythmPattern0 style) (pianoSampleNPattern0 style) --[(RhythmicPattern, Int)]
+  let pitchType = fst $ pianoPitchPattern0 style
+  let equateLists' = equateLists (pianoRhythmPattern0 style) (pianoSampleNPattern0 style) (snd $ pianoPitchPattern0 style)
+  let pianoRhythmPattern = sel1 equateLists'
+  let pianoSampleNPattern = sel2 equateLists'
+  let pianoPitchPattern = sel3 equateLists'
+  let nPat = List.zip pianoRhythmPattern pianoSampleNPattern --[(RhythmicPattern, Int)]
   let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
-  let attacks = rhythmicPattern (pianoRhythmPattern0 style) tempo iw ew  -- [Rational] [(1, 0), (1, 0.5)]
-  let chordPattern = generatechords attacks (harmony gmm) -- [(Rational, [Pitch])]
-  let pitchPattern = concatChords chordPattern -- [(Rational, Pitch)]
-  let time = fmap (\c -> countToTime tempo (fst c)) pitchPattern  -- [UTCTime]
-  let instCmap = cmap'' "piano" (cycle samplePat) pitchPattern--Map Text Datum
+  let pat = List.zip pianoRhythmPattern pianoPitchPattern -- [(RhythmicPosition, (String, Double))]
+  let pitchPat = pitchPattern pat tempo iw ew
+  -- let attacks = rhythmicPattern (pianoRhythmPattern0 style) tempo iw ew  -- [Rational] [(1, 0), (1, 0.5)]
+  -- let chordPattern = generatechords attacks (harmony gmm) -- [(Rational, [Pitch])]
+  -- let pitchPattern = concatChords chordPattern -- [(Rational, Pitch)]
+  let pianoline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
+  let time = fmap (\c -> countToTime tempo (fst c)) pianoline  -- [UTCTime]
+  let instCmap = cmap'' "piano" samplePat pianoline--Map Text Datum
   let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
 

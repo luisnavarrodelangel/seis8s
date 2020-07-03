@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Sound.Seis8s.Parser (parseLang, render) where
 
 import Sound.Seis8s.Program
@@ -14,13 +16,17 @@ import qualified Language.Haskell.Exts as Exts
 import Control.Applicative
 import Data.IntMap.Strict
 import Control.Monad.State
-import Data.Map as Map
+import qualified Data.Map as Map
 import qualified Sound.OSC as H
 import qualified Data.Text as T
+import qualified Data.List as List
 import Data.Bifunctor
 import Data.Tempo
 import Data.Time
 import Data.Fixed
+import Data.Maybe
+import qualified Sound.OSC as H
+
 
 type H = Haskellish GlobalMaterial
 
@@ -66,46 +72,83 @@ globalMaterialFunctions :: H (GlobalMaterial -> GlobalMaterial)
 globalMaterialFunctions = parseSetChordProg
 
 parseSetChordProg :: H (GlobalMaterial -> GlobalMaterial)
-parseSetChordProg = (reserved "harmonia" >> return setChordProg) <*> progressionParser
+parseSetChordProg = parseSetChordProgWMetre
+                 <|> parseSetChordProgMetreAuto
 
-setChordProg :: [Harmony] -> GlobalMaterial -> GlobalMaterial
-setChordProg hs gm = gm { harmony = hs }
+parseSetChordProgWMetre :: H (GlobalMaterial -> GlobalMaterial)
+parseSetChordProgWMetre = parseSetChordProgWMetre' <*> chordList
 
-progressionToGm :: H GlobalMaterial
-progressionToGm = progressionToGm' <*> progressionParser
+parseSetChordProgWMetre' :: H ([Chord] -> GlobalMaterial -> GlobalMaterial)
+parseSetChordProgWMetre' = parseSetChordProgWMetre'' <*> rationalOrInteger
 
-progressionToGm' :: H ([Harmony] -> GlobalMaterial)
-progressionToGm' = setNewGlobalMaterial <$ reserved "harmonia"
+parseSetChordProgWMetre'' :: H (Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial)
+parseSetChordProgWMetre'' = (setChordProg <$ reserved "harmonia")
 
-progressionParser :: H [Harmony]
-progressionParser = list harmoniaParser
+parseSetChordProgMetreAuto :: H (GlobalMaterial -> GlobalMaterial)
+parseSetChordProgMetreAuto = (reserved "harmonia" >> return setChordProgMetreAuto) <*>  chordListMetreAuto
 
-harmoniaParser :: H Harmony
-harmoniaParser = harmoniaParser' <*> rationalOrInteger
+setChordProg :: Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial
+setChordProg metre hs gm = gm { harmony = castProgression metre hs }
 
-harmoniaParser' :: H (Rational -> Harmony)
-harmoniaParser' = harmoniaParser'' <*> rationalOrInteger
+setChordProgMetreAuto ::[Chord] -> GlobalMaterial -> GlobalMaterial
+setChordProgMetreAuto hs gm = gm { harmony = castProgressionMetreAuto hs }
 
-harmoniaParser'' :: H (Rational -> Rational -> Harmony)
-harmoniaParser'' = harmoniaParser''' <*> rationalOrInteger
+chordList :: H [Chord]
+chordList = list chordParser
 
-harmoniaParser''' :: H (Rational -> Rational -> Rational -> Harmony)
-harmoniaParser''' = harmoniaParser'''' <*> chordTypeParser
+chordParser :: H Chord
+chordParser = chordParser' <*> rationalOrInteger
 
-harmoniaParser'''' :: H (ChordType -> Rational -> Rational -> Rational -> Harmony)
-harmoniaParser'''' = do
+chordParser' :: H (Rational -> Chord)
+chordParser' = chordParser'' <*> rationalOrInteger
+
+chordParser'' :: H (Rational -> Rational -> Chord)
+chordParser'' = chordParser''' <*> chordTypeParser
+
+chordParser''' :: H (ChordType -> Rational -> Rational -> Chord)
+chordParser''' = do
   p <- pitchParser
-  return $ setHarmony p
+  return $ \t s e -> castHarmony p t s e
 
-setNewGlobalMaterial :: [Harmony] -> GlobalMaterial
-setNewGlobalMaterial hs = GlobalMaterial { harmony = hs }
+--parses a list of chords with default dur of 1c, e.g. harmonia [c maj, d maj]
+chordListMetreAuto :: H [Chord]
+chordListMetreAuto = do
+  x <- listofpitchandchord
+  return $ pitchandtypetochord x
 
-setHarmony :: Pitch -> ChordType -> Rational -> Rational -> Rational -> Harmony
-setHarmony p t m s e = Harmony (Chord p t) (m, s) (m, e)
+listofpitchandchord :: H [(Pitch, ChordType)]
+listofpitchandchord = list parsepitchandtypetotuple
 
--- ?
-setHarmony' :: Rational -> (Pitch, ChordType, Rational, Rational) -> Harmony
-setHarmony' metre (p, t, s, e) = Harmony (Chord p t) (metre, s) (metre, e)
+parsepitchandtypetotuple ::  H (Pitch, ChordType)
+parsepitchandtypetotuple = parsepitchandtypetotuple' <*> chordTypeParser
+
+parsepitchandtypetotuple' :: H (ChordType -> (Pitch, ChordType))
+parsepitchandtypetotuple' = do
+  p <- pitchParser
+  return $ \t -> pitchandtypetotuple p t
+
+pitchandtypetotuple :: Pitch -> ChordType -> (Pitch, ChordType)
+pitchandtypetotuple p t = (p,t)
+
+pitchandtypetochord :: [(Pitch, ChordType)] -> [Chord]
+pitchandtypetochord xs = do
+  let startandend = fmap (\s -> (toRational s, toRational s+1)) [0 .. (length xs)]
+  let zipXSwithStartEnd = zip xs startandend --[((),())]
+  fmap (\((p,t), (s,e)) -> Chord p t (s,e)) zipXSwithStartEnd
+
+-- harmonia 1 [C maj 0 1]
+castProgression :: Rational -> [Chord] -> Progression
+castProgression metre cs = Progression metre cs
+
+-- harmonia 1 [C maj 0 1]
+castProgressionMetreAuto :: [Chord] -> Progression
+castProgressionMetreAuto cs = do
+  let metre = 1 + (realToFrac $ length cs)
+  Progression metre cs
+
+castHarmony :: Pitch -> ChordType -> Rational -> Rational -> Chord
+castHarmony p t s e = Chord p t (s, e)
+
 
 pitchParser :: H Pitch
 pitchParser =
@@ -158,7 +201,7 @@ transformadoresDeLayer =  parseSeleccionarEstilo
                       <|> parseCambiarNotas
                       <|> parseCambiarRitmo
                       <|> parseCambiarRitmos
-                      <|> parseCambiarIntervalo
+                      <|> parseCambiarIntervaloConString
                       <|> parsePreset
                       <|> parseAlternar
 --
@@ -174,7 +217,8 @@ inst =
 
 
 estilo :: H S.Style
-estilo = cumbia <$ reserved "cumbia"
+estilo =  defaultStyle <$ reserved "def"
+      <|> cumbia <$ reserved "cumbia"
 
 -- a function to change the style of the layer
 parseSeleccionarEstilo :: H Layer
@@ -342,23 +386,41 @@ cambiarNota ps c = c {style = nuevoE}
 --                             efectoPitchPattern0 = ("intervalo", [intervalo index 0])
 --                             }
 -- provee el intervalo con respecto a la tonica y cualidad del acorde
-parseCambiarIntervalo :: H Layer
-parseCambiarIntervalo = parseCambiarIntervalo' <*> parseLayer
+parseCambiarIntervaloConString :: H Layer
+parseCambiarIntervaloConString = parseCambiarIntervaloConString' <*> parseLayer
 
-parseCambiarIntervalo' :: H (Layer -> Layer)
-parseCambiarIntervalo' = parseCambiarIntervalo'' <*> string
+parseCambiarIntervaloConString' :: H (Layer -> Layer)
+parseCambiarIntervaloConString' = parseCambiarIntervaloConString'' <*> string
 
-parseCambiarIntervalo'' :: H (String -> Layer -> Layer)
-parseCambiarIntervalo'' = cambiarIntervalo <$ reserved "intervalo"
+parseCambiarIntervaloConString'' :: H (String -> Layer -> Layer)
+parseCambiarIntervaloConString'' = cambiarIntervaloConString <$ reserved "intervalo"
 
-cambiarIntervalo :: String -> Layer -> Layer
-cambiarIntervalo index c = c {style = nuevoE}
+cambiarIntervaloConString :: String -> Layer -> Layer
+cambiarIntervaloConString index c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("intervalo", [intervalo index 0]),
                             pianoPitchPattern0 = ("intervalo", [intervalo index 0]),
                             bassPitchPattern0= ("intervalo", [intervalo index 0]),
                             efectoPitchPattern0 = ("intervalo", [intervalo index 0])
                             }
+
+-- parseCambiarIntervaloConInt :: H Layer
+-- parseCambiarIntervaloConInt = parseCambiarIntervaloConInt' <*> parseLayer
+--
+-- parseCambiarIntervaloConInt' :: H (Layer -> Layer)
+-- parseCambiarIntervaloConInt' = parseCambiarIntervaloConInt'' <*> int
+--
+-- parseCambiarIntervaloConInt'' :: H (Int -> Layer -> Layer)
+-- parseCambiarIntervaloConInt'' = cambiarIntervaloConInt <$ reserved "intervalo"
+
+-- cambiarIntervalos :: [String] -> Layer -> Layer
+-- cambiarIntervalos index c = c {style = nuevoE}
+--   where nuevoE = (style c) {
+--                             cuerdaPitchPattern0 = ("intervalo", [(index, 0)]),
+--                             pianoPitchPattern0 = ("intervalo", [(index, 0)]),
+--                             bassPitchPattern0= ("intervalo", [(index, 0)]),
+--                             efectoPitchPattern0 = ("intervalo", [(index, 0)])
+--                             }
 
 -- type RhythmicPattern = [(Rational,Rational)]
 -- ritmo 0.5 cumbia cuerda
@@ -460,7 +522,7 @@ preset 0 c = c {style = nuevoE}
 preset 1 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             pianoRhythmPattern0 = pianoRhythmPattern1 (style c), -- ie. [𝄽 ♩ 𝄽 ♩],
-                            pianoSampleNPattern0 = pianoSampleNPattern0 (style c),
+                            pianoSampleNPattern0 = pianoSampleNPattern1 (style c),
 
                             bassRhythmPattern0 = bassRhythmPattern1 (style c),  --i.e. [♩ 𝄽  ♩ 𝄽 ],
                             bassSampleNPattern0 = pianoSampleNPattern0 (style c),
@@ -489,100 +551,92 @@ parseAlternar''' :: H (Int -> (Layer -> Layer) -> Layer -> Layer)
 parseAlternar''' = alternar <$ reserved "alternar"
 
 parseLayerToLayerFunc :: H (Layer -> Layer)
-parseLayerToLayerFunc = pareseSeleccionarEstiloF
+parseLayerToLayerFunc = parseSeleccionarEstilo'
+                      <|> parseSeleccionarSample'
+                      <|> parseSeleccionarSamples'
+                      <|> parseTonicaYquinta'
+                      <|> parseTonicaYquinta2'
+                      <|> parseTonicaQoctava'
+                      <|> parseTonicaQtercera'
+                      <|> parseCambiarNota'
+                      <|> parseCambiarNotas'
+                      <|> parseCambiarRitmo'
+                      <|> parseCambiarRitmos'
+                      <|> parseCambiarIntervaloConString'
+                      <|> parsePreset'
+                      <|> parseAlternar'
 
-pareseSeleccionarEstiloF :: H (Layer -> Layer)
-pareseSeleccionarEstiloF = seleccionarEstiloF <$ reserved "seleccionarEstilo"
-
-seleccionarEstiloF :: Layer -> Layer
-seleccionarEstiloF c = c {style = cumbia}
+seleccionarSampleF ::  Layer -> Layer
+seleccionarSampleF c =  c {style = nuevoE}
+   where
+      index = 1
+      nuevoE = (style c) {
+                             cuerdaSampleNPattern0 = [index],
+                             pianoSampleNPattern0 =  [index],
+                             bassSampleNPattern0 =  [index],
+                             guiraSampleNPattern0 = [index],
+                             contrasSampleNPattern0 = [index],
+                             tarolaSampleNPattern0 = [index],
+                             efectoSampleNPattern0 = [index]
+                            }
 
 alternar :: Int -> (Layer -> Layer) -> Layer -> Layer
-alternar n f x = Layer { getEvents = updatedEv, style = defaultStyle }
+alternar 0 f x = Layer { getEvents = updatedEv, style = style x}
+  where
+    f0 = getEvents x
+    s0 = style x
+    updatedEv gm s t iw ew = f0 gm s0 t iw ew
+
+alternar 1 f x = Layer { getEvents = updatedEv, style = style (f x)}
+  where
+    f1 = getEvents (f x)
+    s1 = style (f x)
+    updatedEv gm s t iw ew = f1 gm s1 t iw ew
+
+alternar n f x = Layer { getEvents = updatedEv, style = style (f x)}
   where
     f0 = getEvents x -- lista orginal de evs
     f1 = getEvents (f x) -- lista nueva de evs
     s0 = style x
     s1 = style (f x)
-    updatedEv gm s t iw ew = liftM2 (++) es0 es1 -- the events from both of them [], -- the edge case is if there is no windows
-      where --timeToCount :: Tempo -> UTCTime -> Rational
-        w0 = if (mod' ew' (toRational n) /= 0) then Just (iw', ew') else Nothing
-          where
-            iw' = timeToCount t iw -- (toRational $ diffUTCTime iw (mytime 0))
-            ew' = timeToCount t ew-- (toRational $ diffUTCTime ew (mytime 0))
-                  -- Just (toRational $ diffUTCTime iw (mytime 0), toRational $ diffUTCTime ew (mytime 0)) -- Just (0 :: Rational, 1 :: Rational)-- :: Maybe (UTCTime, UTCTime)-- window for es0 and f0
-        w1 =  if (mod' ew' (toRational n) == 0) then Just (iw', ew') else Nothing
-          where
-            iw' = timeToCount t iw -- (toRational $ diffUTCTime iw (mytime 0))
-            ew' = timeToCount t ew -- (toRational $ diffUTCTime ew (mytime 0))
-      --  Just (1 :: Rational, 2 :: Rational)-- :: Maybe (UTCTime, UTCTime) -- think how to handle this
-        es0 = case w0 of
-          Just (iw0, ew0) -> f0 gm s0 t (countToTime t iw0) (countToTime t ew0)  -- window of time where this layer is in effect, this is the part to calculte (iw0 and ew0, iw1 iw1)
-          Nothing -> return []
-        es1 = case w1 of
-          Just (iw1, ew1) -> f1 gm s1 t (countToTime t iw1) (countToTime t ew1) -- do the same here
-          Nothing -> return []
+
+    updatedEv gm s t iw ew = liftM concat $ liftM2 (++) es0  es1
+      where
+        iw' = timeToCount t iw -- Rational
+        ew' = timeToCount t ew --
+
+        (w0, w1) = alternarWindows n iw' ew' -- find all the windows that comply with certain condition within the provided window
+
+        es0 = mapM (\(i,e) -> f0 gm s0 t (countToTime t i) (countToTime t e)) w0 -- State LayerState [[Events]]
+        es1 = mapM (\(i,e) -> f1 gm s1 t (countToTime t i) (countToTime t e)) w1
+
+    -- updatedStyle gm s t iw ew = if (mod' iw' (realToFrac n) /= realToFrac n - 1) then s0 else s1
+    --   where
+    --     iw' = timeToCount t iw -- Rational
+    --     ew' = timeToCount t ew --
 
 
--- -- alternar 2 (tonicaQoctava) $ cumbia bajo -- alterna entre el patron anterior y el dad en la funcion alternar
--- -- donde 2 es el metre y no ocupamos attacks
---
--- boolAttacks :: Tempo -> UTCTime -> UTCTime -> Rational -> Rational -> [(Bool, Rational)] -- e.g [(True, 0), (True, 2)]
--- boolAttacks tempo iw ew metre attack = do
---   let attacks = findBeats tempo iw ew metre attack  -- [Rational]
---   fmap (\b -> (True, b)) attacks
---
--- boolAttacks' :: Tempo -> UTCTime -> UTCTime -> Rational -> Rational -> [(Bool, Rational)] -- e.g [(True, 0), (True, 2)]
--- boolAttacks' tempo iw ew metre attack = do
---   let attacks = findBeats tempo iw ew metre attack  -- [Rational]
---   fmap (\b -> (True, b)) attacks
---
--- alternar 8 (tonicaQoctava) $ cumbia bajo
---
--- -- (Rational,Rational)
---
--- -- I want that when I give f (tonicaQoctava) $ cumbia bajo , tonicaQoctava se convierta en el nuevo Layer
--- -- switchLayer :: Tempo -> UTCTime -> Int -> (Layer -> Layer) -> Layer -> Layer
--- -- switchLayer tempo we m g (Layer (s, i))
--- --   | (mod' m (timeToCount tempo we?) == 0 = g (Layer (s, i))
--- --   | otherwise = (Layer (s, i))
--- -- -
--- alternar :: Int -> (Event -> Event) -> Layer -> Layer
--- alternar 0 _ x = x
--- alternar 1 f x =  f x
--- alternar n f x
---   | (mod (timeToCount tempo we)) n == 0 = f x
---   | otherwise = x
---
--- f' :: Int -> Event -> Event
--- f' n (time, mymap)
---   | mod time n == 0 = (time, mymap)
---   | otherwise = (time, mymap)
+alternarWindows n iw ew = do
+  let lista = [realToFrac $ floor iw .. realToFrac $ floor ew]
+  let lista' = fmap (\e -> (e, e + 1)) lista
+  let lista'' = drop 1 $ init lista'
+  let lista''' = firstItem : lista'' ++ lastItem
+      firstItem | (realToFrac $ floor iw) == (realToFrac $ floor ew) = (realToFrac iw, realToFrac ew)
+                | otherwise = (realToFrac iw, (realToFrac $ floor iw) + 1)
+
+      lastItem | (realToFrac $ floor ew) == (realToFrac $ floor iw) = []
+               | (realToFrac ew) > (realToFrac $ floor ew) = [(realToFrac $ floor ew, realToFrac ew)]
+               | otherwise = []
+  let x = catMaybes $ fmap (\x -> if (mod' (realToFrac $ floor $ fst x) (realToFrac n) /= (realToFrac n -1)) then Just x else Nothing) lista'''
+  let fx = catMaybes $ fmap (\x -> if (mod' (realToFrac $ floor $ fst x) (realToFrac n) == (realToFrac n -1)) then Just x else Nothing ) lista'''
+  (x, fx)
 
 
--- -- ritmosToLayer :: Tempo -> UTCTime -> UTCTime -> Rational -> (Layer -> Layer) ->  Layer -> Layer
--- -- ritmosToLayer tempo iw ew metre (Layer (s2, i)) (Layer (s2, i)) = (Layer (altE, i))
--- --   where
--- --     altRitmo = alternarRitmos (boolAttacks tempo iw ew metre 0) (cuerdaRhythmPattern0 s1) (cuerdaRhythmPattern0 s2)
--- --     altE = s2 {
--- --                   cuerdaRhythmPattern0 = altRitmo,
--- --                   cuerdaSampleNPattern0 = [0],
--- --                   cuerdaPitchPattern0 = ("intervalo", [("unisono", 0, 0)])
--- --                   }
--- --
--- --
--- -- alternarRitmos :: [(Bool, Rational)] -> [(Rational,Rational)] -> [(Rational,Rational)] -> [(Rational,Rational)]
--- -- alternarRitmos xs s1 s2 = concat $ fmap (\x -> alternarRitmo x s1 s2) xs
--- --
--- -- alternarRitmo :: (Bool, Rational) -> [(Rational,Rational)] -> [(Rational,Rational)] -> [(Rational,Rational)]
--- -- alternarRitmo (b, altAttack) r1 r2
--- --   | fst (b, altAttack) == True = r1
--- --   | otherwise = r2
---
---
+-- test funcs
+-- let l = alternar 3 (seleccionarSampleF) (seleccionarEstilo cumbia bajo)
+-- (runState  (getEvents l testgmm cumbia  mytempo (mytime 0) (mytime 1)) emptyLayerState)
 
-
--- heper functions
+-- helper functions
 
 rationalList :: H [Rational]
 rationalList = list $ rationalOrInteger
@@ -605,11 +659,12 @@ doubleList = list double
 -- render :: (GlobalMaterial,Style,Instrument) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Map Text Datum)]
 -- runState :: State s a -> s -> (a, s) -- as soon as the state is meaningful I should stop discarding it.
 --check Tidal.params for looking at the available params for webdirt
-render :: ([Layer], GlobalMaterial) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime, Map T.Text H.Datum)]
+render :: ([Layer], GlobalMaterial) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime, Map.Map T.Text H.Datum)]
 render (ls, gm) tempo iw ew = Prelude.concat $ fmap (\l -> render' (l, gm) tempo iw ew) ls
 
 
-render' :: (Layer, GlobalMaterial) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime, Map T.Text H.Datum)]
-render' (layer, gm) tempo iw ew = fst $ runState x emptyLayerState --this should be another argument to my render function
-  where
-     x = getEvents layer gm (style layer) tempo iw ew
+render' :: (Layer, GlobalMaterial) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime, Map.Map T.Text H.Datum)]
+render' (layer, gm) tempo iw ew = do
+   fst $ runState x emptyLayerState --this should be another argument to my render function
+    where
+      x = getEvents layer gm (style layer) tempo iw ew

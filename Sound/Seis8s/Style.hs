@@ -61,6 +61,7 @@ data Style  = Style  {
 defaultStyle :: Style
 defaultStyle = Style {
    pianoSampleNPattern0 = [0],
+   pianoSampleNPattern1 = [0],
    pianoRhythmPattern0 = [(1, 0)], -- ie.  [𝄽  𝄽  𝄽  ♩],
    pianoRhythmPattern1 = [], -- ie. [𝄽 ♩ 𝄽 ♩],
    pianoPitchPattern0 = ("intervalo", [("segunda" , 0, 0)]),
@@ -70,6 +71,7 @@ defaultStyle = Style {
    cuerdaPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
 
    bassSampleNPattern0 = [0],
+   bassSampleNPattern1 = [],
    bassSampleNPattern2 = [],  --index
    bassRhythmPattern0 = [(1, 0)],  --i.e. [♩ 𝄽  ♩ 𝄽 ],
    bassRhythmPattern1 = [],  --i.e. [♩ 𝄽  ♩ ♩],
