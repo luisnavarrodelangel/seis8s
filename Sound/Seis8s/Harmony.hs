@@ -74,7 +74,7 @@ intervaloDisponible cht (tipo, _, _)
 
       |cht == major && tipo == "tercera" = Just $ sel2 (intervalo "3M" 0)
       |cht == major7 && tipo == "tercera" = Just $ sel2 (intervalo "3M" 0)
-      |cht == minor && tipo == "tercera" = Just $ sel2 (intervalo "3M" 0)
+      |cht == minor && tipo == "tercera" = Just $ sel2 (intervalo "3m" 0)
       |cht == minor7 && tipo == "tercera" = Just $ sel2 (intervalo "3m" 0)
       |cht == dom && tipo == "tercera" = Just $ sel2 (intervalo "3M" 0)
       |cht == sus2 && tipo == "tercera" = Nothing
@@ -300,6 +300,9 @@ dim7 = [0, 3, 6, 9]
 --intervalo "t" -1
 
 -- una lista de intervalos
+intervaloDouble :: Double -> Double -> (String, Double, Octava)
+intervaloDouble intervalo octava = ("libre", intervalo, octava)
+
 intervalo :: String -> Double -> (String, Double, Octava)
 intervalo "unisono" octava = ("unisono", 0, octava)
 

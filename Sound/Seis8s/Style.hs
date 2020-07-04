@@ -17,19 +17,35 @@ type NPattern = [Int]
 
 
 data Style  = Style  {
+ altavozRhythmPattern0 :: RhythmicPattern,
+ altavozSampleNPattern0 :: NPattern,
+ altavozPitchPattern0 :: PitchPattern,
+ altavozPanPattern0 :: Double,
+ altavozGainPattern0 :: Double,
+
  pianoSampleNPattern0 :: NPattern,
  pianoSampleNPattern1 :: NPattern,
  pianoPitchPattern0 :: PitchPattern,
  pianoRhythmPattern0 :: RhythmicPattern, -- or could this be accompaniment (used for various instruments)?-- [(Rational, Rational)] -- not universal value, but semiuniversal values.
  pianoRhythmPattern1 :: RhythmicPattern,
+ pianoPanPattern0 :: Double,
+ pianoGainPattern0 :: Double,
+
+
 
  cuerdaRhythmPattern0 :: RhythmicPattern,
  cuerdaSampleNPattern0 :: NPattern,
  cuerdaPitchPattern0 :: PitchPattern,
+ cuerdaPanPattern0 :: Double,
+ cuerdaGainPattern0 :: Double,
+
 
  efectoRhythmPattern0 :: RhythmicPattern,
  efectoSampleNPattern0 :: NPattern,
  efectoPitchPattern0 :: PitchPattern,
+ efectoPanPattern0 :: Double,
+efectoGainPattern0 :: Double,
+
 
  bassSampleNPattern0 :: NPattern,
  bassSampleNPattern1 :: NPattern,
@@ -40,17 +56,35 @@ data Style  = Style  {
  bassPitchPattern0 :: PitchPattern,  --index
  bassPitchPattern1 :: PitchPattern,  --index
  bassPitchPattern2 :: PitchPattern,  --index
+ bassPanPattern0 :: Double,
+ bassGainPattern0 :: Double,
+
 
  guiraRhythmPattern0 :: RhythmicPattern,
  guiraSampleNPattern0 ::NPattern, -- this should not take the harmony
+ guiraPitchPattern0 :: PitchPattern,
+ guiraPanPattern0 :: Double,
+ guiraGainPattern0 :: Double,
 
  contrasRhythmPattern0 :: RhythmicPattern,
  contrasSampleNPattern0 :: NPattern,
+ contrasPitchPattern0 :: PitchPattern,
+ contrasPanPattern0 :: Double,
+ contrasGainPattern0 :: Double,
 
  tarolaRhythmPattern0 :: RhythmicPattern,
- tarolaSampleNPattern0 :: NPattern
+ tarolaSampleNPattern0 :: NPattern,
+ tarolaPitchPattern0 :: PitchPattern,
+ tarolaPanPattern0 :: Double,
+ tarolaGainPattern0 :: Double,
 
- } deriving (Show)
+ extrasRhythmPattern0 :: RhythmicPattern,
+ extrasSampleNPattern0 :: NPattern,
+ extrasPitchPattern0 :: PitchPattern,
+ extrasPanPattern0 :: Double,
+ extrasGainPattern0 :: Double
+
+} deriving (Show)
 
 
  -- type PitchPostion = (Rational, Pitch)
@@ -60,15 +94,27 @@ data Style  = Style  {
 
 defaultStyle :: Style
 defaultStyle = Style {
+
+   altavozRhythmPattern0 = [(1, 0)],
+   altavozSampleNPattern0 = [0],
+   altavozPitchPattern0 = ("midinote", [("mn", 60, 0)]),
+   altavozPanPattern0 = 0.5,
+   altavozGainPattern0 = 1,
+
+
    pianoSampleNPattern0 = [0],
    pianoSampleNPattern1 = [0],
    pianoRhythmPattern0 = [(1, 0)], -- ie.  [𝄽  𝄽  𝄽  ♩],
    pianoRhythmPattern1 = [], -- ie. [𝄽 ♩ 𝄽 ♩],
    pianoPitchPattern0 = ("intervalo", [("segunda" , 0, 0)]),
+   pianoPanPattern0 = 0.5,
+   pianoGainPattern0 = 1,
 
    cuerdaRhythmPattern0 = [(1,0)],
    cuerdaSampleNPattern0 = [0],
    cuerdaPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
+   cuerdaPanPattern0 = 0.5,
+   cuerdaGainPattern0 = 1,
 
    bassSampleNPattern0 = [0],
    bassSampleNPattern1 = [],
@@ -79,19 +125,38 @@ defaultStyle = Style {
    bassPitchPattern0 = ("intervalo", [("unisono", 0, 0)]), -- int
    bassPitchPattern1 = ("intervalo", [("unisono", 0, 0)]),  --interval
    bassPitchPattern2 = ("intervalo", [("unisono", 0, 0)]),  --index
+   bassPanPattern0 = 0.5,
+   bassGainPattern0 = 1,
 
    guiraRhythmPattern0 = [(1,0)],
    guiraSampleNPattern0 = [0],
+   guiraPitchPattern0 = ("midinote", [("mn", 60, 0)]),
+   guiraPanPattern0 = 0.5,
+   guiraGainPattern0 = 1,
 
    contrasRhythmPattern0 = [(1, 0)],
    contrasSampleNPattern0 = [0],
+   contrasPitchPattern0 =("midinote", [("mn", 60, 0)]),
+   contrasPanPattern0 = 0.5,
+   contrasGainPattern0 = 1,
 
    tarolaRhythmPattern0 = [(1, 0)],
    tarolaSampleNPattern0 = [0],
+   tarolaPitchPattern0 = ("midinote", [("mn", 60, 0)]),
+   tarolaPanPattern0 = 0.5,
+   tarolaGainPattern0 = 1,
 
    efectoRhythmPattern0 = [(1, 0)],
    efectoSampleNPattern0 = [0],
-   efectoPitchPattern0 = ("intervalo", [("unisono", 0, 0)])
+   efectoPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
+   efectoPanPattern0 = 0.5,
+   efectoGainPattern0 = 1,
+
+   extrasRhythmPattern0 = [(1, 0)],
+   extrasSampleNPattern0 = [0],
+   extrasPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
+   extrasPanPattern0 = 0.5,
+   extrasGainPattern0 = 1
 }
 
 --hh
@@ -110,15 +175,27 @@ defaultStyle = Style {
 
 cumbia :: Style
 cumbia = Style {
+    altavozRhythmPattern0 = [(1, 0)],
+    altavozSampleNPattern0 = [0],
+    altavozPitchPattern0 = ("midinote", [("mn", 60, 0)]),
+    altavozPanPattern0 = 0.5,
+    altavozGainPattern0 = 1,
+
     pianoRhythmPattern0 = [(1, 0.75)], -- ie.  [𝄽  𝄽  𝄽  ♩],
     pianoSampleNPattern0 = [0],
     pianoRhythmPattern1 = [(1,0.25), (1, 0.75)], -- ie. [𝄽 ♩ 𝄽 ♩],
     pianoSampleNPattern1 = [0, 0],
     pianoPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+    pianoPanPattern0 = 0.5,
+    pianoGainPattern0 = 1,
+
 
     cuerdaRhythmPattern0 = [(1,0)],
     cuerdaSampleNPattern0 = [0],
     cuerdaPitchPattern0 = ("intervalo", [intervalo "unisono" 0]), -- or double? (nota [0, 2, 3] cumbia) cuerda
+    cuerdaPanPattern0 = 0.5,
+    cuerdaGainPattern0 = 1,
+
 
     bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],  --i.e. [♩ 𝄽  ♩ ♩],
     bassSampleNPattern0 = [0, 0, 0],
@@ -126,6 +203,8 @@ cumbia = Style {
     bassRhythmPattern1 = [(1, 0), (1, 0.5)],  --i.e. [♩ 𝄽  ♩ 𝄽 ],
     bassSampleNPattern1 = [0, 0],
     bassPitchPattern1 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0]),
+    bassPanPattern0 = 0.5,
+    bassGainPattern0 = 1,
 
     -- bassRhythmPattern2 = [(8, 0), (8, 0.5), (8, 0.75), (8, 1), (8, 1.5), (8, 1.75), (8, 2), (1, 2.5), (8, 2.75), (8, 3), (8, 3.5), (8, 3.75), (8, 4), (8, 4.5), (8, 4.75), (8, 5), (8, 5.5), (8, 5.75), (8, 6), (8, 6.5), (8, 6.75), (8, 7), (8, 7.25), (8, 7.5), (8, 7.75)],  --i.e. [♩ 𝄽  ♩ 𝄽
     -- bassSampleNPattern2 = take 25 $ cycle [0],
@@ -145,16 +224,34 @@ cumbia = Style {
 
     guiraRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.375), (1, 0.5), (1, 0.75), (1, 0.875)], --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
     guiraSampleNPattern0 = [0, 1, 2, 0, 1, 2],
+    guiraPitchPattern0 = ("midinote", [("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0)]),
+    guiraPanPattern0 = 0.5,
+    guiraGainPattern0 = 1,
 
     contrasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
     contrasSampleNPattern0 = [0, 1, 0, 1, 0, 1, 0, 1],
+    contrasPitchPattern0 = ("midinote", [("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0)]),
+    contrasPanPattern0 = 0.5,
+    contrasGainPattern0 = 1,
 
     tarolaRhythmPattern0 = [(1, 0.1875), (1, 0.375)],
     tarolaSampleNPattern0 = [0, 0],
+    tarolaPitchPattern0 = ("midinote", [("mn", 60, 0), ("mn", 60, 0)]),
+    tarolaPanPattern0 = 0.5,
+    tarolaGainPattern0 = 1,
 
     efectoRhythmPattern0 = [(1, 0)],
     efectoSampleNPattern0 = [0],
-    efectoPitchPattern0 = ("intervalo", [intervalo "unisono" 0])
+    efectoPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
+    efectoPanPattern0 = 0.5,
+    efectoGainPattern0 = 1,
+
+    extrasRhythmPattern0 = [(1, 0)],
+    extrasSampleNPattern0 = [0],
+    extrasPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
+    extrasPanPattern0 = 0.5,
+    extrasGainPattern0 = 1
+
   }
 
 
