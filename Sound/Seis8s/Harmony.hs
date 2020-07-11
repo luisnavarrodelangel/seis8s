@@ -3,7 +3,6 @@ module Sound.Seis8s.Harmony where
 import Sound.Seis8s.Generic
 import Sound.Seis8s.Rhythm
 
-import Data.Maybe
 import Data.Time
 import Data.Tempo
 import Data.Maybe
@@ -29,7 +28,7 @@ generateLineFromMidi' :: (Rational, (String, Double, Double)) -> (Rational, Pitc
 generateLineFromMidi' (attack, (midiIdentifier, midinote, octava)) = (attack, midinote)
 
 generateLine :: [(Rational, (String, Double, Octava))] -> Progression -> [(Rational, Pitch)]
-generateLine attacksAndIntervals (Progression metre chords) =  concat $ fmap (generateNotesFromChord attacksAndIntervals metre) chords
+generateLine attacksAndIntervals (Progression metre chords) =  sort $ concat $ fmap (generateNotesFromChord attacksAndIntervals metre) chords
 
 generateNotesFromChord :: [(Rational, (String, Double, Octava))] -> Metre -> Chord -> [(Rational, Pitch)]
 generateNotesFromChord attacksAndIntervals metre chord = concat $ fmap (\x -> generateSingleNoteFromChord x metre chord) attacksAndIntervals
@@ -202,9 +201,6 @@ compareRationalWChordRange attack metre (startOffset, endOffset) = do
         | otherwise = (attackInMetre' < startInMetre) && (attackInMetre' >= endInMetre)
   b
 
--- return a list of pitches from one chord
-generateChord :: Chord -> [Pitch]
-generateChord (Chord root chordType (start, end))  = fmap ((+) root) chordType
 
 concatChord :: (Rational, [Pitch]) -> [(Rational, Pitch)]
 concatChord (attack, ps) =  fmap (\p -> (attack, p)) (snd (attack, ps))
@@ -212,9 +208,13 @@ concatChord (attack, ps) =  fmap (\p -> (attack, p)) (snd (attack, ps))
 concatChords :: [(Rational, [Pitch])] -> [(Rational, Pitch)] -- eg. for [60, 64, 67] three events all whith the same time all with different pitches
 concatChords attackAndChords = concat $ fmap (\x -> concatChord x) attackAndChords
 
+-- return a list of pitches from one chord
+generateChord :: Chord -> [Pitch]
+generateChord (Chord root chordType (start, end))  = fmap ((+) root) chordType
+
 -- return a list of lists of pitches from a list of Chords
-generateChords :: [Chord] -> [[Pitch]]
-generateChords cs = fmap (\x -> generateChord x) cs
+-- generateChords :: [Chord] -> [[Pitch]]
+-- generateChords cs = fmap (\x -> generateChord x) cs
 
 
 -- pitches

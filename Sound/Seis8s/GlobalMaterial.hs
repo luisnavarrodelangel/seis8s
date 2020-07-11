@@ -12,11 +12,16 @@ data GlobalMaterial = GlobalMaterial {
   harmony :: Progression -- combination of a pitch and a chord type, e.g 60 major
 } deriving (Show)
 
-defaultGlobalMaterial = GlobalMaterial { harmony = Progression 1 [Chord 60 major (0, 1)]}
+defaultGlobalMaterial = GlobalMaterial { harmony = Progression 0.5 [Chord 60 major (0, 0.5)]}
 
-myharmony = Progression 2 [Chord 60 major (0, 1), Chord 62 minor (1, 2)]
+-- defaultGlobalMaterial = GlobalMaterial { harmony = myharmony'}
+
+
+myharmony = Progression 1 [Chord 60 major (0, 0.5), Chord 62 minor (0.5, 1)]
+-- myharmony' = Progression 1 [Chord 60 [0, 4, 7] (0, 0.5), Chord 64 [(-1), 0, 7] (0.5, 1)]
 testgmm = GlobalMaterial {harmony = myharmony }
-
+-- [60, 64, 67]
+-- [64, 67, 71]
 
 -- myTempo  = Tempo {freq = 1, time = myTime 0, count = 0}
 -- tempo is provided by Estuary in this case.

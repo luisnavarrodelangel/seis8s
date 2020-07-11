@@ -111,6 +111,12 @@ efecto = Layer {getEvents = efectoEvents, style = defaultStyle}
 altavoz :: Layer
 altavoz = Layer {getEvents = altavozEvents, style = defaultStyle}
 
+congas :: Layer
+congas = Layer {getEvents = congasEvents, style = defaultStyle}
+
+clave :: Layer
+clave = Layer {getEvents = claveEvents, style = defaultStyle}
+
 extras :: Layer
 extras = Layer {getEvents = extrasEvents, style = defaultStyle}
 
@@ -279,6 +285,43 @@ extrasEvents gmm style tempo iw ew = do
   let instCmap = cmap'' "extras" samplePat extrasline paneo gain--Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
+
+congasEvents gmm style tempo iw ew = do
+  let paneo = congasPanPattern0 style
+  let gain = congasGainPattern0 style
+  let pitchType = fst $ congasPitchPattern0 style
+  let equateLists' = equateLists (congasRhythmPattern0 style) (congasSampleNPattern0 style) (snd $ congasPitchPattern0 style)
+  let congasRhythmPattern = sel1 equateLists'
+  let congasSampleNPattern = sel2 equateLists'
+  let congasPitchPattern = sel3 equateLists'
+  let nPat = List.zip congasRhythmPattern congasSampleNPattern --[(RhythmicPattern, Int)]
+  let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
+  let pat = List.zip congasRhythmPattern congasPitchPattern --[(RhythmicPattern, Int)]
+  let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
+  let congasline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
+  let time = fmap (\c -> countToTime tempo (fst c)) congasline  -- [UTCTime]
+  let instCmap = cmap'' "congas" samplePat congasline paneo gain--Map Text Datum
+  let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
+  return events
+
+claveEvents gmm style tempo iw ew = do
+  let paneo = clavePanPattern0 style
+  let gain = claveGainPattern0 style
+  let pitchType = fst $ clavePitchPattern0 style
+  let equateLists' = equateLists (claveRhythmPattern0 style) (claveSampleNPattern0 style) (snd $ clavePitchPattern0 style)
+  let claveRhythmPattern = sel1 equateLists'
+  let claveSampleNPattern = sel2 equateLists'
+  let clavePitchPattern = sel3 equateLists'
+  let nPat = List.zip claveRhythmPattern claveSampleNPattern --[(RhythmicPattern, Int)]
+  let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
+  let pat = List.zip claveRhythmPattern clavePitchPattern --[(RhythmicPattern, Int)]
+  let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
+  let claveline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
+  let time = fmap (\c -> countToTime tempo (fst c)) claveline  -- [UTCTime]
+  let instCmap = cmap'' "tarola" samplePat claveline paneo gain--Map Text Datum
+  let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
+  return events
+
 cmap'' :: String -> [(Rational, Int)] -> [(Rational, Pitch)] -> Double -> Double -> [M.Map T.Text Datum]
 cmap'' sampleName is ps pan gain = do
   let is' = fmap (\i -> snd i) is

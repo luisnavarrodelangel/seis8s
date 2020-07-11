@@ -81,10 +81,10 @@ parseSetChordProgWMetre' :: H ([Chord] -> GlobalMaterial -> GlobalMaterial)
 parseSetChordProgWMetre' = parseSetChordProgWMetre'' <*> rationalOrInteger
 
 parseSetChordProgWMetre'' :: H (Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial)
-parseSetChordProgWMetre'' = (setChordProg <$ reserved "harmonia")
+parseSetChordProgWMetre'' = (setChordProg <$ reserved "armonia")
 
 parseSetChordProgMetreAuto :: H (GlobalMaterial -> GlobalMaterial)
-parseSetChordProgMetreAuto = (reserved "harmonia" >> return setChordProgMetreAuto) <*>  chordListMetreAuto
+parseSetChordProgMetreAuto = (reserved "armonia" >> return setChordProgMetreAuto) <*>  chordListMetreAuto
 
 setChordProg :: Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial
 setChordProg metre hs gm = gm { harmony = castProgression metre hs }
@@ -122,7 +122,7 @@ chordParserMajAuto'' = do
   return $ \s e -> castHarmonyMajAuto p s e
 
 
---parses a list of chords with default dur of 1c, e.g. harmonia [c maj, d maj]
+--parses a list of chords with default dur of 1c, e.g. armonia [c maj, d maj]
 chordListMetreAuto :: H [Chord]
 chordListMetreAuto = chordListMetreAuto'
                   <|> parsePitchtochord
@@ -137,7 +137,7 @@ pitchtochord :: [Pitch] -> [Chord]
 pitchtochord ps = do
   let startandend = fmap (\s -> (toRational s, toRational s+1)) [0 .. (length ps)]
   let zipXSwithStartEnd = zip ps startandend --[(x,())]
-  fmap (\(p, (s,e)) -> Chord p major (s,e)) zipXSwithStartEnd
+  fmap (\(p, (s,e)) -> Chord p major (s/2,e/2)) zipXSwithStartEnd
 
 --
 chordListMetreAuto' :: H [Chord]
@@ -163,23 +163,23 @@ pitchandtypetochord :: [(Pitch, ChordType)] -> [Chord]
 pitchandtypetochord xs = do
   let startandend = fmap (\s -> (toRational s, toRational s+1)) [0 .. (length xs)]
   let zipXSwithStartEnd = zip xs startandend --[((),())]
-  fmap (\((p,t), (s,e)) -> Chord p t (s,e)) zipXSwithStartEnd
+  fmap (\((p,t), (s,e)) -> Chord p t (s/2,e/2)) zipXSwithStartEnd
 
--- harmonia 1 [C maj 0 1]
+-- armonia 1 [C maj 0 1]
 castProgression :: Rational -> [Chord] -> Progression
-castProgression metre cs = Progression metre cs
+castProgression metre cs = Progression (metre/2) cs
 
--- harmonia 1 [C maj 0 1]
+-- armonia 1 [C maj 0 1]
 castProgressionMetreAuto :: [Chord] -> Progression
 castProgressionMetreAuto cs = do
   let metre = realToFrac $ length cs
-  Progression metre cs
+  Progression (metre/2) cs
 
 castHarmony :: Pitch -> ChordType -> Rational -> Rational -> Chord
-castHarmony p t s e = Chord p t (s, e)
+castHarmony p t s e = Chord p t (s/2, e/2)
 
 castHarmonyMajAuto :: Pitch -> Rational -> Rational -> Chord
-castHarmonyMajAuto p s e = Chord p major (s, e)
+castHarmonyMajAuto p s e = Chord p major (s/2, e/2)
 
 
 pitchParser :: H Pitch
@@ -256,6 +256,8 @@ inst =
     <|> tarola <$ reserved "tarola"
     <|> efecto <$ reserved "efecto"
     <|> altavoz <$ reserved "altavoz"
+    <|> clave <$ reserved "clave"
+    <|> congas <$ reserved "congas"
     <|> extras <$ reserved "extras"
 
 
@@ -296,7 +298,9 @@ seleccionarSamples is c =  c {style = nuevoE}
                            tarolaSampleNPattern0 = is,
                            efectoSampleNPattern0 = is,
                            altavozSampleNPattern0 = is,
-                           extrasSampleNPattern0 = is
+                           extrasSampleNPattern0 = is,
+                           claveSampleNPattern0 = is,
+                           congasSampleNPattern0 = is
                           }
 
 -- a function to select a new sample from the folder
@@ -320,11 +324,14 @@ seleccionarSample index c =  c {style = nuevoE}
                              tarolaSampleNPattern0 = [index],
                              efectoSampleNPattern0 = [index],
                              altavozSampleNPattern0 = [index],
-                             extrasSampleNPattern0 = [index]
+                             extrasSampleNPattern0 = [index],
+                             claveSampleNPattern0 = [index],
+                             congasSampleNPattern0 = [index]
                             }
 
 -- transforms the preset bass to just fundamental and fifth of the chord
 -- e.g  (tonicaYquinta cumbia) bajo
+
 parseTonicaYquinta :: H Layer
 parseTonicaYquinta = parseTonicaYquinta' <*> parseLayer
 
@@ -336,7 +343,7 @@ tonicaYquinta :: Layer -> Layer -- ?
 tonicaYquinta c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassPitchPattern0 =  ("intervalo", [(intervalo "unisono" 0), (intervalo "5a" 0)]), -- index from list of pitches i.e. [60, 67]
-                            bassRhythmPattern0 = [(1, 0), (1, 0.5)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
+                            bassRhythmPattern0 = [(1/2, 0), (1/2, 0.5/2)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
                             }
 
 -- Arriba, el bajo toca la tónica, la quinta y la quinta una octava más alta.
@@ -349,7 +356,7 @@ parseTonicaYquinta2' = tonicaYquinta2 <$ reserved "tonicayquinta2"
 tonicaYquinta2 :: Layer -> Layer
 tonicaYquinta2 c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
+                            bassRhythmPattern0 = [(1/2, 0), (1/2, 0.5/2), (1, 0.75/2)],
                             bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "5a" (-1)]) -- index from list of pitches i.e. [60, 64, 67]
                           }
 
@@ -363,7 +370,7 @@ parseTonicaQoctava' = tonicaQoctava <$ reserved "tonicaQoctava"
 tonicaQoctava :: Layer -> Layer
 tonicaQoctava c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
+                            bassRhythmPattern0 = [(1/2, 0), (1/2, 0.5/2), (1/2, 0.75/2)],
                             bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "8a" 0]) -- index from list of pitches i.e. [60, 64, 67]
                           }
 
@@ -402,8 +409,10 @@ cambiarNotas ps c = c {style = nuevoE}
                             guiraPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             tarolaPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             contrasPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
-                            extrasPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps)
-                            }
+                            extrasPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                            clavePitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                            congasPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps)
+                           }
 
 listDeNotasConRelacion :: Relacion -> [Double] -> [(Relacion, Double, Octava)]
 listDeNotasConRelacion r ns = fmap (\n -> (r, n, 0)) ns
@@ -429,7 +438,9 @@ cambiarNota ps c = c {style = nuevoE}
                             tarolaPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             contrasPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             guiraPitchPattern0 = ("midinote", [("mn", ps, 0)]),
-                            extrasPitchPattern0 = ("midinote", [("mn", ps, 0)])
+                            extrasPitchPattern0 = ("midinote", [("mn", ps, 0)]),
+                            clavePitchPattern0 = ("midinote", [("mn", ps, 0)]),
+                            congasPitchPattern0 = ("midinote", [("mn", ps, 0)])
                              }
 
 -- provee una lista de intervalos con Double y una octava seleccionable, e.g. intervalo [0 1, "5a" 2]
@@ -470,8 +481,9 @@ cambiarIntervalosDoubleConOctava is c = c {style = nuevoE}
                               tarolaPitchPattern0 = ("intervalo", is'),
                               guiraPitchPattern0 = ("intervalo", is'),
                               contrasPitchPattern0 = ("intervalo", is'),
-                              extrasPitchPattern0 = ("intervalo", is')
-
+                              extrasPitchPattern0 = ("intervalo", is'),
+                              congasPitchPattern0 = ("intervalo", is'),
+                              clavePitchPattern0 = ("intervalo", is')
                               }
 --
 parseCambiarIntervaloDoubleConOctava :: H Layer
@@ -498,7 +510,10 @@ cambiarIntervaloDoubleConOctava index octava c = c {style = nuevoE}
                             tarolaPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             guiraPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             contrasPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
-                            extrasPitchPattern0 = ("intervalo", [intervaloDouble index octava])
+                            extrasPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
+                            congasPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
+                            clavePitchPattern0 = ("intervalo", [intervaloDouble index octava])
+
                             }
 --
 parseCambiarIntervalosDouble :: H Layer
@@ -523,7 +538,9 @@ cambiarIntervalosDouble indices c = c {style = nuevoE}
                               guiraPitchPattern0 = ("intervalo", indices'),
                               contrasPitchPattern0 = ("intervalo", indices'),
                               tarolaPitchPattern0 = ("intervalo", indices'),
-                              extrasPitchPattern0 = ("intervalo", indices')
+                              extrasPitchPattern0 = ("intervalo", indices'),
+                              clavePitchPattern0 = ("intervalo", indices'),
+                              congasPitchPattern0 = ("intervalo", indices')
                               }
 
 parseCambiarIntervaloDouble :: H Layer
@@ -547,7 +564,9 @@ cambiarIntervaloDouble index c = c {style = nuevoE}
                             guiraPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             contrasPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             altavozPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
-                            extrasPitchPattern0 = ("intervalo", [intervaloDouble index 0])
+                            extrasPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
+                            congasPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
+                            clavePitchPattern0 = ("intervalo", [intervaloDouble index 0])
                             }
 -- provee una lista de intervalos con una octava seleccionable, e.g. intervalo ["3a" 1, "5a" 2]
 
@@ -592,7 +611,9 @@ cambiarIntervalosConOctava is c = c {style = nuevoE}
                               guiraPitchPattern0 = ("intervalo", is'),
                               tarolaPitchPattern0 = ("intervalo", is'),
                               contrasPitchPattern0 = ("intervalo", is'),
-                              extrasPitchPattern0 = ("intervalo", is')
+                              extrasPitchPattern0 = ("intervalo", is'),
+                              congasPitchPattern0 = ("intervalo", is'),
+                              clavePitchPattern0 = ("intervalo", is')
                               }
 
 -- provee un intervalo con una octava seleccionable, e.g. intervalo "3a" 1
@@ -620,7 +641,9 @@ cambiarIntervaloConOctava index octava c = c {style = nuevoE}
                             guiraPitchPattern0 = ("intervalo", [intervalo index octava]),
                             contrasPitchPattern0 = ("intervalo", [intervalo index octava]),
                             altavozPitchPattern0 = ("intervalo", [intervalo index octava]),
-                            extrasPitchPattern0 = ("intervalo", [intervalo index octava])
+                            extrasPitchPattern0 = ("intervalo", [intervalo index octava]),
+                            congasPitchPattern0 = ("intervalo", [intervalo index octava]),
+                            clavePitchPattern0 = ("intervalo", [intervalo index octava])
                             }
 
 -- provee los intervalos de una lista
@@ -647,7 +670,9 @@ cambiarIntervalos indices c = c {style = nuevoE}
                               guiraPitchPattern0 = ("intervalo", indices'),
                               contrasPitchPattern0 = ("intervalo", indices'),
                               altavozPitchPattern0 = ("intervalo", indices'),
-                              extrasPitchPattern0 = ("intervalo", indices')
+                              extrasPitchPattern0 = ("intervalo", indices'),
+                              congasPitchPattern0 = ("intervalo", indices'),
+                              clavePitchPattern0 = ("intervalo", indices')
                               }
 -- provee el intervalo con respecto a la tonica y cualidad del acorde
 parseCambiarIntervalo :: H Layer
@@ -670,7 +695,9 @@ cambiarIntervalo index c = c {style = nuevoE}
                             guiraPitchPattern0 = ("intervalo", [intervalo index 0]),
                             contrasPitchPattern0 = ("intervalo", [intervalo index 0]),
                             tarolaPitchPattern0 = ("intervalo", [intervalo index 0]),
-                            extrasPitchPattern0 = ("intervalo", [intervalo index 0])
+                            extrasPitchPattern0 = ("intervalo", [intervalo index 0]),
+                            congasPitchPattern0 = ("intervalo", [intervalo index 0]),
+                            clavePitchPattern0 = ("intervalo", [intervalo index 0])
                             }
 
 -- type RhythmicPattern = [(Rational,Rational)]
@@ -688,17 +715,19 @@ parseCambiarRitmo''' :: H (Rational -> Rational -> Layer -> Layer)
 parseCambiarRitmo''' = cambiarRitmo <$ reserved "ritmo"
 
 cambiarRitmo :: Rational -> Rational -> Layer -> Layer
-cambiarRitmo metre attacks c = c {style = nuevoE}
+cambiarRitmo metre attack c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            cuerdaRhythmPattern0 = [cambiarRitmo' metre attacks],
-                            pianoRhythmPattern0 = [cambiarRitmo' metre attacks],
-                            bassRhythmPattern0 = [cambiarRitmo' metre attacks],
-                            guiraRhythmPattern0 = [cambiarRitmo' metre attacks],
-                            contrasRhythmPattern0 = [cambiarRitmo' metre attacks],
-                            tarolaRhythmPattern0 = [cambiarRitmo' metre attacks],
-                            efectoRhythmPattern0 = [cambiarRitmo' metre attacks],
-                            altavozRhythmPattern0 = [cambiarRitmo' metre attacks],
-                            extrasRhythmPattern0 = [cambiarRitmo' metre attacks]
+                            cuerdaRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            pianoRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            bassRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            guiraRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            contrasRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            tarolaRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            efectoRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            altavozRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            extrasRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            congasRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
+                            claveRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)]
                             }
 
 cambiarRitmo' :: Rational -> Rational -> (Rational, Rational)
@@ -720,15 +749,17 @@ parseCambiarRitmos''' = cambiarRitmos <$ reserved "ritmo"
 cambiarRitmos :: Rational -> [Rational] -> Layer -> Layer
 cambiarRitmos metre attacks c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            cuerdaRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            pianoRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            bassRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            guiraRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            contrasRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            tarolaRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            efectoRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            altavozRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            extrasRhythmPattern0 = cambiarRitmo'' metre attacks
+                            cuerdaRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            pianoRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            bassRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            guiraRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            contrasRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            tarolaRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            efectoRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            altavozRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            extrasRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            claveRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
+                            congasRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks)
                             }
 
 cambiarRitmo'' :: Rational -> [Rational] -> [(Rational, Rational)]
@@ -755,7 +786,9 @@ cambiarGain gain c = c {style = nuevoE}
                             tarolaGainPattern0 = gain,
                             efectoGainPattern0 = gain,
                             altavozGainPattern0 = gain,
-                            extrasGainPattern0 = gain
+                            extrasGainPattern0 = gain,
+                            congasGainPattern0 = gain,
+                            claveGainPattern0 = gain
                             }
 
 --cambia el paneo
@@ -779,7 +812,9 @@ cambiarPaneo pan c = c {style = nuevoE}
                             tarolaPanPattern0 = pan,
                             efectoPanPattern0 = pan,
                             altavozPanPattern0 = pan,
-                            extrasPanPattern0 = pan
+                            extrasPanPattern0 = pan,
+                            congasPanPattern0 = pan,
+                            clavePanPattern0 = pan
                             }
 
 -- a function that allows switching between presets
@@ -826,9 +861,17 @@ preset 0 c = c {style = nuevoE}
                             efectoSampleNPattern0 = efectoSampleNPattern0 (style c),
                             efectoPitchPattern0 = efectoPitchPattern0 (style c),
 
-                           extrasRhythmPattern0 = extrasRhythmPattern0 (style c),
+                            extrasRhythmPattern0 = extrasRhythmPattern0 (style c),
                             extrasSampleNPattern0 = extrasSampleNPattern0 (style c),
-                            extrasPitchPattern0 = extrasPitchPattern0 (style c)
+                            extrasPitchPattern0 = extrasPitchPattern0 (style c),
+
+                            congasRhythmPattern0 = congasRhythmPattern0 (style c),
+                            congasSampleNPattern0 = congasSampleNPattern0 (style c),
+                            congasPitchPattern0 = congasPitchPattern0 (style c),
+
+                            claveRhythmPattern0 = claveRhythmPattern0 (style c),
+                            claveSampleNPattern0 = claveSampleNPattern0 (style c),
+                            clavePitchPattern0 = clavePitchPattern0 (style c)
                           }
 
 preset 1 c = c {style = nuevoE}
@@ -935,8 +978,8 @@ alternarWindows n iw ew = do
       lastItem | (realToFrac $ floor ew) == (realToFrac $ floor iw) = []
                | (realToFrac ew) > (realToFrac $ floor ew) = [(realToFrac $ floor ew, realToFrac ew)]
                | otherwise = []
-  let x = catMaybes $ fmap (\x -> if (mod' (realToFrac $ floor $ fst x) (realToFrac n) /= (realToFrac n -1)) then Just x else Nothing) lista'''
-  let fx = catMaybes $ fmap (\x -> if (mod' (realToFrac $ floor $ fst x) (realToFrac n) == (realToFrac n -1)) then Just x else Nothing ) lista'''
+  let x = catMaybes $ fmap (\x -> if (mod' (realToFrac $ floor $ fst x) ((realToFrac n)/2) /= ((realToFrac n)/2 -1)) then Just x else Nothing) lista'''
+  let fx = catMaybes $ fmap (\x -> if (mod' (realToFrac $ floor $ fst x) ((realToFrac n)/2) == ((realToFrac n)/2 -1)) then Just x else Nothing ) lista'''
   (x, fx)
 
 
