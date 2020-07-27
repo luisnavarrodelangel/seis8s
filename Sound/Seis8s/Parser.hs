@@ -69,7 +69,21 @@ silencio = emptyLayer <$ reserved "silencio"
 
 globalMaterialFunctions :: H (GlobalMaterial -> GlobalMaterial)
 globalMaterialFunctions = parseSetChordProg
+                       <|> parseCompasPartido
 
+-- compás "partido"
+-- compás "¢"
+-- compas "4/4"
+parseCompasPartido :: H (GlobalMaterial -> GlobalMaterial)
+parseCompasPartido = parseCompasPartido' <*> string
+
+parseCompasPartido' :: H (String -> GlobalMaterial -> GlobalMaterial)
+parseCompasPartido' = compasAGlobalMaterial <$ reserved "compas"
+
+
+compasAGlobalMaterial :: String -> GlobalMaterial -> GlobalMaterial
+compasAGlobalMaterial s gm = gm {compas = establecerCompas s}
+--
 parseSetChordProg :: H (GlobalMaterial -> GlobalMaterial)
 parseSetChordProg = parseSetChordProgWMetre
                  <|> parseSetChordProgMetreAuto
@@ -87,10 +101,10 @@ parseSetChordProgMetreAuto :: H (GlobalMaterial -> GlobalMaterial)
 parseSetChordProgMetreAuto = (reserved "armonia" >> return setChordProgMetreAuto) <*>  chordListMetreAuto
 
 setChordProg :: Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial
-setChordProg metre hs gm = gm { harmony = castProgression metre hs }
+setChordProg metre hs gm = gm { harmony = castProgression metre (compas gm) hs}
 
 setChordProgMetreAuto ::[Chord] -> GlobalMaterial -> GlobalMaterial
-setChordProgMetreAuto hs gm = gm { harmony = castProgressionMetreAuto hs }
+setChordProgMetreAuto hs gm = gm { harmony = castProgressionMetreAuto hs (compas gm)}
 
 chordList :: H [Chord]
 chordList = list $ (chordParser <|> chordParserMajAuto)
@@ -159,23 +173,24 @@ parsepitchandtypetotuple' = do
 pitchandtypetotuple :: Pitch -> ChordType -> (Pitch, ChordType)
 pitchandtypetotuple p t = (p,t)
 
+-- start here
 pitchandtypetochord :: [(Pitch, ChordType)] -> [Chord]
 pitchandtypetochord xs = do
   let startandend = fmap (\s -> (toRational s, toRational s+1)) [0 .. (length xs)]
   let zipXSwithStartEnd = zip xs startandend --[((),())]
-  fmap (\((p,t), (s,e)) -> Chord p t (s/2,e/2)) zipXSwithStartEnd
+  fmap (\((p,t), (s,e)) -> Chord p t (s,e)) zipXSwithStartEnd
 
 -- armonia 1 [C maj 0 1]
-castProgression :: Rational -> [Chord] -> Progression
-castProgression metre cs = Progression (metre/2) cs
+castProgression :: Rational -> Double -> [Chord] -> Progression
+castProgression metre compas cs  = Progression (metre/ toRational compas) cs
 
 -- armonia 1 [C maj 0 1]
-castProgressionMetreAuto :: [Chord] -> Progression
-castProgressionMetreAuto cs = do
+castProgressionMetreAuto :: [Chord] -> Double -> Progression
+castProgressionMetreAuto cs compas = do
   let metre = realToFrac $ length cs
-  Progression (metre/2) cs
+  Progression (metre/ toRational compas) cs
 
-castHarmony :: Pitch -> ChordType -> Rational -> Rational -> Chord
+castHarmony :: Pitch -> ChordType -> Rational -> Rational ->  Chord
 castHarmony p t s e = Chord p t (s/2, e/2)
 
 castHarmonyMajAuto :: Pitch -> Rational -> Rational -> Chord
@@ -245,6 +260,8 @@ transformadoresDeLayer =  parseSeleccionarEstilo
                       <|> parseAlternar
                       <|> parseCambiarGain
                       <|> parseCambiarPaneo
+                      <|> parseTumbao
+                      <|> parseTumbaoCongas
 --
 inst :: H Layer
 inst =
@@ -329,6 +346,41 @@ seleccionarSample index c =  c {style = nuevoE}
                              congasSampleNPattern0 = [index]
                             }
 
+--
+parseTumbao :: H Layer
+parseTumbao = parseTumbao' <*> parseLayer
+
+parseTumbao' :: H (Layer -> Layer) -- (tonicaYquinta cumbia) bajo
+parseTumbao' = parseTumbao'' <*> string
+
+parseTumbao'' :: H (String -> Layer -> Layer) -- (tonicaYquinta cumbia) bajo
+parseTumbao'' = tumbao <$ reserved "tumbao"
+
+tumbao :: String -> Layer -> Layer -- ?
+
+tumbao "tonicaQuinta" c = c {style = nuevoE}
+  where nuevoE = (style c) {
+                            bassPitchPattern0 =  ("intervalo", [(intervalo "unisono" 0), (intervalo "5a" 0)]), -- index from list of pitches i.e. [60, 67]
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
+                            }
+
+tumbao "tonicaQuinta2" c = c {style = nuevoE}
+  where nuevoE = (style c) {
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
+                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "5a" (-1)]) -- index from list of pitches i.e. [60, 64, 67]
+                          }
+
+tumbao "tonicaAuintaOctava" c = c {style = nuevoE}
+  where nuevoE = (style c) {
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
+                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "8a" 0]) -- index from list of pitches i.e. [60, 64, 67]
+                          }
+
+tumbao "tonicaQuintaTercera" c = c {style = nuevoE}
+  where nuevoE = (style c) {
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
+                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "3a" 0]) -- index from list of pitches i.e. [60, 64, 67]
+                          }
 -- transforms the preset bass to just fundamental and fifth of the chord
 -- e.g  (tonicaYquinta cumbia) bajo
 
@@ -343,7 +395,7 @@ tonicaYquinta :: Layer -> Layer -- ?
 tonicaYquinta c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassPitchPattern0 =  ("intervalo", [(intervalo "unisono" 0), (intervalo "5a" 0)]), -- index from list of pitches i.e. [60, 67]
-                            bassRhythmPattern0 = [(1/2, 0), (1/2, 0.5/2)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
                             }
 
 -- Arriba, el bajo toca la tónica, la quinta y la quinta una octava más alta.
@@ -356,7 +408,7 @@ parseTonicaYquinta2' = tonicaYquinta2 <$ reserved "tonicayquinta2"
 tonicaYquinta2 :: Layer -> Layer
 tonicaYquinta2 c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            bassRhythmPattern0 = [(1/2, 0), (1/2, 0.5/2), (1, 0.75/2)],
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
                             bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "5a" (-1)]) -- index from list of pitches i.e. [60, 64, 67]
                           }
 
@@ -370,7 +422,7 @@ parseTonicaQoctava' = tonicaQoctava <$ reserved "tonicaQoctava"
 tonicaQoctava :: Layer -> Layer
 tonicaQoctava c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            bassRhythmPattern0 = [(1/2, 0), (1/2, 0.5/2), (1/2, 0.75/2)],
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
                             bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "8a" 0]) -- index from list of pitches i.e. [60, 64, 67]
                           }
 
@@ -387,7 +439,47 @@ tonicaQtercera c = c {style = nuevoE}
                             bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
                             bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "3a" 0]) -- index from list of pitches i.e. [60, 64, 67]
                           }
+--
 
+parseTumbaoCongas :: H Layer
+parseTumbaoCongas = parseTumbaoCongas' <*> parseLayer
+
+parseTumbaoCongas' :: H (Layer -> Layer)
+parseTumbaoCongas' = parseTumbaoCongas'' <*> int
+
+parseTumbaoCongas'' :: H (Int -> Layer -> Layer)
+parseTumbaoCongas'' = tumbaoCongas <$ reserved "tumbao"
+
+tumbaoCongas :: Int ->   Layer -> Layer
+tumbaoCongas 0 c = c {style = nuevoE}
+  where nuevoE = (style c) {
+  congasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
+  congasSampleNPattern0 = [1, 2, 1, 2]
+                          }
+
+tumbaoCongas 1 c = c {style = nuevoE}
+  where nuevoE = (style c) {
+  congasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
+  congasSampleNPattern0 = [3, 2, 1, 2]
+                          }
+
+tumbaoCongas 2 c = c {style = nuevoE}
+  where nuevoE = (style c) {
+  congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.75)],
+  congasSampleNPattern0 = [3, 3, 2, 1, 2]
+                          }
+
+tumbaoCongas 3 c = c {style = nuevoE}
+  where nuevoE = (style c) {
+  congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.75)],
+  congasSampleNPattern0 = [1, 3, 2, 1, 2]
+                          }
+
+tumbaoCongas 4 c = c {style = nuevoE}
+  where nuevoE = (style c) {
+  congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.625), (1, 0.75)],
+  congasSampleNPattern0 = [1, 3, 2, 1, 3, 2]
+                          }
 -- a function for changing the preset pitch pattern provided by the style
 parseCambiarNotas :: H Layer
 parseCambiarNotas = parseCambiarNotas' <*> parseLayer
@@ -717,17 +809,17 @@ parseCambiarRitmo''' = cambiarRitmo <$ reserved "ritmo"
 cambiarRitmo :: Rational -> Rational -> Layer -> Layer
 cambiarRitmo metre attack c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            cuerdaRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            pianoRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            bassRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            guiraRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            contrasRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            tarolaRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            efectoRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            altavozRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            extrasRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            congasRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)],
-                            claveRhythmPattern0 = [cambiarRitmo' (metre/2) (attack/2)]
+                            cuerdaRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            pianoRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            bassRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            guiraRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            contrasRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            tarolaRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            efectoRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            altavozRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            extrasRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            congasRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
+                            claveRhythmPattern0 = [cambiarRitmo' (metre) (attack)]
                             }
 
 cambiarRitmo' :: Rational -> Rational -> (Rational, Rational)
@@ -749,17 +841,17 @@ parseCambiarRitmos''' = cambiarRitmos <$ reserved "ritmo"
 cambiarRitmos :: Rational -> [Rational] -> Layer -> Layer
 cambiarRitmos metre attacks c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            cuerdaRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            pianoRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            bassRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            guiraRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            contrasRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            tarolaRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            efectoRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            altavozRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            extrasRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            claveRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks),
-                            congasRhythmPattern0 = cambiarRitmo'' (metre/2) (fmap (flip (/) 2) attacks)
+                            cuerdaRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            pianoRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            bassRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            guiraRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            contrasRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            tarolaRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            efectoRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            altavozRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            extrasRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            claveRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            congasRhythmPattern0 = cambiarRitmo'' metre attacks
                             }
 
 cambiarRitmo'' :: Rational -> [Rational] -> [(Rational, Rational)]
@@ -929,6 +1021,8 @@ parseLayerToLayerFunc = parseSeleccionarEstilo'
                       <|> parseAlternar'
                       <|> parseCambiarGain'
                       <|> parseCambiarPaneo'
+                      <|> parseTumbao'
+                      <|> parseTumbaoCongas'
 
 
 alternar :: Int -> (Layer -> Layer) -> Layer -> Layer
@@ -951,40 +1045,106 @@ alternar n f x = Layer { getEvents = updatedEv, style = style (f x)}
     s0 = style x
     s1 = style (f x)
 
-    updatedEv gm s t iw ew = liftM concat $ liftM2 (++) es0  es1
+    updatedEv gm s t iw ew = liftM ordernarEv $ liftM concat $ liftM2 (++) es0  es1
       where
         iw' = timeToCount t iw -- Rational
         ew' = timeToCount t ew --
 
-        (w0, w1) = alternarWindows n iw' ew' -- find all the windows that comply with certain condition within the provided window
+        (w0, w1) = alternarWindows'' (toRational n) (toRational $ compas gm) iw' ew' -- find all the windows that comply with certain condition within the provided window
 
         es0 = mapM (\(i,e) -> f0 gm s0 t (countToTime t i) (countToTime t e)) w0 -- State LayerState [[Events]]
         es1 = mapM (\(i,e) -> f1 gm s1 t (countToTime t i) (countToTime t e)) w1
 
-    -- updatedStyle gm s t iw ew = if (mod' iw' (realToFrac n) /= realToFrac n - 1) then s0 else s1
-    --   where
-    --     iw' = timeToCount t iw -- Rational
-    --     ew' = timeToCount t ew --
+data Event' = Event' (UTCTime, Map.Map T.Text H.Datum) deriving (Show, Eq)
 
+instance Ord Event' where
+   Event' (u1, _) `compare` Event' (u2, _) = u1 `compare` u2
 
-alternarWindows n iw ew = do
-  let lista = [realToFrac $ floor iw .. realToFrac $ floor ew]
-  let lista' = fmap (\e -> (e, e + 1)) lista
+ordernarEv :: [(UTCTime, Map.Map T.Text H.Datum)] -> [(UTCTime, Map.Map T.Text H.Datum)]
+ordernarEv evs = do
+  let evsToEv = List.sort $ fmap (\e -> Event' e) evs
+  fmap (\e -> evToEv e) evsToEv
+
+evToEv :: Event'-> (UTCTime, Map.Map T.Text H.Datum)
+evToEv (Event' (utc, d)) = (utc, d)
+
+-- myEvent' :: Event'
+-- myEvent' = Event' ((mytime 0.75), Map.fromList [("s", H.string "test")])
+-- --
+-- myEvents :: [Event']
+-- myEvents = [Event' ((mytime 1.0), Map.fromList [("s", H.string "tres")]), Event' ((mytime 0.75), Map.fromList [("s", H.string "dos")]), Event' ((mytime 0.25), Map.fromList [("s", H.string "uno")])]
+
+alternarWindows n compas iw ew = do
+  let n' = n * compas
+  let iw' = realToFrac $ floor iw
+  let ew' = realToFrac $ floor ew
+  let lista = [iw', iw' + compas .. ew']
+  let lista' = fmap (\e -> (e, e + (1 * compas))) lista
   let lista'' = drop 1 $ init lista'
   let lista''' = firstItem : lista'' ++ lastItem
       firstItem | (realToFrac $ floor iw) == (realToFrac $ floor ew) = (realToFrac iw, realToFrac ew)
-                | otherwise = (realToFrac iw, (realToFrac $ floor iw) + 1)
+                | otherwise = (realToFrac iw, (realToFrac $ floor iw) + (1 * compas))
 
       lastItem | (realToFrac $ floor ew) == (realToFrac $ floor iw) = []
                | (realToFrac ew) > (realToFrac $ floor ew) = [(realToFrac $ floor ew, realToFrac ew)]
                | otherwise = []
-  let x = catMaybes $ fmap (\x -> if (mod' (realToFrac $ floor $ fst x) ((realToFrac n)/2) /= ((realToFrac n)/2 -1)) then Just x else Nothing) lista'''
-  let fx = catMaybes $ fmap (\x -> if (mod' (realToFrac $ floor $ fst x) ((realToFrac n)/2) == ((realToFrac n)/2 -1)) then Just x else Nothing ) lista'''
+  let x = catMaybes $ fmap (\(x, y) -> if (mod' (realToFrac x) (realToFrac n')) /= ((realToFrac n') - compas) then Just (x , y) else Nothing) lista'''
+  let fx = catMaybes $ fmap (\(x,y) -> if (mod' (realToFrac x) (realToFrac n')) == ((realToFrac n') - compas) then Just (x , y) else Nothing ) lista'''
   (x, fx)
 
+-- alternarWindows' :: Rational -> Rational -> Rational -> Rational -> ([(Rational, Rational)], [(Rational, Rational)])
+alternarWindows' n compas iw ew = do
+  let n' = n * compas
+  let iw' = realToFrac $ floor iw
+  let ew' = realToFrac $ floor ew
+  let lista = [iw', iw' + compas .. ew']
+  let lista' = fmap (\e -> (e, e + (1 * compas))) lista
+  let lista'' = drop 1 $ init lista'
+  let lista''' = firstItem ++ lista'' ++ lastItem
+      firstItem | (realToFrac $ floor iw) == (realToFrac $ floor ew) = [(realToFrac iw, realToFrac ew)]
+                | (realToFrac iw) == ((realToFrac $ floor iw) + (1 * compas)) = []
+                | otherwise = [(realToFrac iw, (realToFrac $ floor iw) + (1 * compas))]
+
+      lastItem | (realToFrac $ floor ew) == (realToFrac $ floor iw) = []
+               | (realToFrac ew) > (realToFrac $ floor ew) = [(realToFrac $ floor ew, realToFrac ew)]
+               | otherwise = []
+  let x = catMaybes $ fmap (\(x, y) -> if (mod' (realToFrac x) (realToFrac n')) /= ((realToFrac n') - compas) then Just (x , y) else Nothing) lista'''
+  let fx = catMaybes $ fmap (\(x,y) -> if (mod' (realToFrac x) (realToFrac n')) == ((realToFrac n') - compas) then Just (x , y) else Nothing ) lista'''
+  (x, fx)
+
+-- alternarWindows'' :: Double -> Double -> Double -> Double -> ([(Double, Double)], [(Double, Double)])
+alternarWindows'' n compas iw ew = do
+  let n' = n * compas
+  let iw' = realToFrac $ floor iw
+  let ew' = realToFrac $ ceiling ew
+  let lista = [iw', (iw' + compas).. ew']
+  let lowerFilteredList = Prelude.filter  ((<=) iw) lista
+  let upwardsFilteredList = Prelude.filter  ((>=) ew) lowerFilteredList
+  let lista' = fmap (\e -> (e, e + compas)) upwardsFilteredList
+  let confirmHead |((length lista') > 0) && (iw < (fst $ head lista')) = ((fst $ head lista') - ((fst $ head lista') - iw) , fst $ head lista') : lista'
+                  | ((length lista') > 0) && (iw == (fst $ head lista')) = lista'
+                  | ((length lista') == 0) = [(iw, ew)]
+  let confirmLast | (length confirmHead == 1) = [(fst $ head confirmHead, ew)]
+                  | (length confirmHead > 1) && (ew == (fst $ last confirmHead)) = init confirmHead
+                  | (length confirmHead > 1) && (ew > (fst $ last confirmHead)) = init confirmHead ++ [(snd $ last $ init confirmHead, ew)]
+  let x = catMaybes $ fmap (\(a, b) -> compararX (a, b) compas n') confirmLast
+  let fx = catMaybes $ fmap (\(a, b) -> compararFx (a, b) compas n') confirmLast
+  (x, fx)
+
+-- compararX :: (Double, Double) -> Double -> Double -> Maybe (Double, Double)
+compararX (a,b) compas n
+  | (a > 0) && (a < (realToFrac $ floor a) + compas) = if (mod' (realToFrac $ floor a) (realToFrac n)) /= ((realToFrac n) - compas) then Just (a , b) else Nothing
+  | (a > (realToFrac $ floor a) + compas) && (a < (realToFrac $ ceiling a)) = if (mod' ((realToFrac $ floor a) + compas) (realToFrac n)) /= ((realToFrac n) - compas) then Just (a , b) else Nothing
+  | otherwise = if (mod' (realToFrac a) (realToFrac n)) /= ((realToFrac n) - compas) then Just (a , b) else Nothing
+
+-- compararFx :: (Double, Double) -> Double -> Double -> Maybe (Double, Double)
+compararFx (a,b) compas n
+  | (a > 0) && (a < (realToFrac $ floor a) + compas) = if (mod' (realToFrac $ floor a) (realToFrac n)) == ((realToFrac n) - compas) then Just (a , b) else Nothing
+  | (a > (realToFrac $ floor a) + compas) && (a < (realToFrac $ ceiling a)) = if (mod' ((realToFrac $ floor a) + compas) (realToFrac n)) == ((realToFrac n) - compas) then Just (a , b) else Nothing
+  | otherwise = if (mod' (realToFrac a) (realToFrac n)) == ((realToFrac n) - compas) then Just (a , b) else Nothing
 
 -- test funcs
--- let l = alternar 3 (seleccionarSampleF) (seleccionarEstilo cumbia bajo)
+-- let l = alternar 2 (tonicaYquinta) (seleccionarEstilo cumbia bajo)
 -- (runState  (getEvents l testgmm cumbia  mytempo (mytime 0) (mytime 1)) emptyLayerState)
 
 -- helper functions
@@ -1013,11 +1173,11 @@ doubleList = list double
 -- render :: (GlobalMaterial,Style,Instrument) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime,Map Text Datum)]
 -- runState :: State s a -> s -> (a, s) -- as soon as the state is meaningful I should stop discarding it.
 --check Tidal.params for looking at the available params for webdirt
-render :: ([Layer], GlobalMaterial) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime, Map.Map T.Text H.Datum)]
+render :: ([Layer], GlobalMaterial) -> Tempo -> UTCTime -> UTCTime -> [Event]
 render (ls, gm) tempo iw ew = Prelude.concat $ fmap (\l -> render' (l, gm) tempo iw ew) ls
 
 
-render' :: (Layer, GlobalMaterial) -> Tempo -> UTCTime -> UTCTime -> [(UTCTime, Map.Map T.Text H.Datum)]
+render' :: (Layer, GlobalMaterial) -> Tempo -> UTCTime -> UTCTime -> [Event]
 render' (layer, gm) tempo iw ew = do
    fst $ runState x emptyLayerState --this should be another argument to my render function
     where

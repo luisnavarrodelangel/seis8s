@@ -191,6 +191,10 @@ generateSingleChordFromRational attack metre (Chord p chordType (start, end))
   | compareRationalWChordRange attack metre (start, end) = [(attack, generateChord (Chord p chordType (start, end)))]
   | otherwise = []
 
+-- return a list of pitches from one chord
+generateChord :: Chord -> [Pitch]
+generateChord (Chord root chordType (start, end))  = fmap ((+) root) chordType
+
 compareRationalWChordRange :: Rational -> Metre -> ChordPosition -> Bool
 compareRationalWChordRange attack metre (startOffset, endOffset) = do
   let attackInMetre = attack / metre
@@ -208,9 +212,6 @@ concatChord (attack, ps) =  fmap (\p -> (attack, p)) (snd (attack, ps))
 concatChords :: [(Rational, [Pitch])] -> [(Rational, Pitch)] -- eg. for [60, 64, 67] three events all whith the same time all with different pitches
 concatChords attackAndChords = concat $ fmap (\x -> concatChord x) attackAndChords
 
--- return a list of pitches from one chord
-generateChord :: Chord -> [Pitch]
-generateChord (Chord root chordType (start, end))  = fmap ((+) root) chordType
 
 -- return a list of lists of pitches from a list of Chords
 -- generateChords :: [Chord] -> [[Pitch]]
