@@ -151,7 +151,7 @@ pitchtochord :: [Pitch] -> [Chord]
 pitchtochord ps = do
   let startandend = fmap (\s -> (toRational s, toRational s+1)) [0 .. (length ps)]
   let zipXSwithStartEnd = zip ps startandend --[(x,())]
-  fmap (\(p, (s,e)) -> Chord p major (s/2,e/2)) zipXSwithStartEnd
+  fmap (\(p, (s,e)) -> Chord p major (s*0.5,e*0.5)) zipXSwithStartEnd
 
 --
 chordListMetreAuto' :: H [Chord]
@@ -182,7 +182,7 @@ pitchandtypetochord xs = do
 
 -- armonia 1 [C maj 0 1]
 castProgression :: Rational -> Double -> [Chord] -> Progression
-castProgression metre compas cs  = Progression (metre/ toRational compas) cs
+castProgression metre compas cs  = Progression (metre * toRational compas) cs
 
 -- armonia 1 [C maj 0 1]
 castProgressionMetreAuto :: [Chord] -> Double -> Progression
@@ -191,10 +191,10 @@ castProgressionMetreAuto cs compas = do
   Progression (metre/ toRational compas) cs
 
 castHarmony :: Pitch -> ChordType -> Rational -> Rational ->  Chord
-castHarmony p t s e = Chord p t (s/2, e/2)
+castHarmony p t s e = Chord p t (s*0.5, e*0.5)
 
 castHarmonyMajAuto :: Pitch -> Rational -> Rational -> Chord
-castHarmonyMajAuto p s e = Chord p major (s/2, e/2)
+castHarmonyMajAuto p s e = Chord p major (s*0.5, e*0.5)
 
 
 pitchParser :: H Pitch

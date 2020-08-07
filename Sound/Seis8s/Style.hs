@@ -25,9 +25,17 @@ data Style  = Style  {
 
  pianoSampleNPattern0 :: NPattern,
  pianoSampleNPattern1 :: NPattern,
+ pianoSampleNPattern2 :: NPattern,
+ pianoSampleNPattern3 :: NPattern,
  pianoPitchPattern0 :: PitchPattern,
+ pianoPitchPattern1 :: PitchPattern,
+ pianoPitchPattern2 :: PitchPattern,
+ pianoPitchPattern3 :: PitchPattern,
+
  pianoRhythmPattern0 :: RhythmicPattern, -- or could this be accompaniment (used for various instruments)?-- [(Rational, Rational)] -- not universal value, but semiuniversal values.
  pianoRhythmPattern1 :: RhythmicPattern,
+ pianoRhythmPattern2 :: RhythmicPattern,
+ pianoRhythmPattern3 :: RhythmicPattern,
  pianoPanPattern0 :: Double,
  pianoGainPattern0 :: Double,
 
@@ -217,9 +225,19 @@ cumbia = Style {
     pianoSampleNPattern0 = [0],
     pianoRhythmPattern1 = [(1,0.25), (1, 0.75)], -- ie. [𝄽 ♩ 𝄽 ♩],
     pianoSampleNPattern1 = [0, 0],
-    pianoPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+    -- pianoPitchPattern0 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+    pianoPitchPattern0 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+    pianoSampleNPattern2 = take 10 $ cycle  [0],
+    pianoRhythmPattern2 = [(2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.625), (2, 1.625)],
+    pianoPitchPattern2 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]),
+
+    pianoSampleNPattern3 = take 14 $ cycle  [0],
+    pianoRhythmPattern3 = [(2, 0), (2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.5), (2, 0.875), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.375), (2, 1.625), (2, 1.625)],
+    pianoPitchPattern3 = ("intervalo", [intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0]),
+
+    -- pianoPitchPattern0 = ("voicing", [0, 0, 0]), -- not used yet
     pianoPanPattern0 = 0.5,
-    pianoGainPattern0 = 1,
+    pianoGainPattern0 = 0.75,
 
 
     cuerdaRhythmPattern0 = [(1,0)],
@@ -250,18 +268,20 @@ cumbia = Style {
     -- bassSampleNPattern2 = take 13 $ cycle [0],
     -- bassPitchPattern2 = ("intervalo", [intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "5a", intervalo "unisono", intervalo "5a"]),
 
+    guiraRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.375), (1, 0.5), (1, 0.75), (1, 0.875)], --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
+    guiraSampleNPattern0 = [0, 1, 2, 0, 1, 2],
+    guiraPitchPattern0 = ("midinote", [("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0)]),
 
-    guiraRhythmPattern0 = [(1, 0), (1, 0.5)], --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
-    guiraSampleNPattern0 = take 2 $ cycle [0],
-    guiraPitchPattern0 = ("midinote", take 2 $ cycle [("mn", 60, 0)]),
+    guiraRhythmPattern1 = [(1, 0), (1, 0.5)], --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
+    guiraSampleNPattern1 = take 2 $ cycle [0],
+    guiraPitchPattern1 = ("midinote", take 2 $ cycle [("mn", 60, 0)]),
+
     guiraPanPattern0 = 0.5,
-    guiraGainPattern0 = 1,
+    guiraGainPattern0 = 0.8,
 
-    guiraRhythmPattern1 = [(1, 0), (1, 0.25), (1, 0.375), (1, 0.5), (1, 0.75), (1, 0.875)], --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
-    guiraSampleNPattern1 = [0, 1, 2, 0, 1, 2],
-    guiraPitchPattern1 = ("midinote", [("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0)]),
+
     guiraPanPattern1 = 0.5,
-    guiraGainPattern1 = 1,
+    guiraGainPattern1 = 0.5,
 
     contrasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
     contrasSampleNPattern0 = [0, 1, 0, 1, 0, 1, 0, 1],
@@ -283,7 +303,7 @@ cumbia = Style {
 
     congasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
     congasSampleNPattern0 = [1, 2, 1, 2],
-    congasPitchPattern0 = ("intervalo", take 4 $ cycle [intervalo "unisono" 0]),
+    congasPitchPattern0 = ("midinote", take 4 $ cycle [("mn", 60, 0)]),
     congasPanPattern0 = 0.5,
     congasGainPattern0 = 1,
 

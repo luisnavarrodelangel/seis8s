@@ -3,10 +3,12 @@ module Sound.Seis8s.Harmony where
 import Sound.Seis8s.Generic
 import Sound.Seis8s.Rhythm
 
+
 import Data.Time
 import Data.Tempo
 import Data.Maybe
-import Data.List
+import Data.Function
+import Data.List as List
 import Data.Tuple.Select
 
 type Relacion = String -- "segunda" "absoluto"
@@ -33,7 +35,7 @@ generateLine attacksAndIntervals (Progression metre chords) =  sort $ concat $ f
 generateNotesFromChord :: [(Rational, (String, Double, Octava))] -> Metre -> Chord -> [(Rational, Pitch)]
 generateNotesFromChord attacksAndIntervals metre chord = concat $ fmap (\x -> generateSingleNoteFromChord x metre chord) attacksAndIntervals
 
-generateSingleNoteFromChord :: (Rational, (String, Double, Octava)) -> Rational -> Chord ->  [(Rational, Pitch)]
+generateSingleNoteFromChord :: (Rational, (String, Double, Octava)) -> Metre -> Chord ->  [(Rational, Pitch)]
 generateSingleNoteFromChord (attack, (tipo, interval, octava)) metre (Chord p t (start, end))
   |compareRationalWChordRange attack metre (start, end) = attackAndNote attack note
   | otherwise = []
@@ -43,6 +45,29 @@ generateSingleNoteFromChord (attack, (tipo, interval, octava)) metre (Chord p t 
 attackAndNote :: Rational -> Maybe Pitch -> [(Rational, Pitch)]
 attackAndNote attack (Just note) = [(attack, note)]
 attackAndNote _ Nothing = []
+
+-- functions to pick a chord that has a voicing
+
+pickChords' :: [Rational] -> Progression -> [(String, Double, Octava)] -> [(Rational, [Pitch])]
+pickChords' attacks (Progression metre chords) pitchPattern = concat $ fmap (\a -> pickChordsWithVoicingFromRational' (Progression metre chords) a pitchPattern) attacks 
+
+pickChordsWithVoicingFromRational' :: Progression -> Rational -> [(String, Double, Octava)] -> [(Rational, [Pitch])]
+pickChordsWithVoicingFromRational' (Progression metre chords) attack pitchPattern = do
+   let acordes = acordesConVoicing $ getNotesInChords (Progression metre chords) pitchPattern--[([Pitch], (Rational, Rational))]
+   concat $ fmap (pickSingleChordFromRational' attack metre) acordes
+
+pickSingleChordFromRational' :: Rational -> Metre -> ([Pitch], (Rational, Rational)) -> [(Rational, [Pitch])]
+pickSingleChordFromRational' attack metre (acorde, (start, end))
+  | compareRationalWChordRange attack metre (start, end) = [(attack, acorde)]
+  | otherwise = []
+
+getNotesInChords :: Progression -> [(String, Double, Octava)] -> [([Pitch], (Start, End))]
+getNotesInChords (Progression metre chords) intervalos = fmap (\c -> getNotesInChord c intervalos) chords
+
+getNotesInChord :: Chord -> [(String, Double, Octava)] -> ([Pitch], (Start, End))
+getNotesInChord (Chord root chordType (start, end)) intervalos =  do
+  let acorde = catMaybes $ fmap (\i -> getNoteInChord (Chord root chordType (start, end)) i) intervalos
+  (acorde, (start, end))
 
 getNoteInChord :: Chord -> (String, Double, Octava) -> Maybe Pitch
 getNoteInChord (Chord root chordType (start, end)) (tipo, interval, octava)
@@ -180,11 +205,12 @@ intervaloDisponible cht (tipo, _, _)
   -- (!!) (generateChord (Chord root chordType)) (round interval)
 
 -- generates a list of chords according to a given harmony and a given rhythm pattern
+-- generatechords :: [Rational] -> Progression ->  [(Rational, [Pitch])]
 generatechords :: [Rational] -> Progression ->  [(Rational, [Pitch])]
 generatechords attacks (Progression metre chords) = concat $ fmap (generateChordsFromRational (Progression metre chords)) attacks
 
 generateChordsFromRational :: Progression -> Rational -> [(Rational, [Pitch])]
-generateChordsFromRational (Progression metre chords) attack   = concat $ fmap (generateSingleChordFromRational metre attack) chords
+generateChordsFromRational (Progression metre chords) attack   = concat $ fmap (generateSingleChordFromRational attack metre) chords
 
 generateSingleChordFromRational :: Rational -> Metre -> Chord -> [(Rational, [Pitch])]
 generateSingleChordFromRational attack metre (Chord p chordType (start, end))
@@ -195,6 +221,27 @@ generateSingleChordFromRational attack metre (Chord p chordType (start, end))
 generateChord :: Chord -> [Pitch]
 generateChord (Chord root chordType (start, end))  = fmap ((+) root) chordType
 
+pickChords :: [Rational] -> Progression ->  [(Rational, [Pitch])]
+pickChords attacks (Progression metre chords) = concat $ fmap (pickChordsWithVoicingFromRational (Progression metre chords)) attacks
+
+pickChordsWithVoicingFromRational :: Progression -> Rational -> [(Rational, [Pitch])]
+pickChordsWithVoicingFromRational (Progression metre chords) attack = do
+   let acordes = acordesConVoicing $ generateChordsFromProg (Progression metre chords) --[([Pitch], (Rational, Rational))]
+   concat $ fmap (pickSingleChordFromRational attack metre) acordes
+
+pickSingleChordFromRational :: Rational -> Metre -> ([Pitch], (Rational, Rational)) -> [(Rational, [Pitch])]
+pickSingleChordFromRational attack metre (acorde, (start, end))
+  | compareRationalWChordRange attack metre (start, end) = [(attack, acorde)]
+  | otherwise = []
+
+generateChordsFromProg :: Progression -> [([Pitch], (Rational, Rational))]
+generateChordsFromProg (Progression metre chords)  = fmap (\c -> generateChordFromProg c) chords
+
+generateChordFromProg :: Chord -> ([Pitch], (Rational, Rational))
+generateChordFromProg (Chord root chordType (start, end))  = do
+  let acorde = fmap ((+) root) chordType
+  (acorde, (start,end))
+
 compareRationalWChordRange :: Rational -> Metre -> ChordPosition -> Bool
 compareRationalWChordRange attack metre (startOffset, endOffset) = do
   let attackInMetre = attack / metre
@@ -202,6 +249,25 @@ compareRationalWChordRange attack metre (startOffset, endOffset) = do
   let startInMetre = startOffset / metre
   let endInMetre = endOffset / metre
   let b | startOffset <= endOffset = (attackInMetre' >= startInMetre) && (attackInMetre' < endInMetre)
+        | otherwise = (attackInMetre' < startInMetre) && (attackInMetre' >= endInMetre)
+  b
+-- armonia 1 [c 0 5] => Progression 0.5 [Chord 60 major (0, 0.25)]
+-- attack 1 es 0.5
+-- compas gmm = compas "partido" (i.e. 0.5)
+-- por lo tanto compareRationalWChordRange' 0.5 0.5 0.5 (0, 0.25)
+-- compareRationalWChordRange' 1 1 1 (0, 0.5)
+-- not in use
+compareRationalWChordRange' :: Rational -> Metre -> Double -> ChordPosition -> Bool
+compareRationalWChordRange' attack metre compas (startOffset, endOffset) = do
+  let attack' = attack / toRational compas
+  let metre' = metre / toRational compas
+  let startOffset' = startOffset / toRational compas
+  let endOffset' = endOffset / toRational compas
+  let attackInMetre = attack' / metre' -- 1/1 = 1
+  let attackInMetre' = fract attackInMetre -- 1.0 -> 0
+  let startInMetre = startOffset' / metre' -- 0/1 = 0
+  let endInMetre = endOffset' / metre' -- 0.5/1 = 0.5
+  let b | startOffset' <= endOffset' = (attackInMetre' >= startInMetre) && (attackInMetre' < endInMetre)
         | otherwise = (attackInMetre' < startInMetre) && (attackInMetre' >= endInMetre)
   b
 
@@ -213,9 +279,174 @@ concatChords :: [(Rational, [Pitch])] -> [(Rational, Pitch)] -- eg. for [60, 64,
 concatChords attackAndChords = concat $ fmap (\x -> concatChord x) attackAndChords
 
 
--- return a list of lists of pitches from a list of Chords
--- generateChords :: [Chord] -> [[Pitch]]
--- generateChords cs = fmap (\x -> generateChord x) cs
+-- a simple voicing
+
+c1 = Chord 60 major (0, 0.5)
+c2 = Chord 64 minor (0.5, 1)
+
+--generateLine xs 1 myharmony = [(9 % 20,60.0),(9 % 20,64.0),(9 % 20,67.0)]
+agruparNotas :: [(Rational, Pitch)] -> [[(Rational, Pitch)]]
+agruparNotas xs = groupBy ((==) `on` fst) xs
+-- 1. se recibe como [(Rational, Pitch)]
+-- 2. lo transformamos a [[(Rational, Pitch)]]
+-- 3. lo regresamos a  [(Rational, Pitch)]
+-- [(0, 59), (0, 62), (0, 67), (0.5, 60), (0.5, 64), (0.5, 67)]
+-- generateChordsFromProg :: Progression -> [([Pitch], (Rational, Rational))]
+--
+--
+acordesConVoicing :: [([Pitch], (Rational, Rational))] -> [([Pitch], (Rational, Rational))]
+acordesConVoicing prog
+  | length prog == 0 = []
+  | length prog == 1 =  prog
+  | length prog == 2 =  [a, ab]
+  | length prog == 3 =  [a, ab, bc]
+  | length prog == 4 =  [a, ab, bc, cd]
+  | length prog == 5 =  [a, ab, bc, cd, de]
+  | length prog == 6 =  [a, ab, bc, cd, de, ef]
+  | length prog == 7 =  [a, ab, bc, cd, de, ef, fg]
+  | length prog == 8 =  [a, ab, bc, cd, de, ef, fg, gh]
+  | length prog == 9 =  [a, ab, bc, cd, de, ef, fg, gh, hi]
+  | length prog == 10 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij]
+  | length prog == 11 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk]
+  | length prog == 12 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl]
+  | length prog == 13 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm]
+  | length prog == 14 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn]
+  | length prog == 15 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no]
+  | length prog == 16 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op]
+  | length prog == 17 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq]
+  | length prog == 18 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr]
+  | length prog == 19 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs]
+  | length prog == 20 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st]
+  | length prog == 21 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu]
+  | length prog == 22 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv]
+  | length prog == 23 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw]
+  | length prog == 24 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx]
+  | length prog == 25 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx, xy]
+  | length prog == 26 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx, xy, yz]
+  | length prog == 27 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx, xy, yz, za]
+  | length prog == 28 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx, xy, yz, za, ab']
+  | length prog == 29 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx, xy, yz, za, ab', bc']
+  | length prog == 30 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx, xy, yz, za, ab', bc', cd']
+  | length prog == 31 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx, xy, yz, za, ab', bc', cd', de']
+  | length prog == 32 =  [a, ab, bc, cd, de, ef, fg, gh, hi, ij, jk, kl, lm, mn, no, op, pq, qr, rs, st, tu, uv, vw, wx, xy, yz, za, ab', bc', cd', de', ef']
+    where
+      a = (!!) prog 0
+      ab = acordeConVoicing a ((!!) prog 1)
+      bc = acordeConVoicing ab ((!!) prog 2)
+      cd = acordeConVoicing bc ((!!) prog 3)
+      de = acordeConVoicing cd ((!!) prog 4)
+      ef = acordeConVoicing de ((!!) prog 5)
+      fg = acordeConVoicing ef ((!!) prog 6)
+      gh = acordeConVoicing fg ((!!) prog 7)
+      hi = acordeConVoicing gh ((!!) prog 8)
+      ij = acordeConVoicing hi ((!!) prog 9)
+      jk = acordeConVoicing ij ((!!) prog 10)
+      kl = acordeConVoicing jk ((!!) prog 11)
+      lm = acordeConVoicing kl ((!!) prog 12)
+      mn = acordeConVoicing lm ((!!) prog 13)
+      no = acordeConVoicing mn ((!!) prog 14)
+      op = acordeConVoicing no ((!!) prog 15)
+      pq = acordeConVoicing op ((!!) prog 16)
+      qr = acordeConVoicing pq ((!!) prog 17)
+      rs = acordeConVoicing qr ((!!) prog 18)
+      st = acordeConVoicing rs ((!!) prog 19)
+      tu = acordeConVoicing st ((!!) prog 20)
+      uv = acordeConVoicing tu ((!!) prog 21)
+      vw = acordeConVoicing uv ((!!) prog 22)
+      wx = acordeConVoicing vw ((!!) prog 23)
+      xy = acordeConVoicing wx ((!!) prog 24)
+      yz = acordeConVoicing xy ((!!) prog 25)
+      za = acordeConVoicing yz ((!!) prog 26)
+      ab' = acordeConVoicing za ((!!) prog 27)
+      bc' = acordeConVoicing ab' ((!!) prog 28)
+      cd' = acordeConVoicing bc' ((!!) prog 29)
+      de' = acordeConVoicing cd' ((!!) prog 30)
+      ef' = acordeConVoicing de' ((!!) prog 31)
+--
+-- -- [(9 % 20,60.0),(9 % 20,64.0),(9 % 20,67.0)]
+-- -- [([Pitch], (Rational, Rational))] -- ([60, 64, 67], (0, 1))
+
+acordeConVoicing :: ([Pitch], (Rational, Rational)) -> ([Pitch], (Rational, Rational)) -> ([Pitch], (Rational, Rational))
+acordeConVoicing prev sig = do
+  let notasComunesPrev = notasComunes (fst prev) (fst sig) -- [(0, 60), (0, 64), (0, 67)] [(0.25, 64), (0.25, 67), (0.25, 71)] = [(0.25, 64), (0.25, 67)]
+  let notasComunesSig = notasComunes (fst sig) (fst prev)
+  let notasNoComunesPrev = notasNoComunes' (fst prev) notasComunesPrev -- [(0, 60)]
+  let notasNoComunesSig = notasNoComunes' (fst sig) notasComunesSig -- [(0.5, 71)]
+  let dists = distancias'' notasNoComunesPrev notasNoComunesSig -- [(Double, Pitch)]
+  let notasCercanas' = notasCercanas (length notasNoComunesSig) dists -- [71] -- [Pitch]
+  let listaFinal = List.sort $ notasComunesPrev ++ notasCercanas'
+  (listaFinal, snd sig)
+
+
+-- notasNoComunes' :: [(Rational, Pitch)] -> [(Rational, Pitch)] -> [(Rational, Pitch)]
+notasNoComunes' :: [Pitch] -> [Pitch] -> [Pitch]
+notasNoComunes' xs ys = catMaybes $ fmap (\x -> notasNoComunes x ys) xs
+
+-- [([Pitch], (Rational, Rational))]
+-- notasNoComunes :: (Rational, Pitch) -> [(Rational, Pitch)] -> Maybe (Rational, Pitch)
+notasNoComunes :: Pitch -> [Pitch] -> Maybe Pitch
+notasNoComunes x xs
+  | elem x xs = Nothing
+  | otherwise = Just x
+
+-- 71 [64, 67, 71] [64, 67]
+
+-- 1. encontrar las notas en comun entre ambas listas
+-- notasComunes :: [Pitch] -> [Pitch] -> [Pitch]
+notasComunes :: [Pitch] -> [Pitch] -> [Pitch]
+notasComunes prev sig = concat $ fmap (\p -> notaComun' p sig) prev
+
+-- notaComun' :: (Rational, Pitch) -> [(Rational, Pitch)] -> [(Rational, Pitch)]
+notaComun' :: Pitch -> [Pitch] -> [Pitch]
+notaComun' prev sig = do
+  let hacerListasDeListas' = hacerListasDeListas sig
+  concat $ fmap (\s -> notaComun prev s) hacerListasDeListas'
+
+-- notaComun :: (Rational, Pitch) -> [(Rational, Pitch)] -> [(Rational, Pitch)]
+notaComun :: Pitch -> [Pitch] -> [Pitch]
+notaComun prev sig = filter ((==) prev) sig
+
+-- hacerListasDeListas :: [(Rational, Pitch)] -> [[(Rational, Pitch)]]
+hacerListasDeListas :: [Pitch] -> [[Pitch]]
+hacerListasDeListas xs = fmap (\x -> hacerListaDeListas x) xs
+
+-- hacerListaDeListas :: (Rational, Pitch) -> [(Rational, Pitch)]
+hacerListaDeListas :: Pitch -> [Pitch]
+hacerListaDeListas x = do
+  let xs = List.sort $ [x, (x - 12) .. 0] ++ [(x + 12), (x + 24) .. 127] -- [Pitch]
+  xs
+
+-- (0, 60) [(0.5, 65), (0.5, 69), (0.5, 72)]
+-- (0, 60) [[ ], [], []]
+
+-- 2. Escoger todos los 3 valores con distancia más corta de la lista.
+distancias :: Pitch -> Pitch -> [(Double, Pitch)]
+distancias prev sig = do
+  let saltoSig = (sig - 12)
+  let sig' = (sig + 12)
+  let saltoSig' = (sig + 12) + 12
+  let sigs = List.sort $ [sig, saltoSig .. 0] ++ [sig', saltoSig' .. 127] -- [Pitch]
+  let sigs' = catMaybes $  fmap (\s -> if (s >= (prev - 12)) && (s <= (prev + 12)) then Just s else Nothing) sigs  -- [(Rational, Pitch)]
+  let sigsYdist = fmap (\d -> (abs $ prev - d, d)) sigs'
+  sigsYdist
+
+distancias' :: Pitch -> [Pitch] -> [(Double, Pitch)]
+distancias' prev sig = concat $ fmap (\s -> distancias prev s) sig
+
+distancias'' :: [Pitch] -> [Pitch] -> [(Double, Pitch)]
+distancias'' prev sig = List.sort $ concat $ fmap (\p -> distancias' p sig) prev
+
+-- uniq which removes duplicates from a list (found here https://codereview.stackexchange.com/questions/150533/filter-duplicate-elements-in-haskell)
+uniqPitch :: Eq b => [(a,b)] -> [(a,b)]
+uniqPitch [] = []
+uniqPitch ((x, y):xs) = (x,y) : uniqPitch (filter ((/= y) . snd) xs)
+
+notasCercanas :: Int -> [(Double, Pitch)] -> [Pitch]
+notasCercanas tamano notas = do
+  let lista1 = take tamano $ uniqPitch notas
+  List.sort $ fmap snd lista1
+
+
 
 
 -- pitches

@@ -143,8 +143,8 @@ pianoEvents gmm style tempo iw ew = do
   let paneo = pianoPanPattern0 style
   let gain = pianoGainPattern0 style
 
-  let pitchType = fst $ pianoPitchPattern0 style
-  let equateLists' = equateLists (pianoRhythmPattern0 style) (pianoSampleNPattern0 style) (snd $ pianoPitchPattern0 style)
+  let pitchType = fst $ pianoPitchPattern2 style
+  let equateLists' = equateLists (pianoRhythmPattern3 style) (pianoSampleNPattern0 style) (snd $ pianoPitchPattern3 style)
   let pianoRhythmPattern = sel1 equateLists'
   let pianoRhythmPattern' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm))) pianoRhythmPattern
 
@@ -154,7 +154,10 @@ pianoEvents gmm style tempo iw ew = do
   let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
   let pat = List.zip pianoRhythmPattern' pianoPitchPattern -- [(RhythmicPosition, (String, Double))]
   let pitchPat = pitchPattern pat tempo iw ew
-  let pianoline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
+  let pianoline | pitchType == "intervalo" = (generateLine pitchPat (harmony gmm)) -- [(Rational, Pitch )]
+                | pitchType == "midinote" = (generateLineFromMidi pitchPat) -- [(Rational, Pitch)]
+                | pitchType == "acorde" = concatChords $ pickChords (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) --[(Rational, Pitch )]
+                -- | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) pianoPitchPattern
   let time = fmap (\c -> countToTime tempo (fst c)) pianoline  -- [UTCTime]
   let instCmap = cmap'' "piano" samplePat pianoline paneo gain--Map Text Datum
   let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]

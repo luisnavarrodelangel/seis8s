@@ -13,10 +13,12 @@ data GlobalMaterial = GlobalMaterial {
   compas :: Double
 } deriving (Show)
 
-defaultGlobalMaterial = GlobalMaterial {harmony = Progression 0.5 [Chord 60 major (0, 0.5)], compas = establecerCompas "partido"}
+defaultGlobalMaterial = GlobalMaterial {harmony = myharmony', compas = establecerCompas "partido"}
+-- {harmony = Progression 1 [Chord 60 major (0, 1)], compas = establecerCompas "partido"}
 
 myharmony = Progression 0.5 [Chord 60 major (0, 0.5)]
-testgmm = GlobalMaterial {harmony = myharmony, compas = establecerCompas "partido" }
+myharmony' = Progression 2 [Chord 60 major (0, 0.5), Chord 65 major (0.5, 1), Chord 67 major (1,1.5), Chord 71 dim (1.5, 2)]
+testgmm = GlobalMaterial {harmony = myharmony', compas = establecerCompas "partido" }
 
 establecerCompas :: String -> Double
 establecerCompas "4/4" = 1
