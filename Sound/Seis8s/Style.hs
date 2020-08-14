@@ -126,9 +126,17 @@ defaultStyle = Style {
 
    pianoSampleNPattern0 = [0],
    pianoSampleNPattern1 = [0],
+   pianoSampleNPattern2 = [0],
+   pianoSampleNPattern3 = [0],
    pianoRhythmPattern0 = [(1, 0)], -- ie.  [𝄽  𝄽  𝄽  ♩],
-   pianoRhythmPattern1 = [], -- ie. [𝄽 ♩ 𝄽 ♩],
+   pianoRhythmPattern1 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
+   pianoRhythmPattern2 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
+   pianoRhythmPattern3 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
    pianoPitchPattern0 = ("intervalo", [("unisono" , 0, 0)]),
+   pianoPitchPattern1 = ("intervalo", [("unisono" , 0, 0)]),
+   pianoPitchPattern2 = ("intervalo", [("unisono" , 0, 0)]),
+   pianoPitchPattern3 = ("intervalo", [("unisono" , 0, 0)]),
+   
    pianoPanPattern0 = 0.5,
    pianoGainPattern0 = 1,
 

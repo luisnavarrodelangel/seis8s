@@ -248,6 +248,8 @@ transformadoresDeLayer =  parseSeleccionarEstilo
                       <|> parseCambiarNotas
                       <|> parseCambiarRitmo
                       <|> parseCambiarRitmos
+                      <|> parseCambiarRitmoAuto
+                      <|> parseCambiarRitmosAuto
                       <|> parseCambiarIntervalo
                       <|> parseCambiarIntervalos
                       <|> parseCambiarIntervaloConOctava
@@ -262,6 +264,10 @@ transformadoresDeLayer =  parseSeleccionarEstilo
                       <|> parseCambiarPaneo
                       <|> parseTumbao
                       <|> parseTumbaoCongas
+                      <|> parseacompanamiento
+                      <|> parseacompanamientos
+                      <|> parseAcompanamientoConVoicingSel
+                      <|> parseAcompanamientosConVoicingSel
 --
 inst :: H Layer
 inst =
@@ -791,6 +797,62 @@ cambiarIntervalo index c = c {style = nuevoE}
                             congasPitchPattern0 = ("intervalo", [intervalo index 0]),
                             clavePitchPattern0 = ("intervalo", [intervalo index 0])
                             }
+-- ritmo [0.25, 0.5]. si [0.1] => 1 [0.1] => metre = ceiling $ last attacks
+parseCambiarRitmosAuto :: H Layer
+parseCambiarRitmosAuto =  parseCambiarRitmosAuto' <*> parseLayer
+
+parseCambiarRitmosAuto' :: H (Layer -> Layer)
+parseCambiarRitmosAuto' =  parseCambiarRitmosAuto'' <*> rationalList
+
+parseCambiarRitmosAuto'' :: H ([Rational] -> Layer -> Layer)
+parseCambiarRitmosAuto'' = cambiarRitmosAuto <$ reserved "ritmo"
+
+cambiarRitmosAuto :: [Rational] -> Layer -> Layer
+cambiarRitmosAuto attacks c = c {style = nuevoE}
+  where
+    attack = last attacks
+    metre = (realToFrac $ floor attack) + 1
+    nuevoE = (style c) {
+                            cuerdaRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            pianoRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            bassRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            guiraRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            contrasRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            tarolaRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            efectoRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            altavozRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            extrasRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            claveRhythmPattern0 = cambiarRitmo'' metre attacks,
+                            congasRhythmPattern0 = cambiarRitmo'' metre attacks
+                            }
+-- ritmo 4  cumbia cuerda, ritmo 1
+parseCambiarRitmoAuto :: H Layer
+parseCambiarRitmoAuto =  parseCambiarRitmo' <*> parseLayer
+
+parseCambiarRitmoAuto' :: H (Layer -> Layer)
+parseCambiarRitmoAuto' = parseCambiarRitmoAuto'' <*> rationalOrInteger
+
+parseCambiarRitmoAuto'' :: H (Rational -> Layer -> Layer)
+parseCambiarRitmoAuto'' = cambiarRitmoMetreAuto <$ reserved "ritmo"
+
+cambiarRitmoMetreAuto :: Rational -> Layer -> Layer
+cambiarRitmoMetreAuto attack c = c {style = nuevoE}
+  where
+    metre = (realToFrac $ floor attack) + 1
+
+    nuevoE = (style c) {
+                            cuerdaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            pianoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            bassRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            guiraRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            contrasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            tarolaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            efectoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            altavozRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            extrasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            congasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            claveRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)]
+                            }
 
 -- type RhythmicPattern = [(Rational,Rational)]
 -- ritmo 0.5 cumbia cuerda
@@ -809,23 +871,27 @@ parseCambiarRitmo''' = cambiarRitmo <$ reserved "ritmo"
 cambiarRitmo :: Rational -> Rational -> Layer -> Layer
 cambiarRitmo metre attack c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            cuerdaRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            pianoRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            bassRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            guiraRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            contrasRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            tarolaRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            efectoRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            altavozRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            extrasRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            congasRhythmPattern0 = [cambiarRitmo' (metre) (attack)],
-                            claveRhythmPattern0 = [cambiarRitmo' (metre) (attack)]
+                            cuerdaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            pianoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            bassRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            guiraRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            contrasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            tarolaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            efectoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            altavozRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            extrasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            congasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            claveRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)]
                             }
 
-cambiarRitmo' :: Rational -> Rational -> (Rational, Rational)
-cambiarRitmo' metre attack = (metre, attack)
-
---e.g. ritmo [0.125, 0.25] cumbia cuerda
+cambiarRitmo' :: Rational -> Rational -> Maybe (Rational, Rational)
+cambiarRitmo' metre attack = metreAndAttack
+  where
+    cuartosPorCompas = 4 * metre
+    metreAndAttack | (attack >= metre) && (attack < (metre + cuartosPorCompas)) = Just (metre, attack') -- e.g. ritmo 1 [1 2 3 4] => ritmo 1 [0, 0.25, 0.5, 0.75], 2 [1 2 3 4, 5 6 7 8] => ritmo 2 [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75]
+                   | otherwise = Nothing
+                   where attack' = (attack - 1) / 4
+--e.g. ritmo 1 [0.125, 0.25] cumbia cuerda, deberia ser ritmo 1 [1 1.25 1.5 1.75], ritmo 2 [1 2]
 parseCambiarRitmos :: H Layer
 parseCambiarRitmos =  parseCambiarRitmos' <*> parseLayer
 
@@ -855,7 +921,7 @@ cambiarRitmos metre attacks c = c {style = nuevoE}
                             }
 
 cambiarRitmo'' :: Rational -> [Rational] -> [(Rational, Rational)]
-cambiarRitmo'' metre attacks = fmap (cambiarRitmo' metre) attacks
+cambiarRitmo'' metre attacks = catMaybes $ fmap (cambiarRitmo' metre) attacks
 
 -- cambia el gain
 parseCambiarGain :: H Layer
@@ -982,8 +1048,255 @@ preset 2 c = c {style = nuevoE}
                             bassSampleNPattern0 = pianoSampleNPattern0 (style c),
                             bassPitchPattern0 = bassPitchPattern2 (style c)
                             }
-
 preset _ c = preset 0 c
+
+-- funcion que modifica los acordes del piano -- acompanamiento 2 =>  acompanamiento [0, 0.25, 0.5, 0.75]
+parseacompanamiento :: H Layer
+parseacompanamiento = parseacompanamiento' <*> parseLayer
+
+parseacompanamiento' :: H (Layer -> Layer)
+parseacompanamiento' = parseacompanamiento'' <*> double
+
+parseacompanamiento'' :: H (Double -> Layer -> Layer)
+parseacompanamiento'' = acompanamiento <$ (reserved "acompañamiento" <|> reserved "acompanamiento")
+
+acompanamiento :: Double -> Layer -> Layer
+acompanamiento n c = c {style = nuevoE}
+  where
+    n' | n == 0 = 0
+       |otherwise = abs $ n - 1
+    nuevoE = (style c) {
+                            pianoRhythmPattern0 = [(1, (realToFrac n') / 4)],
+                            pianoSampleNPattern0 = pianoSampleNPattern0 (style c),
+                            pianoPitchPattern0 = pianoPitchPattern0 (style c)
+                          }
+
+-- funcion que modifica los acordes del piano -- acompanamiento [2, 4] =>  acompanamiento [0, 0.25, 0.5, 0.75]
+
+parseacompanamientos :: H Layer
+parseacompanamientos = parseacompanamientos' <*> parseLayer
+
+parseacompanamientos' :: H (Layer -> Layer)
+parseacompanamientos' = parseacompanamientos'' <*> doubleList
+
+parseacompanamientos'' :: H ([Double] -> Layer -> Layer)
+parseacompanamientos'' = acompanamientos <$ (reserved "acompañamiento" <|> reserved "acompanamiento")
+
+acompanamientos :: [Double] -> Layer -> Layer
+acompanamientos ns c = c {style = nuevoE}
+  where
+    ns' = fmap (\n -> if (n == 0) then 0 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
+    metre = 1
+    nuevoE = (style c) {
+                            pianoRhythmPattern0 = fmap (\n -> (metre, (realToFrac n) /4)) ns',
+                            pianoSampleNPattern0 = pianoSampleNPattern0 (style c),
+                            pianoPitchPattern0 = pianoPitchPattern0 (style c)
+                          }
+
+-- funcion que modifica los acordes del piano -- acompanamiento 2 ["f" "3a" "5a"] =>  acompanamiento [0, 0.25, 0.5, 0.75]
+-- si ["f" "3a" "5a", ...] => [["f", "3a", "5a"], ...]
+
+parseAcompanamientoConVoicingSel :: H Layer
+parseAcompanamientoConVoicingSel = parseAcompanamientoConVoicingSel' <*> parseLayer
+
+parseAcompanamientoConVoicingSel' :: H (Layer -> Layer)
+-- parseAcompanamientoConVoicingSel' = parseAcompanamientoConVoicingSel'' <*> parseNote
+parseAcompanamientoConVoicingSel' = parseAcompanamientoConVoicingSel'' <*> praseListaDeListaStringAListaDeAcordes
+
+-- parseAcompanamientoConVoicingSel'' :: H ([[String]] -> Layer -> Layer)
+parseAcompanamientoConVoicingSel'' :: H ([[Note]] -> Layer -> Layer)
+parseAcompanamientoConVoicingSel'' = parseAcompanamientoConVoicingSel''' <*> double
+
+-- parseAcompanamientoConVoicingSel''' :: H (Double -> [[String]] -> Layer -> Layer)
+parseAcompanamientoConVoicingSel''' :: H (Double -> [[Note]] -> Layer -> Layer)
+parseAcompanamientoConVoicingSel''' = acompanamientoConVoicingSel <$ (reserved "acompañamiento" <|> reserved "acompanamiento")
+
+-- acompanamientoConVoicingSel :: Double -> [[String]] -> Layer -> Layer
+acompanamientoConVoicingSel :: Double -> [[Note]] -> Layer -> Layer
+acompanamientoConVoicingSel n notes c = c {style = nuevoE}
+  where
+    n' | n == 0 = 1
+       |otherwise = abs $ n - 1
+    rPat = [(1, (realToFrac n') / 4)]
+    nPat = pianoSampleNPattern0 (style c)
+    nuevoE = (style c) {
+                            pianoRhythmPattern0 = listaDeStringsARhythmicPattern rPat notes,
+                            pianoSampleNPattern0 = listaDeStringsANPattern nPat notes,
+                            pianoPitchPattern0 = ("intervalo", listaDeStringsANote notes)
+                          }
+
+-- acompanamiento [2, 4] ["f" "3a" "5a", "3a" "5a"]
+parseAcompanamientosConVoicingSel :: H Layer
+parseAcompanamientosConVoicingSel = parseAcompanamientosConVoicingSel' <*> parseLayer
+
+parseAcompanamientosConVoicingSel' :: H (Layer -> Layer)
+parseAcompanamientosConVoicingSel' = parseAcompanamientosConVoicingSel'' <*> praseListaDeListaStringAListaDeAcordes
+
+parseAcompanamientosConVoicingSel'' :: H ([[Note]] -> Layer -> Layer)
+parseAcompanamientosConVoicingSel'' = parseAcompanamientosConVoicingSel''' <*> doubleList
+
+parseAcompanamientosConVoicingSel''' :: H ([Double] -> [[Note]] -> Layer -> Layer)
+parseAcompanamientosConVoicingSel''' = acompanamientosConVoicingSel <$ (reserved "acompañamiento" <|> reserved "acompanamiento")
+
+acompanamientosConVoicingSel :: [Double] -> [[Note]] -> Layer -> Layer
+acompanamientosConVoicingSel ns notes c = c {style = nuevoE}
+  where
+    metre = 1
+    ns' = fmap (\n -> if (n == 0) then 1 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
+    rPat = fmap (\n -> (metre, (realToFrac n) /4)) ns'-- [(1, (realToFrac n') / 4)]
+    nPat = pianoSampleNPattern0 (style c)
+    nuevoE = (style c) {
+                            pianoRhythmPattern0 = listaDeStringsARhythmicPattern rPat notes,
+                            pianoSampleNPattern0 = listaDeStringsANPattern nPat notes,
+                            pianoPitchPattern0 = ("intervalo", listaDeStringsANote notes)
+                          }
+-- e.g. [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]
+-- type Note = (Relacion, Double, Octava)
+-- type PitchPattern = (PitchType, [Note])
+-- ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0])
+-- type RhythmicPattern = [(Metre, Attack)]
+-- type NPattern = [Int]
+-- para [["f", "3a", "5a"], ...] => [[((m, a), "f"), ...]]
+
+
+parseNote :: H Note --(Relacion, Double, Octava)
+parseNote = parseNoteConOctava
+         <|> parseNoteConOctavaAuto
+
+
+parseNoteConOctava :: H Note
+parseNoteConOctava = parseNoteConOctava' <*> double
+
+parseNoteConOctava' :: H (Octava -> Note)
+parseNoteConOctava' = do
+  i <- string
+  return $ \o -> intervalo i o
+
+
+parseNoteConOctavaAuto :: H Note
+parseNoteConOctavaAuto = do
+  i <- string
+  return $ intervalo i 0
+
+-- listaDeStringsANote ::  [[String]] -> [Note]
+-- listaDeStringsANote xs = listaDeListaStringAListaDeNota xs -- [Note]
+listaDeStringsANote ::  [[Note]] -> [Note]
+listaDeStringsANote xs = concat xs -- [Note]
+
+-- listaDeStringsARhythmicPattern :: RhythmicPattern -> [[String]] -> RhythmicPattern
+listaDeStringsARhythmicPattern :: RhythmicPattern -> [[Note]] -> RhythmicPattern
+listaDeStringsARhythmicPattern rs xs = do
+  let z = zip xs rs -- [([String], INt)]
+  listaDeListaDeStringARhythmicP z --
+-- let rPat' = listaDeListaDeStringARhythmicP xs [(1, (realToFrac n) / 4)]  -- [(String, RhythmicPosition)]
+
+-- listaDeStringsANPattern :: NPattern -> [[String]] -> NPattern
+listaDeStringsANPattern :: NPattern -> [[Note]] -> NPattern
+listaDeStringsANPattern ns xs = do
+  let z = zip xs ns -- [([String], Int)]
+  listaDeListaDeStringAN z --[Int]
+
+-- listaDeListaDeStringARhythmicP :: [([String], RhythmicPosition)] -> RhythmicPattern
+listaDeListaDeStringARhythmicP :: [([Note], RhythmicPosition)] -> RhythmicPattern
+listaDeListaDeStringARhythmicP xs = do
+  let a = concat $ fmap (\x -> listaDeStringARhythmicP x) xs
+  fmap snd a
+
+-- listaDeStringARhythmicP :: ([String], RhythmicPosition) -> [(String, RhythmicPosition)] -- e.g. [((0,1),"f")]
+listaDeStringARhythmicP :: ([Note], RhythmicPosition) -> [(Note, RhythmicPosition)] -- e.g. [((0,1),"f")]
+listaDeStringARhythmicP (xs, rs) = fmap (\x -> (x, rs)) xs
+
+listaDeListaStringAListaDeNota :: [[String]] -> [Note]
+listaDeListaStringAListaDeNota xs = concat $ fmap listaDeStringAListaDeNota xs
+
+listaDeStringAListaDeNota :: [String] -> [Note] -- [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]
+listaDeStringAListaDeNota xs = fmap stringANote xs
+
+-- listaDeListaDeStringAN :: [([String], Int)] -> [Int]
+listaDeListaDeStringAN :: [([Note], Int)] -> [Int]
+listaDeListaDeStringAN xs = do
+  let a = concat $ fmap (\x -> listaDeStringAN x) xs
+  fmap snd a
+
+listaDeStringAN :: ([Note], Int) -> [(Note, Int)]-- e.g. [("f", 0)]
+listaDeStringAN (xs, n) = fmap (\x -> (x, n)) xs
+
+stringANote :: String -> Note
+stringANote s = intervalo s 0
+
+--
+praseListaDeListaStringAListaDeAcordes :: H [[Note]]
+praseListaDeListaStringAListaDeAcordes = list parseStringsAListaDeAcordes
+
+-- acompanamiento 2 ["f" "3a" "5a", ]
+-- parseStringsAListaDeAcordes :: H [String]
+parseStringsAListaDeAcordes :: H [Note]
+parseStringsAListaDeAcordes = parseUnStringAListadeNotas
+                          <|> parseDosStringsAListadeNotas
+                          <|> parseTresStringsAListadeNotas
+                          <|> parseCuatroStringsAListadeNotas
+
+parseCuatroStringsAListadeNotas :: H [Note]
+parseCuatroStringsAListadeNotas = parseCuatroStringsAListadeNotas' <*> parseNote
+
+parseCuatroStringsAListadeNotas' :: H (Note -> [Note])
+parseCuatroStringsAListadeNotas' = parseCuatroStringsAListadeNotas'' <*> parseNote
+
+parseCuatroStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseCuatroStringsAListadeNotas'' = parseCuatroStringsAListadeNotas''' <*> parseNote
+
+parseCuatroStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseCuatroStringsAListadeNotas''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 -> stringsAListadeCuatroNotas s1 s2 s3 s4
+
+--
+parseTresStringsAListadeNotas :: H [Note]
+parseTresStringsAListadeNotas = parseTresStringsAListadeNotas' <*> parseNote
+
+parseTresStringsAListadeNotas' :: H (Note -> [Note])
+parseTresStringsAListadeNotas' = parseTresStringsAListadeNotas'' <*> parseNote
+
+parseTresStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseTresStringsAListadeNotas'' = do
+  s1 <- parseNote
+  return $ \s2 s3 -> stringsAListadeTresNotas s1 s2 s3
+
+--
+parseDosStringsAListadeNotas :: H  [Note]
+parseDosStringsAListadeNotas = parseDosStringsAListadeNotas' <*> parseNote
+
+parseDosStringsAListadeNotas' :: H (Note -> [Note])
+parseDosStringsAListadeNotas' = do
+  s1 <- parseNote
+  return $ \s2 -> stringsAListadeDosNotas s1 s2
+
+--
+parseUnStringAListadeNotas :: H [Note]
+parseUnStringAListadeNotas = do
+  -- s1 <- string
+  s1 <- parseNote -- Note
+  return $ stringAListadeUnaNota s1
+
+-- helper funcs para acompanamiento
+-- stringAListadeUnaNota :: String -> [String]
+stringAListadeUnaNota :: Note -> [Note]
+stringAListadeUnaNota s1 = [s1]
+
+stringsAListadeDosNotas :: Note -> Note -> [Note]
+stringsAListadeDosNotas s1 s2 = [s1, s2]
+
+stringsAListadeTresNotas :: Note -> Note -> Note -> [Note]
+stringsAListadeTresNotas s1 s2 s3 = [s1, s2, s3]
+
+stringsAListadeCuatroNotas :: Note -> Note -> Note -> Note -> [Note]
+stringsAListadeCuatroNotas s1 s2 s3 s4 = [s1, s2, s3, s4]
+
+-- [60 64 67] [59 62 67]
+-- ["f" "3a" "5a", "3a" (-1) "5a" (-1) "f" (-1)]
+--
+-- helper funcs para acompanamiento con octava. e.g. acompanamiento 2 ["3a" "5a" ]
+-- ?
 
 parseAlternar :: H Layer
 parseAlternar = parseAlternar' <*> parseLayer
@@ -1009,6 +1322,8 @@ parseLayerToLayerFunc = parseSeleccionarEstilo'
                       <|> parseCambiarNotas'
                       <|> parseCambiarRitmo'
                       <|> parseCambiarRitmos'
+                      <|> parseCambiarRitmoAuto'
+                      <|> parseCambiarRitmosAuto'
                       <|> parseCambiarIntervalo'
                       <|> parseCambiarIntervalos'
                       <|> parseCambiarIntervaloConOctava'
@@ -1023,6 +1338,10 @@ parseLayerToLayerFunc = parseSeleccionarEstilo'
                       <|> parseCambiarPaneo'
                       <|> parseTumbao'
                       <|> parseTumbaoCongas'
+                      <|> parseacompanamiento'
+                      <|> parseacompanamientos'
+                      <|> parseAcompanamientoConVoicingSel'
+                      <|> parseAcompanamientosConVoicingSel'
 
 
 alternar :: Int -> (Layer -> Layer) -> Layer -> Layer

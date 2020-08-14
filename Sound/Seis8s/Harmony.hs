@@ -49,7 +49,7 @@ attackAndNote _ Nothing = []
 -- functions to pick a chord that has a voicing
 
 pickChords' :: [Rational] -> Progression -> [(String, Double, Octava)] -> [(Rational, [Pitch])]
-pickChords' attacks (Progression metre chords) pitchPattern = concat $ fmap (\a -> pickChordsWithVoicingFromRational' (Progression metre chords) a pitchPattern) attacks 
+pickChords' attacks (Progression metre chords) pitchPattern = concat $ fmap (\a -> pickChordsWithVoicingFromRational' (Progression metre chords) a pitchPattern) attacks
 
 pickChordsWithVoicingFromRational' :: Progression -> Rational -> [(String, Double, Octava)] -> [(Rational, [Pitch])]
 pickChordsWithVoicingFromRational' (Progression metre chords) attack pitchPattern = do
@@ -537,6 +537,10 @@ intervaloDouble intervalo octava = ("libre", intervalo, octava)
 
 intervalo :: String -> Double -> (String, Double, Octava)
 intervalo "unisono" octava = ("unisono", 0, octava)
+
+intervalo "f" octava = ("unisono", 0, octava)
+
+intervalo "1a" octava = ("unisono", 0, octava)
 
 intervalo "2a" octava = ("segunda", 0, octava)
 

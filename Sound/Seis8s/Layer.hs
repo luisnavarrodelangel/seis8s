@@ -144,7 +144,7 @@ pianoEvents gmm style tempo iw ew = do
   let gain = pianoGainPattern0 style
 
   let pitchType = fst $ pianoPitchPattern2 style
-  let equateLists' = equateLists (pianoRhythmPattern3 style) (pianoSampleNPattern0 style) (snd $ pianoPitchPattern3 style)
+  let equateLists' = equateLists (pianoRhythmPattern0 style) (pianoSampleNPattern0 style) (snd $ pianoPitchPattern0 style)
   let pianoRhythmPattern = sel1 equateLists'
   let pianoRhythmPattern' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm))) pianoRhythmPattern
 
@@ -156,8 +156,8 @@ pianoEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew
   let pianoline | pitchType == "intervalo" = (generateLine pitchPat (harmony gmm)) -- [(Rational, Pitch )]
                 | pitchType == "midinote" = (generateLineFromMidi pitchPat) -- [(Rational, Pitch)]
-                | pitchType == "acorde" = concatChords $ pickChords (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) --[(Rational, Pitch )]
-                -- | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) pianoPitchPattern
+                -- | pitchType == "acorde" = concatChords $ pickChords (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) --[(Rational, Pitch )]
+                | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) pianoPitchPattern
   let time = fmap (\c -> countToTime tempo (fst c)) pianoline  -- [UTCTime]
   let instCmap = cmap'' "piano" samplePat pianoline paneo gain--Map Text Datum
   let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
@@ -370,7 +370,7 @@ equateLists :: [(Rational, Rational)] -> [Int] -> [(String, Double, Double)] -> 
 equateLists attacks ns chi
   | (length attacks == length ns) && (length ns == length chi) = (attacks, ns, chi)
   | (length attacks > length ns) && (length attacks == length chi) = (attacks, take (length attacks) $ cycle ns, chi)
-  -- | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, take (length attacks) $ cycle chi)
+  | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, take (length attacks) $ cycle chi)
   | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, chi)
   | (length attacks > length ns) && (length attacks < length chi) = (attacks, take (length attacks) $ cycle ns, chi)
   | (length attacks == length ns) && (length ns > length chi)  = (attacks, ns, take (length ns) $ cycle chi)
