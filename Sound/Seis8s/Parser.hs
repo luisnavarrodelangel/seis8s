@@ -1071,6 +1071,18 @@ acompanamiento n c = c {style = nuevoE}
                             pianoPitchPattern0 = pianoPitchPattern0 (style c)
                           }
 
+
+-- acompanamientoTest :: Double -> Layer -> Layer
+acompanamientoTest n notes = do
+
+  let  n' | n == 0 = 0
+          |otherwise = abs $ n - 1
+  let pianoRhythmPattern = [(1, (realToFrac n') / 4)]
+  let pianoSampleNPattern = [0]
+  let pianoPitchPattern = notes
+  (show pianoRhythmPattern, show pianoSampleNPattern, show pianoPitchPattern)
+
+
 -- funcion que modifica los acordes del piano -- acompanamiento [2, 4] =>  acompanamiento [0, 0.25, 0.5, 0.75]
 
 parseacompanamientos :: H Layer
@@ -1092,6 +1104,16 @@ acompanamientos ns c = c {style = nuevoE}
                             pianoSampleNPattern0 = pianoSampleNPattern0 (style c),
                             pianoPitchPattern0 = pianoPitchPattern0 (style c)
                           }
+acompanamientosTest :: [Double] -> [[Note]] -> (String, String, String)
+acompanamientosTest ns notes = do
+  let ns' = fmap (\n -> if (n == 0) then 0 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
+  let metre = 1
+  let rPat = fmap (\n -> (metre, (realToFrac n) /4)) ns'
+  let nPat = [0]
+  let pianoRhythmPattern =  listaDeStringsARhythmicPattern rPat notes
+  let pianoSampleNPattern = listaDeStringsANPattern nPat notes
+  let pianoPitchPattern = listaDeStringsANote notes
+  (show pianoRhythmPattern, show pianoSampleNPattern, show pianoPitchPattern)
 
 -- funcion que modifica los acordes del piano -- acompanamiento 2 ["f" "3a" "5a"] =>  acompanamiento [0, 0.25, 0.5, 0.75]
 -- si ["f" "3a" "5a", ...] => [["f", "3a", "5a"], ...]
@@ -1124,6 +1146,18 @@ acompanamientoConVoicingSel n notes c = c {style = nuevoE}
                             pianoSampleNPattern0 = listaDeStringsANPattern nPat notes,
                             pianoPitchPattern0 = ("intervalo", listaDeStringsANote notes)
                           }
+---- test
+-- p test this by taking the layer out
+-- acompanamientoConVoicingSel :: Double -> [[Note]] -> Layer -> Layer
+acompanamientoConVoicingSelTest n notes = do
+    let  n' | n == 0 = 1
+            |otherwise = abs $ n - 1
+    let rPat = [(1, (realToFrac n') / 4)]
+    let nPat = [0]
+    let pianoRhythmPattern = listaDeStringsARhythmicPattern rPat notes
+    let pianoSampleNPattern = listaDeStringsANPattern nPat notes
+    let pianoPitchPattern = ("intervalo", listaDeStringsANote notes)
+    (show pianoRhythmPattern, show pianoSampleNPattern, show pianoPitchPattern)
 
 -- acompanamiento [2, 4] ["f" "3a" "5a", "3a" "5a"]
 parseAcompanamientosConVoicingSel :: H Layer

@@ -370,7 +370,7 @@ equateLists :: [(Rational, Rational)] -> [Int] -> [(String, Double, Double)] -> 
 equateLists attacks ns chi
   | (length attacks == length ns) && (length ns == length chi) = (attacks, ns, chi)
   | (length attacks > length ns) && (length attacks == length chi) = (attacks, take (length attacks) $ cycle ns, chi)
-  | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, take (length attacks) $ cycle chi)
+  -- | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, take (length attacks) $ cycle chi)
   | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, chi)
   | (length attacks > length ns) && (length attacks < length chi) = (attacks, take (length attacks) $ cycle ns, chi)
   | (length attacks == length ns) && (length ns > length chi)  = (attacks, ns, take (length ns) $ cycle chi)
