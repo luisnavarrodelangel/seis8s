@@ -139,29 +139,92 @@ cuerdaEvents gmm style tempo iw ew = do
 
   return events
 
-pianoEvents gmm style tempo iw ew = do
+pianoEvents' gmm style tempo iw ew = do
   let paneo = pianoPanPattern0 style
   let gain = pianoGainPattern0 style
 
-  let pitchType = fst $ pianoPitchPattern2 style
+  let pitchType = fst $ pianoPitchPattern0 style
   let equateLists' = equateLists (pianoRhythmPattern0 style) (pianoSampleNPattern0 style) (snd $ pianoPitchPattern0 style)
   let pianoRhythmPattern = sel1 equateLists'
   let pianoRhythmPattern' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm))) pianoRhythmPattern
+
+  let pianoRhythmPattern'' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm)))  (pianoRhythmPattern0 style)
 
   let pianoSampleNPattern = sel2 equateLists'
   let pianoPitchPattern = sel3 equateLists'
   let nPat = List.zip pianoRhythmPattern' pianoSampleNPattern --[(RhythmicPattern, Int)]
   let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
+
+  let nPat' = List.zip (rhythmicPattern pianoRhythmPattern'' tempo iw ew) pianoSampleNPattern --[(RhythmicPattern, Int)]
+
+  let samplePat' =  concat $ replicate (length pianoRhythmPattern'') nPat'--[(Rational, Int)]
+
   let pat = List.zip pianoRhythmPattern' pianoPitchPattern -- [(RhythmicPosition, (String, Double))]
   let pitchPat = pitchPattern pat tempo iw ew
   let pianoline | pitchType == "intervalo" = (generateLine pitchPat (harmony gmm)) -- [(Rational, Pitch )]
                 | pitchType == "midinote" = (generateLineFromMidi pitchPat) -- [(Rational, Pitch)]
                 -- | pitchType == "acorde" = concatChords $ pickChords (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) --[(Rational, Pitch )]
-                | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) pianoPitchPattern
+                | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern pianoRhythmPattern'' tempo iw ew) (harmony gmm) (snd $ pianoPitchPattern0 style) -- pianoPitchPattern
   let time = fmap (\c -> countToTime tempo (fst c)) pianoline  -- [UTCTime]
-  let instCmap = cmap'' "piano" samplePat pianoline paneo gain--Map Text Datum
+  -- let instCmap = cmap'' "piano" samplePat pianoline paneo gain--Map Text Datum
+  let instCmap = cmap'' "piano" samplePat' pianoline paneo gain--Map Text Datum
   let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
+
+pianoEvents gmm style tempo iw ew = do
+  let paneo = pianoPanPattern0 style
+  let gain = pianoGainPattern0 style
+
+  let pitchType = fst $ pianoPitchPattern0 style
+  let equateLists' = equateLists (pianoRhythmPattern0 style) (pianoSampleNPattern0 style) (snd $ pianoPitchPattern0 style)
+  let pianoRhythmPattern = sel1 equateLists'
+  let pianoRhythmPattern' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm))) pianoRhythmPattern
+
+  let pianoRhythmPattern'' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm)))  (pianoRhythmPattern0 style)
+
+  let pianoSampleNPattern = sel2 equateLists'
+  let pianoPitchPattern = sel3 equateLists'
+  let nPat = List.zip pianoRhythmPattern' pianoSampleNPattern --[(RhythmicPattern, Int)]
+  let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
+
+  let pat = List.zip pianoRhythmPattern' pianoPitchPattern -- [(RhythmicPosition, (String, Double))]
+  let pitchPat = pitchPattern pat tempo iw ew
+  let pianoline | pitchType == "intervalo" = (generateLine pitchPat (harmony gmm)) -- [(Rational, Pitch )]
+                | pitchType == "midinote" = (generateLineFromMidi pitchPat) -- [(Rational, Pitch)]
+                -- | pitchType == "acorde" = concatChords $ pickChords (rhythmicPattern pianoRhythmPattern' tempo iw ew) (harmony gmm) --[(Rational, Pitch )]
+                | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern pianoRhythmPattern'' tempo iw ew) (harmony gmm) (snd $ pianoPitchPattern0 style) -- pianoPitchPattern
+  let time = fmap (\c -> countToTime tempo (fst c)) pianoline  -- [UTCTime]
+  -- let instCmap = cmap'' "piano" samplePat pianoline paneo gain--Map Text Datum
+
+  -- let nPat' = concat $ replicate (length (rhythmicPattern pianoRhythmPattern'' tempo iw ew)) (pianoSampleNPattern0 style)--[(Rational, Int)]
+  let samplePat' = zip (fmap (\t -> timeToCount tempo t) time) (concat $ replicate (length time) (pianoSampleNPattern0 style))
+
+  let instCmap = cmap'' "piano" samplePat' pianoline paneo gain--Map Text Datum
+  let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
+  return events
+
+nTest = [0,0,0,0,0,0]
+nTest2 = [0,0,0]
+
+rTest :: [(Rational, Rational)]
+rTest = [(0.5,0.125), (0.5,0.125), (0.5,0.125), (0.5, 0.375), (0.5, 0.375), (0.5, 0.375)]
+
+rTest2 :: [(Rational, Rational)]
+rTest2 = [(0.5,0.125), (0.5, 0.375)]
+
+rTest3 :: [(Rational, Rational)]
+rTest3 = [(0.5,0.125), (0.5, 0.375), (0.5,0.125), (0.5, 0.375)]
+
+-- p
+-- pianoSampleNPattern1 = take 6 $ cycle [0],
+-- pianoRhythmPattern1 = [(1,0.25), (1,0.25), (1,0.25), (1, 0.75), (1, 0.75), (1, 0.75)], -- ie. [𝄽 ♩ 𝄽 ♩],
+-- pianoPitchPattern1 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+
+noteTest = [("unisono",0.0,0.0),("tercera",0.0,0.0),("quinta",0.0,0.0),("unisono",0.0,0.0),("tercera",0.0,0.0),("quinta",0.0,0.0)]
+
+noteTest2 = [("unisono",0.0,0.0),("tercera",0.0,0.0),("quinta",0.0,0.0)]
+
+noteTest3 = [("unisono",0.0,0.0),("tercera",0.0,0.0),("quinta",0.0,0.0)]
 
 bajoEvents gmm style tempo iw ew = do
   let paneo = bassPanPattern0 style
@@ -369,15 +432,15 @@ cmap sampleName pitch = M.fromList [("s", string sampleName), ("note", double pi
 equateLists :: [(Rational, Rational)] -> [Int] -> [(String, Double, Double)] -> ([(Rational, Rational)], [Int], [(String, Double, Double)])
 equateLists attacks ns chi
   | (length attacks == length ns) && (length ns == length chi) = (attacks, ns, chi)
-  | (length attacks > length ns) && (length attacks == length chi) = (attacks, take (length attacks) $ cycle ns, chi)
-  -- | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, take (length attacks) $ cycle chi)
-  | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle ns, chi)
-  | (length attacks > length ns) && (length attacks < length chi) = (attacks, take (length attacks) $ cycle ns, chi)
-  | (length attacks == length ns) && (length ns > length chi)  = (attacks, ns, take (length ns) $ cycle chi)
-  | (length attacks < length ns) && (length ns == length chi)  = (take (length ns) $ cycle attacks, ns, chi)
-  -- | (length attacks < length ns) && (length ns > length chi) = (take (length ns) $ cycle attacks, ns, take
+  | (length attacks > length ns) && (length attacks == length chi) = (attacks, take (length attacks) $ cycle' ns, chi)
+  | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle' ns, take (length attacks) $ cycle' chi)
+  | (length attacks > length ns) && (length attacks > length chi) = (attacks, take (length attacks) $ cycle' ns, chi)
+  | (length attacks > length ns) && (length attacks < length chi) = (attacks, take (length attacks) $ cycle' ns, chi)
+  | (length attacks == length ns) && (length ns > length chi)  = (attacks, ns, take (length ns) $ cycle' chi)
+  | (length attacks < length ns) && (length ns == length chi)  = (take (length ns) $ cycle' attacks, ns, chi)
+  -- | (length attacks < length ns) && (length ns > length chi) = (take (length ns) $ cycle' attacks, ns, take --??
   | (length attacks < length ns) && (length ns > length chi) =  (attacks, ns, chi)
-  | (length attacks == length ns) && (length ns < length chi) = (take (length chi) $ cycle attacks, take (length chi) $ cycle ns, chi) -- genera acordes
+  | (length attacks == length ns) && (length ns < length chi) = (take (length chi) $ cycle' attacks, take (length chi) $ cycle' ns, chi) -- genera acordes
   | otherwise = error "case not expected"
 -- [0.5, 0.25] [1, 1] [0,1]
 -- [0.5, 0.25] [1] [0,1]

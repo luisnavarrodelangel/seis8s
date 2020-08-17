@@ -16,6 +16,9 @@ myDay = fromGregorian 2020 4 4
 mytime :: Rational -> UTCTime
 mytime s = UTCTime myDay (realToFrac s)
 
+cycle' :: [a] -> [a]
+cycle' [] = []
+cycle' xs = cycle xs
 --
 -- testgmm = GlobalMaterial {harmony = myharmony }
 --

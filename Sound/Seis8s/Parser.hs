@@ -56,6 +56,7 @@ statement =  parseLayer <|> globalStatement <|> silencio -- programaLiteral <|> 
 -- then harmony Cmaj Emin -- 2nd, and changes the state
 -- then clave tresDos -- 3rd -- and changes the state
 
+
 globalStatement :: H Layer
 globalStatement = do
   f <- globalMaterialFunctions -- progressionToGm
@@ -65,7 +66,8 @@ globalStatement = do
   return emptyLayer
 
 silencio :: H Layer
-silencio = emptyLayer <$ reserved "silencio"
+silencio = (reserved "" >> return emptyLayer)
+        <|> emptyLayer <$ reserved "silencio"
 
 globalMaterialFunctions :: H (GlobalMaterial -> GlobalMaterial)
 globalMaterialFunctions = parseSetChordProg
@@ -357,36 +359,42 @@ parseTumbao :: H Layer
 parseTumbao = parseTumbao' <*> parseLayer
 
 parseTumbao' :: H (Layer -> Layer) -- (tonicaYquinta cumbia) bajo
-parseTumbao' = parseTumbao'' <*> string
+parseTumbao' = parseTumbao'' <*> int
 
-parseTumbao'' :: H (String -> Layer -> Layer) -- (tonicaYquinta cumbia) bajo
+parseTumbao'' :: H (Int -> Layer -> Layer) -- (tonicaYquinta cumbia) bajo
 parseTumbao'' = tumbao <$ reserved "tumbao"
 
-tumbao :: String -> Layer -> Layer -- ?
+tumbao :: Int -> Layer -> Layer -- ?
 
-tumbao "tonicaQuinta" c = c {style = nuevoE}
+tumbao 0 c = c {style = nuevoE}
+  where nuevoE = (style c) {bassPitchPattern0 = bassPitchPattern0 (style c), bassRhythmPattern0 = bassRhythmPattern0 (style c)}
+
+-- tonicaQuinta
+tumbao 1 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassPitchPattern0 =  ("intervalo", [(intervalo "unisono" 0), (intervalo "5a" 0)]), -- index from list of pitches i.e. [60, 67]
                             bassRhythmPattern0 = [(1, 0), (1, 0.5)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
                             }
-
-tumbao "tonicaQuinta2" c = c {style = nuevoE}
+-- tonicaQuinta2
+tumbao 2 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
                             bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "5a" (-1)]) -- index from list of pitches i.e. [60, 64, 67]
                           }
-
-tumbao "tonicaAuintaOctava" c = c {style = nuevoE}
+-- tonicaAuintaOctava
+tumbao 3 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
                             bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "8a" 0]) -- index from list of pitches i.e. [60, 64, 67]
                           }
-
-tumbao "tonicaQuintaTercera" c = c {style = nuevoE}
+-- tonicaQuintaTercera
+tumbao 4 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
                             bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "3a" 0]) -- index from list of pitches i.e. [60, 64, 67]
                           }
+
+tumbao _ c = c
 -- transforms the preset bass to just fundamental and fifth of the chord
 -- e.g  (tonicaYquinta cumbia) bajo
 
@@ -1068,7 +1076,7 @@ acompanamiento n c = c {style = nuevoE}
     nuevoE = (style c) {
                             pianoRhythmPattern0 = [(1, (realToFrac n') / 4)],
                             pianoSampleNPattern0 = pianoSampleNPattern0 (style c),
-                            pianoPitchPattern0 = pianoPitchPattern0 (style c)
+                            pianoPitchPattern0 = pianoPitchPattern0 (style c) -- ("acorde", [note])
                           }
 
 
@@ -1099,20 +1107,25 @@ acompanamientos ns c = c {style = nuevoE}
   where
     ns' = fmap (\n -> if (n == 0) then 0 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
     metre = 1
+    notes = replicate (length ns) (snd $ pianoPitchPattern0 (style c)) -- [[Note]]
+    rPat = fmap (\n -> (metre, (realToFrac n) /4)) ns'
+    nPat = concat $ fmap (\x -> replicate (length ns) x) (pianoSampleNPattern0 (style c))
     nuevoE = (style c) {
-                            pianoRhythmPattern0 = fmap (\n -> (metre, (realToFrac n) /4)) ns',
-                            pianoSampleNPattern0 = pianoSampleNPattern0 (style c),
-                            pianoPitchPattern0 = pianoPitchPattern0 (style c)
+                            pianoRhythmPattern0 = rPat, -- listaDeStringsARhythmicPattern rPat notes,
+                            pianoSampleNPattern0 = concat $ replicate (length ns) $ pianoSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
+                            pianoPitchPattern0 = pianoPitchPattern0 (style c) -- ("acorde", concat $ notes) -- (PitchType, [Note])
                           }
-acompanamientosTest :: [Double] -> [[Note]] -> (String, String, String)
+
+acompanamientosTest :: [Double] -> [Note] -> (String, String, String)
 acompanamientosTest ns notes = do
   let ns' = fmap (\n -> if (n == 0) then 0 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
   let metre = 1
+  let notes' = replicate (length ns)  [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0] -- [[Note]]
   let rPat = fmap (\n -> (metre, (realToFrac n) /4)) ns'
-  let nPat = [0]
-  let pianoRhythmPattern =  listaDeStringsARhythmicPattern rPat notes
-  let pianoSampleNPattern = listaDeStringsANPattern nPat notes
-  let pianoPitchPattern = listaDeStringsANote notes
+  let nPat = concat $ fmap (\x -> replicate (length ns) x) [0]
+  let pianoRhythmPattern =  listaDeStringsARhythmicPattern rPat notes'
+  let pianoSampleNPattern = listaDeStringsANPattern nPat notes'
+  let pianoPitchPattern = ("acorde", concat $ notes')
   (show pianoRhythmPattern, show pianoSampleNPattern, show pianoPitchPattern)
 
 -- funcion que modifica los acordes del piano -- acompanamiento 2 ["f" "3a" "5a"] =>  acompanamiento [0, 0.25, 0.5, 0.75]
@@ -1212,9 +1225,10 @@ parseNoteConOctavaAuto = do
   i <- string
   return $ intervalo i 0
 
+
 -- listaDeStringsANote ::  [[String]] -> [Note]
 -- listaDeStringsANote xs = listaDeListaStringAListaDeNota xs -- [Note]
-listaDeStringsANote ::  [[Note]] -> [Note]
+listaDeStringsANote ::   [[Note]] -> [Note]
 listaDeStringsANote xs = concat xs -- [Note]
 
 -- listaDeStringsARhythmicPattern :: RhythmicPattern -> [[String]] -> RhythmicPattern

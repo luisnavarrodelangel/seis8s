@@ -136,7 +136,7 @@ defaultStyle = Style {
    pianoPitchPattern1 = ("intervalo", [("unisono" , 0, 0)]),
    pianoPitchPattern2 = ("intervalo", [("unisono" , 0, 0)]),
    pianoPitchPattern3 = ("intervalo", [("unisono" , 0, 0)]),
-   
+
    pianoPanPattern0 = 0.5,
    pianoGainPattern0 = 1,
 
@@ -229,12 +229,19 @@ cumbia = Style {
     altavozPanPattern0 = 0.5,
     altavozGainPattern0 = 1,
 
-    pianoRhythmPattern0 = [(1, 0.75)], -- ie.  [𝄽  𝄽  𝄽  ♩],
-    pianoSampleNPattern0 = [0],
-    pianoRhythmPattern1 = [(1,0.25), (1, 0.75)], -- ie. [𝄽 ♩ 𝄽 ♩],
-    pianoSampleNPattern1 = [0, 0],
+    -- pianoRhythmPattern0 = [(1, 0.75)], -- ie.  [𝄽  𝄽  𝄽  ♩],
+    -- pianoSampleNPattern0 = [0],
     -- pianoPitchPattern0 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
-    pianoPitchPattern0 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+
+    pianoSampleNPattern0 = [0, 0, 0],--  [0, 0, 0, 1, 1, 1]
+    pianoRhythmPattern0 = [(1,0.25), (1, 0.75)], -- ie. [𝄽 ♩ 𝄽 ♩],
+    pianoPitchPattern0 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]),
+
+
+    pianoSampleNPattern1 = [0, 0, 0],
+    pianoRhythmPattern1 = [(0.5,0.125), (0.5, 0.375)], -- ie. [𝄽 ♩ 𝄽 ♩],
+    pianoPitchPattern1 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+
     pianoSampleNPattern2 = take 10 $ cycle  [0],
     pianoRhythmPattern2 = [(2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.625), (2, 1.625)],
     pianoPitchPattern2 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]),
