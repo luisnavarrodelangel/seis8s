@@ -17,7 +17,7 @@ defaultGlobalMaterial = GlobalMaterial {harmony = myharmony', compas = establece
 -- {harmony = Progression 1 [Chord 60 major (0, 1)], compas = establecerCompas "partido"}
 
 myharmony = Progression 0.5 [Chord 60 major (0, 0.5)]
-myharmony' = Progression 2 [Chord 60 major (0, 0.5), Chord 65 major (0.5, 1), Chord 67 major (1,1.5), Chord 71 dim (1.5, 2)]
+myharmony' = Progression 1 [Chord 62 minor (0, 0.5), Chord 60 major (0.5, 1)]
 testgmm = GlobalMaterial {harmony = myharmony', compas = establecerCompas "partido" }
 
 establecerCompas :: String -> Double

@@ -230,13 +230,13 @@ defaultStyle = Style {
 
   claveRhythmPattern0 = [(1, 0)],
   claveSampleNPattern0 = NPattern1 [0],
-  clavePitchPattern0 = ("midinote", [("mn", 82, 0)]),
+  clavePitchPattern0 = ("midinote", [("mn", 84, 0)]),
   claveRhythmPattern1 = [(1, 0)],
   claveSampleNPattern1 = NPattern1 [0],
-  clavePitchPattern1 = ("midinote", [("mn", 82, 0)]),
+  clavePitchPattern1 = ("midinote", [("mn", 84, 0)]),
   claveRhythmPattern2 = [(1, 0)],
   claveSampleNPattern2 = NPattern1 [0],
-  clavePitchPattern2 = ("midinote", [("mn", 82, 0)]),
+  clavePitchPattern2 = ("midinote", [("mn", 84, 0)]),
   clavePanPattern0 = 0.5,
   claveGainPattern0 = 1
 }
