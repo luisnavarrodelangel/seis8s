@@ -280,7 +280,7 @@ inst :: H Layer
 inst =
         teclado <$ reserved "teclado"
     <|> bajo <$ reserved "bajo"
-    <|> guira <$ reserved "guira"
+    <|> guira <$ (reserved "guira" <|> reserved "guiro")
     <|> contras <$ reserved "contratiempos"
     <|> cuerda <$ reserved "cuerda"
     <|> acordeon <$ reserved "acordeon"
