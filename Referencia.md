@@ -3,16 +3,16 @@
 
 La premisa detrás de seis8s es el poder interactuar con colecciones de conocimiento musical representado a través de bloques interlazados de código. En seis8s una coleccion de conocimiento se representa a través de un estilo musical. E.g. cumbia.
 
-Dicho estilo necesita de un "cuerpo" para volverse tangible/visible (i.e. audible en este caso). Por ejemplo un piano.
+Dicho estilo necesita de un "cuerpo" para volverse tangible/visible (i.e. audible en este caso). Por ejemplo un teclado.
 
 ```
-cumbia piano
+cumbia teclado
 ```
 
 Otra idea fundamental en seis8s es la idea de "capa". En seis8s una capa se refiere a la adición de cuerpos (sonoros) con el fin de enriquecer la textura.
 
 ```
-cumbia piano;
+cumbia teclado;
 cumbia bajo;
 ```
 > Aqui, el conocimiento musical embebido en el estilo de música cumbia es aplicado a cada uno de los instrumentos individualmente, pero con el fin de que tengan un significado audible en lo colectivo.
@@ -20,7 +20,7 @@ cumbia bajo;
 Otras capas que se pueden agregar son capas de instrumentos percusivos.
 
 ```
-cumbia piano;
+cumbia teclado;
 cumbia bajo;
 cumbia guira;
 cumbia contratiempos;
@@ -29,13 +29,13 @@ cumbia contratiempos;
 A grandes rasgos, el estilo proporciona información sobre los tonos y el ritmo que cada instrumento debe tomar, respectivamente. Esto parámetros se pueden reasignar de la siguiente forma.
 
 ```
-nota 60 $ ritmo 0.25 $ cumbia piano
+nota 60 $ ritmo 0.25 $ cumbia teclado
 ```
 
-Sin embargo, el ejemplo de arriba no tiene mucho sentido, ya que nota y ritmo sobreescriben casi completamente la relación original de cumbia con el piano. E incluso el ejemplo de arriba seria equivalente a:
+Sin embargo, el ejemplo de arriba no tiene mucho sentido, ya que nota y ritmo sobreescriben casi completamente la relación original de cumbia con el teclado. E incluso el ejemplo de arriba seria equivalente a:
 
 ```
-nota 60 $ ritmo 0.25 $ piano
+nota 60 $ ritmo 0.25 $ teclado
 
 ```
 

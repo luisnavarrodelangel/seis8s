@@ -10,11 +10,14 @@ import Data.Time
 import qualified Data.List
 
 -- style should be a collection of individual records that might be accessed or not by the context.
--- The style could have many different fields to access at a time. pianoRhythmPattern4 -- they are defined but no universal. The style is the rhythm (and other stuff) of all the instruments
--- 1) A style is a library of musical information, a style has a pianoRhyhtmPattern
+-- The style could have many different fields to access at a time. tecladoRhythmPattern4 -- they are defined but no universal. The style is the rhythm (and other stuff) of all the instruments
+-- 1) A style is a library of musical information, a style has a tecladoRhyhtmPattern
+type N = (String, Int)
+data NPattern = NPattern1 [Int] | NPattern2 [N] -- (FolderDelSample, Int)
 
-type NPattern = [Int]
-
+instance Show NPattern where
+  show (NPattern1 x) = show x
+  show (NPattern2 y) = show y
 
 data Style  = Style  {
  altavozRhythmPattern0 :: RhythmicPattern,
@@ -23,21 +26,28 @@ data Style  = Style  {
  altavozPanPattern0 :: Double,
  altavozGainPattern0 :: Double,
 
- pianoSampleNPattern0 :: NPattern,
- pianoSampleNPattern1 :: NPattern,
- pianoSampleNPattern2 :: NPattern,
- pianoSampleNPattern3 :: NPattern,
- pianoPitchPattern0 :: PitchPattern,
- pianoPitchPattern1 :: PitchPattern,
- pianoPitchPattern2 :: PitchPattern,
- pianoPitchPattern3 :: PitchPattern,
+ tecladoSampleNPattern0 :: NPattern,
+ tecladoSampleNPattern1 :: NPattern,
+ tecladoSampleNPattern2 :: NPattern,
+ tecladoSampleNPattern3 :: NPattern,
+ tecladoPitchPattern0 :: PitchPattern,
+ tecladoPitchPattern1 :: PitchPattern,
+ tecladoPitchPattern2 :: PitchPattern,
+ tecladoPitchPattern3 :: PitchPattern,
 
- pianoRhythmPattern0 :: RhythmicPattern, -- or could this be accompaniment (used for various instruments)?-- [(Rational, Rational)] -- not universal value, but semiuniversal values.
- pianoRhythmPattern1 :: RhythmicPattern,
- pianoRhythmPattern2 :: RhythmicPattern,
- pianoRhythmPattern3 :: RhythmicPattern,
- pianoPanPattern0 :: Double,
- pianoGainPattern0 :: Double,
+ tecladoRhythmPattern0 :: RhythmicPattern, -- or could this be accompaniment (used for various instruments)?-- [(Rational, Rational)] -- not universal value, but semiuniversal values.
+ tecladoRhythmPattern1 :: RhythmicPattern,
+ tecladoRhythmPattern2 :: RhythmicPattern,
+ tecladoRhythmPattern3 :: RhythmicPattern,
+ tecladoPanPattern0 :: Double,
+ tecladoGainPattern0 :: Double,
+
+
+ acordeonRhythmPattern0 :: RhythmicPattern,
+ acordeonSampleNPattern0 :: NPattern,
+ acordeonPitchPattern0 :: PitchPattern,
+ acordeonPanPattern0 :: Double,
+ acordeonGainPattern0 :: Double,
 
  cuerdaRhythmPattern0 :: RhythmicPattern,
  cuerdaSampleNPattern0 :: NPattern,
@@ -70,11 +80,11 @@ data Style  = Style  {
  guiraPanPattern0 :: Double,
  guiraGainPattern0 :: Double,
 
-guiraRhythmPattern1 :: RhythmicPattern,
-guiraSampleNPattern1 ::NPattern,
-guiraPitchPattern1 :: PitchPattern,
-guiraPanPattern1 :: Double,
-guiraGainPattern1 :: Double,
+ guiraRhythmPattern1 :: RhythmicPattern,
+ guiraSampleNPattern1 ::NPattern,
+ guiraPitchPattern1 :: PitchPattern,
+ guiraPanPattern1 :: Double,
+ guiraGainPattern1 :: Double,
 
  contrasRhythmPattern0 :: RhythmicPattern,
  contrasSampleNPattern0 :: NPattern,
@@ -91,8 +101,20 @@ guiraGainPattern1 :: Double,
  claveRhythmPattern0 :: RhythmicPattern,
  claveSampleNPattern0 :: NPattern,
  clavePitchPattern0 :: PitchPattern,
+ claveRhythmPattern1 :: RhythmicPattern,
+ claveSampleNPattern1 :: NPattern,
+ clavePitchPattern1 :: PitchPattern,
+ claveRhythmPattern2 :: RhythmicPattern,
+ claveSampleNPattern2 :: NPattern,
+ clavePitchPattern2 :: PitchPattern,
  clavePanPattern0 :: Double,
  claveGainPattern0 :: Double,
+
+ jamblockRhythmPattern0 :: RhythmicPattern,
+ jamblockSampleNPattern0 :: NPattern,
+ jamblockPitchPattern0 :: PitchPattern,
+ jamblockPanPattern0 :: Double,
+ jamblockGainPattern0 :: Double,
 
  congasRhythmPattern0 :: RhythmicPattern,
  congasSampleNPattern0 :: NPattern,
@@ -118,37 +140,43 @@ defaultStyle :: Style
 defaultStyle = Style {
 
    altavozRhythmPattern0 = [(1, 0)],
-   altavozSampleNPattern0 = [0],
+   altavozSampleNPattern0 = NPattern1 [0],
    altavozPitchPattern0 = ("midinote", [("mn", 60, 0)]),
    altavozPanPattern0 = 0.5,
    altavozGainPattern0 = 1,
 
 
-   pianoSampleNPattern0 = [0],
-   pianoSampleNPattern1 = [0],
-   pianoSampleNPattern2 = [0],
-   pianoSampleNPattern3 = [0],
-   pianoRhythmPattern0 = [(1, 0)], -- ie.  [𝄽  𝄽  𝄽  ♩],
-   pianoRhythmPattern1 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
-   pianoRhythmPattern2 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
-   pianoRhythmPattern3 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
-   pianoPitchPattern0 = ("intervalo", [("unisono" , 0, 0)]),
-   pianoPitchPattern1 = ("intervalo", [("unisono" , 0, 0)]),
-   pianoPitchPattern2 = ("intervalo", [("unisono" , 0, 0)]),
-   pianoPitchPattern3 = ("intervalo", [("unisono" , 0, 0)]),
+   tecladoSampleNPattern0 = NPattern1 [0],
+   tecladoSampleNPattern1 = NPattern1 [0],
+   tecladoSampleNPattern2 = NPattern1 [0],
+   tecladoSampleNPattern3 = NPattern1 [0],
+   tecladoRhythmPattern0 = [(1, 0)], -- ie.  [𝄽  𝄽  𝄽  ♩],
+   tecladoRhythmPattern1 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
+   tecladoRhythmPattern2 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
+   tecladoRhythmPattern3 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
+   tecladoPitchPattern0 = ("intervalo", [("unisono" , 0, 0)]),
+   tecladoPitchPattern1 = ("intervalo", [("unisono" , 0, 0)]),
+   tecladoPitchPattern2 = ("intervalo", [("unisono" , 0, 0)]),
+   tecladoPitchPattern3 = ("intervalo", [("unisono" , 0, 0)]),
 
-   pianoPanPattern0 = 0.5,
-   pianoGainPattern0 = 1,
+   tecladoPanPattern0 = 0.5,
+   tecladoGainPattern0 = 1,
+
+   acordeonRhythmPattern0 = [(1,0)],
+   acordeonSampleNPattern0 = NPattern1 [0],
+   acordeonPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
+   acordeonPanPattern0 = 0.5,
+   acordeonGainPattern0 = 1,
 
    cuerdaRhythmPattern0 = [(1,0)],
-   cuerdaSampleNPattern0 = [0],
+   cuerdaSampleNPattern0 = NPattern1 [0],
    cuerdaPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
    cuerdaPanPattern0 = 0.5,
    cuerdaGainPattern0 = 1,
 
-   bassSampleNPattern0 = [0],
-   bassSampleNPattern1 = [],
-   bassSampleNPattern2 = [],  --index
+   bassSampleNPattern0 = NPattern1 [0],
+   bassSampleNPattern1 = NPattern1 [0],
+   bassSampleNPattern2 = NPattern1 [0],  --index
    bassRhythmPattern0 = [(1, 0)],  --i.e. [♩ 𝄽  ♩ 𝄽 ],
    bassRhythmPattern1 = [],  --i.e. [♩ 𝄽  ♩ ♩],
    bassRhythmPattern2 =  [],
@@ -159,50 +187,56 @@ defaultStyle = Style {
    bassGainPattern0 = 1,
 
    guiraRhythmPattern0 = [(1,0)],
-   guiraSampleNPattern0 = [0],
+   guiraSampleNPattern0 = NPattern1 [0],
    guiraPitchPattern1 = ("midinote", [("mn", 60, 0)]),
    guiraPanPattern1 = 0.5,
    guiraGainPattern1 = 1,
 
    guiraRhythmPattern1 = [(1,0)],
-   guiraSampleNPattern1 = [0],
+   guiraSampleNPattern1 = NPattern1 [0],
    guiraPitchPattern0 = ("midinote", [("mn", 60, 0)]),
    guiraPanPattern0 = 0.5,
    guiraGainPattern0 = 1,
 
    contrasRhythmPattern0 = [(1, 0)],
-   contrasSampleNPattern0 = [0],
+   contrasSampleNPattern0 = NPattern1 [0],
    contrasPitchPattern0 =("midinote", [("mn", 60, 0)]),
    contrasPanPattern0 = 0.5,
    contrasGainPattern0 = 1,
 
    tarolaRhythmPattern0 = [(1, 0)],
-   tarolaSampleNPattern0 = [0],
+   tarolaSampleNPattern0 = NPattern1 [0],
    tarolaPitchPattern0 = ("midinote", [("mn", 60, 0)]),
    tarolaPanPattern0 = 0.5,
    tarolaGainPattern0 = 1,
 
    efectoRhythmPattern0 = [(1, 0)],
-   efectoSampleNPattern0 = [0],
+   efectoSampleNPattern0 = NPattern1 [0],
    efectoPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
    efectoPanPattern0 = 0.5,
    efectoGainPattern0 = 1,
 
    extrasRhythmPattern0 = [(1, 0)],
-   extrasSampleNPattern0 = [0],
+   extrasSampleNPattern0 = NPattern1 [0],
    extrasPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
    extrasPanPattern0 = 0.5,
    extrasGainPattern0 = 1,
 
   congasRhythmPattern0 = [(1, 0)],
-  congasSampleNPattern0 = [0],
+  congasSampleNPattern0 = NPattern2 [("quinto", 0)],
   congasPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
   congasPanPattern0 = 0.5,
   congasGainPattern0 = 1,
 
   claveRhythmPattern0 = [(1, 0)],
-  claveSampleNPattern0 = [0],
+  claveSampleNPattern0 = NPattern1 [0],
   clavePitchPattern0 = ("midinote", [("mn", 82, 0)]),
+  claveRhythmPattern1 = [(1, 0)],
+  claveSampleNPattern1 = NPattern1 [0],
+  clavePitchPattern1 = ("midinote", [("mn", 82, 0)]),
+  claveRhythmPattern2 = [(1, 0)],
+  claveSampleNPattern2 = NPattern1 [0],
+  clavePitchPattern2 = ("midinote", [("mn", 82, 0)]),
   clavePanPattern0 = 0.5,
   claveGainPattern0 = 1
 }
@@ -224,48 +258,48 @@ defaultStyle = Style {
 cumbia :: Style
 cumbia = Style {
     altavozRhythmPattern0 = [(1, 0)],
-    altavozSampleNPattern0 = [0],
+    altavozSampleNPattern0 = NPattern1 [0],
     altavozPitchPattern0 = ("midinote", [("mn", 60, 0)]),
     altavozPanPattern0 = 0.5,
     altavozGainPattern0 = 1,
 
-    -- pianoRhythmPattern0 = [(1, 0.75)], -- ie.  [𝄽  𝄽  𝄽  ♩],
-    -- pianoSampleNPattern0 = [0],
-    -- pianoPitchPattern0 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+    tecladoRhythmPattern0 = [(1, 0.75)], -- ie.  [𝄽  𝄽  𝄽  ♩],
+    tecladoSampleNPattern0 = NPattern1 [0],
+    tecladoPitchPattern0 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
 
-    pianoSampleNPattern0 = [0, 0, 0],--  [0, 0, 0, 1, 1, 1]
-    pianoRhythmPattern0 = [(1,0.25), (1, 0.75)], -- ie. [𝄽 ♩ 𝄽 ♩],
-    pianoPitchPattern0 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]),
+    tecladoSampleNPattern1 = NPattern1 [0, 0, 0],--  NPattern1 [0, 0, 0, 1, 1, 1]
+    tecladoRhythmPattern1 = [(1,0.25), (1, 0.75)], -- ie. [𝄽 ♩ 𝄽 ♩],
+    tecladoPitchPattern1 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]),
 
+    tecladoSampleNPattern2 = NPattern1 $ take 10 $ cycle  [0],
+    tecladoRhythmPattern2 = [(2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.625), (2, 1.625)],
+    tecladoPitchPattern2 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]),
 
-    pianoSampleNPattern1 = [0, 0, 0],
-    pianoRhythmPattern1 = [(0.5,0.125), (0.5, 0.375)], -- ie. [𝄽 ♩ 𝄽 ♩],
-    pianoPitchPattern1 = ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- not used yet
+    tecladoSampleNPattern3 = NPattern1 $ take 14 $ cycle  [0],
+    tecladoRhythmPattern3 = [(2, 0), (2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.5), (2, 0.875), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.375), (2, 1.625), (2, 1.625)],
+    tecladoPitchPattern3 = ("intervalo", [intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0]),
 
-    pianoSampleNPattern2 = take 10 $ cycle  [0],
-    pianoRhythmPattern2 = [(2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.625), (2, 1.625)],
-    pianoPitchPattern2 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]),
+    -- tecladoPitchPattern0 = ("voicing", [0, 0, 0]), -- not used yet
+    tecladoPanPattern0 = 0.5,
+    tecladoGainPattern0 = 0.75,
 
-    pianoSampleNPattern3 = take 14 $ cycle  [0],
-    pianoRhythmPattern3 = [(2, 0), (2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.5), (2, 0.875), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.375), (2, 1.625), (2, 1.625)],
-    pianoPitchPattern3 = ("intervalo", [intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0]),
-
-    -- pianoPitchPattern0 = ("voicing", [0, 0, 0]), -- not used yet
-    pianoPanPattern0 = 0.5,
-    pianoGainPattern0 = 0.75,
-
+    acordeonRhythmPattern0 = [(1,0)],
+    acordeonSampleNPattern0 = NPattern1 [0],
+    acordeonPitchPattern0 = ("intervalo", [intervalo "unisono" 0]), -- or double? (nota [0, 2, 3] cumbia) cuerda
+    acordeonPanPattern0 = 0.5,
+    acordeonGainPattern0 = 1,
 
     cuerdaRhythmPattern0 = [(1,0)],
-    cuerdaSampleNPattern0 = [0],
-    cuerdaPitchPattern0 = ("intervalo", [intervalo "unisono" 0]), -- or double? (nota [0, 2, 3] cumbia) cuerda
+    cuerdaSampleNPattern0 = NPattern1 [0],
+    cuerdaPitchPattern0 = ("intervalo", [intervalo "unisono" 0]), -- or double? (nota  [0, 2, 3] cumbia) cuerda
     cuerdaPanPattern0 = 0.5,
     cuerdaGainPattern0 = 1,
 
     bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],  --i.e. [♩ 𝄽  ♩ ♩],
-    bassSampleNPattern0 = [0, 0, 0],
+    bassSampleNPattern0 = NPattern1 [0, 0, 0],
     bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- index from list of pitches i.e. [60, 64, 67]
     bassRhythmPattern1 = [(1, 0), (1, 0.5)],  --i.e. [♩ 𝄽  ♩ 𝄽 ],
-    bassSampleNPattern1 = [0, 0],
+    bassSampleNPattern1 = NPattern1 [0, 0],
     bassPitchPattern1 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0]),
     bassPanPattern0 = 0.5,
     bassGainPattern0 = 1,
@@ -276,7 +310,7 @@ cumbia = Style {
     -- tonicayquinta2 $ cumbia bajo
     -- Aqui, escucharás tres notas distinas, la tónica, la quinta y la quinta una octava abajo (i.e. más grave).
     bassRhythmPattern2 = [(1, 0), (1, 0.5), (1, 0.75)],
-    bassSampleNPattern2 = [0, 0, 0],
+    bassSampleNPattern2 = NPattern1 [0, 0, 0],
     bassPitchPattern2 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "5a" (-1)]), -- index from list of pitches i.e. [60, 64, 67]
 
     -- bassRhythmPattern2 = [(4, 0), (4, 0.5), (4, 0.75), (4, 1), (4, 1.5), (4, 1.75), (4, 2), (4, 2.5), (4, 2.75), (4, 3), (4, 3.25), (4, 3.5), (4, 3.75)],
@@ -284,11 +318,11 @@ cumbia = Style {
     -- bassPitchPattern2 = ("intervalo", [intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "3a", intervalo "5a", intervalo "unisono", intervalo "5a", intervalo "unisono", intervalo "5a"]),
 
     guiraRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.375), (1, 0.5), (1, 0.75), (1, 0.875)], --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
-    guiraSampleNPattern0 = [0, 1, 2, 0, 1, 2],
+    guiraSampleNPattern0 = NPattern1 [0, 1, 2, 0, 1, 2],
     guiraPitchPattern0 = ("midinote", [("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0)]),
 
     guiraRhythmPattern1 = [(1, 0), (1, 0.5)], --i.e. [♪♫ ♪♫ ♪♫ ♪♫]
-    guiraSampleNPattern1 = take 2 $ cycle [0],
+    guiraSampleNPattern1 = NPattern1 $ take 2 $ cycle [0],
     guiraPitchPattern1 = ("midinote", take 2 $ cycle [("mn", 60, 0)]),
 
     guiraPanPattern0 = 0.5,
@@ -299,37 +333,50 @@ cumbia = Style {
     guiraGainPattern1 = 0.5,
 
     contrasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
-    contrasSampleNPattern0 = [0, 1, 0, 1, 0, 1, 0, 1],
+    contrasSampleNPattern0 = NPattern1 [0, 1, 0, 1, 0, 1, 0, 1],
     contrasPitchPattern0 = ("midinote", [("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0), ("mn", 60, 0)]),
     contrasPanPattern0 = 0.5,
     contrasGainPattern0 = 1,
 
     tarolaRhythmPattern0 = [(1, 0.375), (1, 0.75)],
-    tarolaSampleNPattern0 = [0, 0],
+    tarolaSampleNPattern0 = NPattern1 [0, 0],
     tarolaPitchPattern0 = ("midinote", [("mn", 60, 0), ("mn", 60, 0)]),
     tarolaPanPattern0 = 0.5,
     tarolaGainPattern0 = 1,
 
     efectoRhythmPattern0 = [(1, 0)],
-    efectoSampleNPattern0 = [0],
+    efectoSampleNPattern0 = NPattern1 [0],
     efectoPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
     efectoPanPattern0 = 0.5,
     efectoGainPattern0 = 1,
 
     congasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
-    congasSampleNPattern0 = [1, 2, 1, 2],
+    -- congasSampleNPattern0 = [1, 2, 1, 2],
+    congasSampleNPattern0 = NPattern2 [("quinto", 0), ("quinto", 1), ("quinto", 0), ("quinto", 1)],
     congasPitchPattern0 = ("midinote", take 4 $ cycle [("mn", 60, 0)]),
     congasPanPattern0 = 0.5,
     congasGainPattern0 = 1,
 
     claveRhythmPattern0 = [(1, 0), (1, 0.5)],
-    claveSampleNPattern0 = take 2 $ cycle [0],
+    claveSampleNPattern0 = NPattern1 $ take 2 $ cycle [0],
     clavePitchPattern0 = ("midinote", take 2 $ cycle [("mn", 84, 0)]),
+    claveRhythmPattern1 = [(2, 0.25), (2, 0.5), (2, 1), (2, 1.375), (2, 1.75)], -- clave 2 3
+    claveSampleNPattern1 = NPattern1 $ take 5$ cycle [0],
+    clavePitchPattern1 = ("midinote", take 5 $ cycle [("mn", 84, 0)]),
+    claveRhythmPattern2 = [(2, 0), (2, 0.375), (2, 0.75), (2, 1.25), (2, 1.5)], -- clave 3 2
+    claveSampleNPattern2 = NPattern1 $ take 5$ cycle [0],
+    clavePitchPattern2 = ("midinote", take 5 $ cycle [("mn", 84, 0)]),
     clavePanPattern0 = 0.5,
     claveGainPattern0 = 1,
 
+    jamblockRhythmPattern0 = [(1, 0), (1, 0.5)],
+    jamblockSampleNPattern0 = NPattern1 $ take 2 $ cycle [0],
+    jamblockPitchPattern0 = ("midinote", take 2 $ cycle [("mn", 60, 0)]),
+    jamblockPanPattern0 = 0.5,
+    jamblockGainPattern0 = 1,
+
     extrasRhythmPattern0 = [(1, 0)],
-    extrasSampleNPattern0 = [0],
+    extrasSampleNPattern0 = NPattern1 [0],
     extrasPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
     extrasPanPattern0 = 0.5,
     extrasGainPattern0 = 1
@@ -340,6 +387,20 @@ cumbia = Style {
 
 rhythmicPattern :: RhythmicPattern -> (Tempo -> UTCTime -> UTCTime ->  [Rational])
 rhythmicPattern xs t iw ew  = Data.List.sort $ concat $ fmap (\(x, y) -> findBeats t iw ew x y) xs
+
+samplePatternRat :: [UTCTime] -> NPattern -> Tempo -> [(Rational, Int)]
+samplePatternRat times (NPattern1 xs)tempo =  do
+  let times' = (fmap (\t -> timeToCount tempo t) times)
+  let nPat = (concat $ replicate (length times) xs)
+  zip times' nPat
+
+samplePattern2 :: [(RhythmicPosition, (String, Int))] -> Tempo -> UTCTime -> UTCTime -> [(Rational, (String, Int))]
+samplePattern2 xs t iw ew =  Data.List.sort $ concat $ fmap (\x -> samplePattern2' x t iw ew) xs
+
+samplePattern2' :: (RhythmicPosition, (String, Int)) -> Tempo -> UTCTime -> UTCTime -> [(Rational, (String, Int))]
+samplePattern2' (xs, (s, i)) t iw ew  = fmap (\attack -> (attack, (s, i))) attacks
+  where
+    attacks = findBeats t iw ew (fst xs) (snd xs)
 
 samplePattern :: [(RhythmicPosition, Int)] -> Tempo -> UTCTime -> UTCTime -> [(Rational, Int)]
 samplePattern xs t iw ew =  Data.List.sort $ concat $ fmap (\x -> samplePattern' x t iw ew) xs

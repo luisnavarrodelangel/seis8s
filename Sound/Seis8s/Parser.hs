@@ -34,16 +34,17 @@ type H = Haskellish GlobalMaterial
 -- type Program = ([Layer], GlobalMaterial)
 
 -- f :: (Style, Intrument)
--- f cumbia piano
+-- f cumbia teclado
 
 -- so I can do :
--- cumbia piano
--- (noDownBeats cumbia) piano
+-- cumbia teclado
+-- (noDownBeats cumbia) teclado
 parseLang :: String -> Either String ([Layer], GlobalMaterial)
-parseLang s = (f . Exts.parseExp) $ ( "do {" ++ s ++ "}" )
-  where
-    f (Exts.ParseOk x) = runHaskellish layers defaultGlobalMaterial x -- Either String (a, st)
-    f (Exts.ParseFailed l s) = Left s
+parseLang s | s == "" = return ([emptyLayer], defaultGlobalMaterial)
+            | otherwise = (f . Exts.parseExp) $ ( "do {" ++ s ++ "}" )
+    where
+      f (Exts.ParseOk x) = runHaskellish layers defaultGlobalMaterial x -- Either String (a, st)
+      f (Exts.ParseFailed l s) = Left s
 
 layers :: H [Layer]
 layers =  listOfDoStatements statement
@@ -56,7 +57,6 @@ statement =  parseLayer <|> globalStatement <|> silencio -- programaLiteral <|> 
 -- then harmony Cmaj Emin -- 2nd, and changes the state
 -- then clave tresDos -- 3rd -- and changes the state
 
-
 globalStatement :: H Layer
 globalStatement = do
   f <- globalMaterialFunctions -- progressionToGm
@@ -66,8 +66,7 @@ globalStatement = do
   return emptyLayer
 
 silencio :: H Layer
-silencio = (reserved "" >> return emptyLayer)
-        <|> emptyLayer <$ reserved "silencio"
+silencio = emptyLayer <$ reserved "silencio"
 
 globalMaterialFunctions :: H (GlobalMaterial -> GlobalMaterial)
 globalMaterialFunctions = parseSetChordProg
@@ -265,7 +264,13 @@ transformadoresDeLayer =  parseSeleccionarEstilo
                       <|> parseCambiarGain
                       <|> parseCambiarPaneo
                       <|> parseTumbao
-                      <|> parseTumbaoCongas
+                      <|> parseaTumbaoBajoVoicingSel
+                      <|> parseaTumbaoBajoVoicingYRitmoSel
+                      <|> parseaTumbaoBajoVoicingsYRitmoSel
+                      <|> parseTumbaoCongasGolpesSel
+                      <|> parseTumbaoCongasGolpesYRitmoSel
+                      <|> parseTumbaoCongasListaDeGolpesSel
+                      <|> parseTumbaoCongasListaDeGolpesYRitmoSel
                       <|> parseacompanamiento
                       <|> parseacompanamientos
                       <|> parseAcompanamientoConVoicingSel
@@ -273,15 +278,17 @@ transformadoresDeLayer =  parseSeleccionarEstilo
 --
 inst :: H Layer
 inst =
-        piano <$ reserved "piano"
+        teclado <$ reserved "teclado"
     <|> bajo <$ reserved "bajo"
     <|> guira <$ reserved "guira"
     <|> contras <$ reserved "contratiempos"
     <|> cuerda <$ reserved "cuerda"
+    <|> acordeon <$ reserved "acordeon"
     <|> tarola <$ reserved "tarola"
     <|> efecto <$ reserved "efecto"
     <|> altavoz <$ reserved "altavoz"
     <|> clave <$ reserved "clave"
+    <|> jamblock <$ (reserved "jamblock" <|> reserved "jam" <|> reserved "block")
     <|> congas <$ reserved "congas"
     <|> extras <$ reserved "extras"
 
@@ -302,21 +309,22 @@ parseSeleccionarEstilo' = do
 seleccionarEstilo :: S.Style -> Layer -> Layer
 seleccionarEstilo e c = c {style = e}
 
--- a function for selecting a different sample n, e.g. (sample [2] cumbia) piano
+-- a function for selecting a different sample n, e.g. (sample [2] cumbia) teclado
 parseSeleccionarSamples :: H Layer
 parseSeleccionarSamples = parseSeleccionarSamples' <*> parseLayer
 
 parseSeleccionarSamples' :: H (Layer -> Layer)
-parseSeleccionarSamples' = parseSeleccionarSamples'' <*> intList
+parseSeleccionarSamples' = parseSeleccionarSamples'' <*> parseNPattern1
 
-parseSeleccionarSamples'' :: H ([Int] -> Layer -> Layer)
+parseSeleccionarSamples'' :: H (NPattern -> Layer -> Layer)
 parseSeleccionarSamples'' = seleccionarSamples <$ reserved "sample"
 
-seleccionarSamples :: [Int] -> Layer -> Layer
+seleccionarSamples :: NPattern -> Layer -> Layer
 seleccionarSamples is c =  c {style = nuevoE}
   where nuevoE = (style c) {
+                           acordeonSampleNPattern0 = is,
                            cuerdaSampleNPattern0 = is,
-                           pianoSampleNPattern0 =  is,
+                           tecladoSampleNPattern0 =  is,
                            bassSampleNPattern0 =  is,
                            guiraSampleNPattern0 = is,
                            contrasSampleNPattern0 = is,
@@ -324,8 +332,9 @@ seleccionarSamples is c =  c {style = nuevoE}
                            efectoSampleNPattern0 = is,
                            altavozSampleNPattern0 = is,
                            extrasSampleNPattern0 = is,
-                           claveSampleNPattern0 = is,
-                           congasSampleNPattern0 = is
+                           jamblockSampleNPattern0 = is,
+                           claveSampleNPattern0 = is
+                           -- congasSampleNPattern0 = is
                           }
 
 -- a function to select a new sample from the folder
@@ -341,20 +350,780 @@ parseSeleccionarSample'' = seleccionarSample <$ reserved "sample"
 seleccionarSample :: Int -> Layer -> Layer
 seleccionarSample index c =  c {style = nuevoE}
    where nuevoE = (style c) {
-                             cuerdaSampleNPattern0 = [index],
-                             pianoSampleNPattern0 =  [index],
-                             bassSampleNPattern0 =  [index],
-                             guiraSampleNPattern0 = [index],
-                             contrasSampleNPattern0 = [index],
-                             tarolaSampleNPattern0 = [index],
-                             efectoSampleNPattern0 = [index],
-                             altavozSampleNPattern0 = [index],
-                             extrasSampleNPattern0 = [index],
-                             claveSampleNPattern0 = [index],
-                             congasSampleNPattern0 = [index]
+                             cuerdaSampleNPattern0 = NPattern1 [index],
+                             acordeonSampleNPattern0 = NPattern1 [index],
+                             tecladoSampleNPattern0 = NPattern1 [index],
+                             bassSampleNPattern0 = NPattern1 [index],
+                             guiraSampleNPattern0 = NPattern1 [index],
+                             contrasSampleNPattern0 = NPattern1 [index],
+                             tarolaSampleNPattern0 = NPattern1 [index],
+                             efectoSampleNPattern0 = NPattern1 [index],
+                             altavozSampleNPattern0 = NPattern1 [index],
+                             extrasSampleNPattern0 = NPattern1 [index],
+                             claveSampleNPattern0 = NPattern1 [index],
+                             jamblockSampleNPattern0 = NPattern1 [index],
+                             congasSampleNPattern0 = NPattern1 [index]
                             }
 
---
+-- bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],  --i.e. [♩ 𝄽  ♩ ♩],
+-- bassSampleNPattern0 = [0, 0, 0],
+-- bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- index
+-- PitchPattern = (PitchType, [Note])
+
+-- tumbao ("f" "3a" "5a") $ cumbia bajo;
+parseaTumbaoBajoVoicingSel :: H Layer
+parseaTumbaoBajoVoicingSel = parseaTumbaoBajoVoicingSel' <*> parseLayer
+
+parseaTumbaoBajoVoicingSel' :: H (Layer -> Layer)
+parseaTumbaoBajoVoicingSel' = parseaTumbaoBajoVoicingSel'' <*> parseStringsAListaDeNotes --
+
+parseaTumbaoBajoVoicingSel'' :: H ([Note] -> Layer -> Layer)
+parseaTumbaoBajoVoicingSel'' = tumbaoBajoVoicingSel <$ (reserved "tumbao")
+
+tumbaoBajoVoicingSel :: [Note] -> Layer -> Layer
+tumbaoBajoVoicingSel notes c = c {style = nuevoE}
+  where
+    nuevoE = (style c) {
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)], --
+                            bassSampleNPattern0 = bassSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
+                            bassPitchPattern0 = ("intervalo", notes)-- ("acorde", [note])
+                          }
+
+
+-- tumbao ("f" 5a") (1 3) $ cumbia bajo;
+parseaTumbaoBajoVoicingYRitmoSel :: H Layer
+parseaTumbaoBajoVoicingYRitmoSel = parseaTumbaoBajoVoicingYRitmoSel' <*> parseLayer
+
+parseaTumbaoBajoVoicingYRitmoSel' :: H (Layer -> Layer)
+parseaTumbaoBajoVoicingYRitmoSel' = parseaTumbaoBajoVoicingYRitmoSel'' <*> parseAtaquesAListaDeAtaques -- [] -- rationalList --
+
+parseaTumbaoBajoVoicingYRitmoSel'' :: H ( [Rational] -> Layer -> Layer)
+parseaTumbaoBajoVoicingYRitmoSel'' = parseaTumbaoBajoVoicingYRitmoSel''' <*> parseStringsAListaDeNotes
+
+parseaTumbaoBajoVoicingYRitmoSel''' :: H ([Note] -> [Rational] -> Layer -> Layer)
+parseaTumbaoBajoVoicingYRitmoSel''' = tumbaoBajoVoicingYRitmoSel <$ (reserved "tumbao")
+
+tumbaoBajoVoicingYRitmoSel :: [Note] -> [Rational] -> Layer -> Layer
+tumbaoBajoVoicingYRitmoSel notes rs c = c {style = nuevoE}
+  where
+    metre = 1
+    -- indices = [0 .. metre]
+    -- rs' = fmap (\n -> if (n == 0) then 0 else (abs $ n - 1)) rs -- [1, 2, 3, 4] a [0, 1, 2, 3]
+    rPat = cambiarRitmo'' metre rs -- fmap (\n -> (metre, (realToFrac n) /4)) rs'-- [(1, (realToFrac n') / 4)]
+    nPat (NPattern1 xs) = NPattern1 $ concat $ replicate (length rPat) xs
+    pPat =  take (length rPat) notes -- new
+    nuevoE = (style c) {
+                            bassRhythmPattern0 = rPat, --
+                            bassSampleNPattern0 =  nPat $ bassSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
+                            bassPitchPattern0 = ("intervalo", pPat)-- new ("intervalo", notes)-- ("acorde", [note])
+                          }
+
+-- tumbao ["f" "5a", "f" "3a" "5a"] [1 3, 1 3 4] $ cumbia bajo;
+parseaTumbaoBajoVoicingsYRitmoSel :: H Layer
+parseaTumbaoBajoVoicingsYRitmoSel = parseaTumbaoBajoVoicingsYRitmoSel' <*> parseLayer
+
+parseaTumbaoBajoVoicingsYRitmoSel' :: H (Layer -> Layer)
+parseaTumbaoBajoVoicingsYRitmoSel' = parseaTumbaoBajoVoicingsYRitmoSel'' <*> parseListasDeListasDeAtaques -- rationalList --
+
+parseaTumbaoBajoVoicingsYRitmoSel'' :: H ( [[Rational]] -> Layer -> Layer)
+parseaTumbaoBajoVoicingsYRitmoSel'' = parseaTumbaoBajoVoicingsYRitmoSel''' <*> praseListaDeListaStringAListaDeAcordes
+
+parseaTumbaoBajoVoicingsYRitmoSel''' :: H ([[Note]] -> [[Rational]] -> Layer -> Layer)
+parseaTumbaoBajoVoicingsYRitmoSel''' = tumbaoBajoVoicingsYRitmoSel <$ (reserved "tumbao")
+
+tumbaoBajoVoicingsYRitmoSel :: [[Note]] -> [[Rational]] -> Layer -> Layer
+tumbaoBajoVoicingsYRitmoSel notes rs c = c {style = nuevoE}
+  where
+    -- rs' = ((maximum $ concat rs) - 1) / 4
+    metre = toRational $ length rs -- [[Nothing], [1, 2, 3]] = metre 2 -- (realToFrac $ floor rs') + 1
+    rPat = cambiarRitmo'''' metre rs
+    nPat (NPattern1 xs) = NPattern1 $ concat $ replicate (length rPat) xs
+    pPat =  take (length rPat) $ concat notes -- new
+    nuevoE = (style c) {
+                            bassRhythmPattern0 = rPat, --
+                            bassSampleNPattern0 = nPat $ bassSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
+                            bassPitchPattern0 = ("intervalo", pPat) --new ("intervalo", concat notes)-- ("acorde", [note])
+                          }
+
+
+-- tumbaoBajoVoicingsYRitmoSelTest :: [[Note]] -> [[Rational]] -> Layer -> Layer
+tumbaoBajoVoicingsYRitmoSelTest notes rs = sumarIaAttacks
+  where
+    zipIAttacks = zip [0 .. ((length rs) - 1)] rs -- [(0, [1, 2, 3]), (1, [1, 2, 3])]
+    sumarIaAttacks = fmap (\(i, xs) -> fmap (\x -> x + (toRational i)) xs) zipIAttacks -- [[1,2, 3], [4, 5, 6]]
+    -- fmap (\(i, ys) -> fmap (\x -> x + (toRational i)) ys) xs
+    rs' = concat sumarIaAttacks
+    rs'' = ((maximum rs') - 1) / 4
+    metre = (realToFrac $ floor rs'') + 1
+
+-- marcha ("p" "t" "p" "a") $ cumbia congas -- accepts only 4 beats
+parseTumbaoCongasGolpesSel :: H Layer
+parseTumbaoCongasGolpesSel = parseTumbaoCongasGolpesSel' <*> parseLayer
+
+parseTumbaoCongasGolpesSel' :: H (Layer -> Layer)
+parseTumbaoCongasGolpesSel' = parseTumbaoCongasGolpesSel'' <*> parseNAListaDeN -- ["a" "t"] = ["a", "t"]-- congasN
+
+parseTumbaoCongasGolpesSel'' :: H ([N] -> Layer -> Layer)
+parseTumbaoCongasGolpesSel'' = tumbaoCongasGolpesSel <$ (reserved "tumbao" <|> reserved "marcha")
+
+tumbaoCongasGolpesSel :: [N] -> Layer -> Layer
+tumbaoCongasGolpesSel xs c = c {style = nuevoE}
+  where
+    -- ns = fmap nSample xs --[nSample x1, nSample x2 ...] = [0, 1, ...]
+    -- nPat = fmap (\x -> ("quinto", x)) ns -- [("quinto", 0), ("quinto", 1) ...]
+    rPat = take (length xs) $ congasRhythmPattern0 (style c)
+    pPat = take (length xs) $ snd $ congasPitchPattern0 (style c)
+    nuevoE = (style c) {
+      congasRhythmPattern0 = rPat,-- congasRhythmPattern0 (style c), -- [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
+      congasSampleNPattern0 = NPattern2 xs, -- [("quinto", 0), ("quinto", 1) ...]
+      congasPitchPattern0 = ("midinote", pPat) -- ("midinote", take 4 $ cycle [("mn", 60, 0)])
+    }
+
+--tumbao ("p" "t" "p" "a") (1 2 3 4 4.5) $ cumbia congas
+parseTumbaoCongasGolpesYRitmoSel :: H Layer
+parseTumbaoCongasGolpesYRitmoSel = parseTumbaoCongasGolpesYRitmoSel' <*> parseLayer
+
+parseTumbaoCongasGolpesYRitmoSel' :: H (Layer -> Layer)
+parseTumbaoCongasGolpesYRitmoSel' = parseTumbaoCongasGolpesYRitmoSel'' <*> parseAtaquesAListaDeAtaques-- parseListasDeListasDeAtaques -- rationalList -- ["a" "t"] = ["a", "t"]-- congasN
+
+parseTumbaoCongasGolpesYRitmoSel'' :: H ([Rational] -> Layer -> Layer)
+parseTumbaoCongasGolpesYRitmoSel'' = parseTumbaoCongasGolpesYRitmoSel''' <*> parseNAListaDeN -- ["a" "t"] = ["a", "t"]-- congasN
+
+parseTumbaoCongasGolpesYRitmoSel''' :: H ([N] -> [Rational] -> Layer -> Layer)
+parseTumbaoCongasGolpesYRitmoSel''' = tumbaoCongasGolpesYRitmoSel <$ (reserved "tumbao" <|> reserved "marcha")
+
+tumbaoCongasGolpesYRitmoSel :: [N] -> [Rational] -> Layer -> Layer
+tumbaoCongasGolpesYRitmoSel xs rs c = c {style = nuevoE}
+  where
+    metre = 1
+    rPat = cambiarRitmo'' metre rs
+    nPat = take (length rPat) xs
+    pPat = take (length rPat) $ snd $ congasPitchPattern0 (style c)
+    nuevoE = (style c) {
+      congasRhythmPattern0 = rPat, -- [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
+      congasSampleNPattern0 = NPattern2 nPat, -- [("quinto", 0), ("quinto", 1) ...]
+      congasPitchPattern0 = ("midinote", pPat) -- ("midinote", take 4 $ cycle [("mn", 60, 0)])
+    }
+
+
+-- tumbao ["p" "s" "p" (q "a"), "p" "s" "p" (t "a")] $ cumbia congas; -- pendiente
+parseTumbaoCongasListaDeGolpesSel :: H Layer
+parseTumbaoCongasListaDeGolpesSel = parseTumbaoCongasListaDeGolpesSel' <*> parseLayer
+
+parseTumbaoCongasListaDeGolpesSel' :: H (Layer -> Layer)
+parseTumbaoCongasListaDeGolpesSel' = parseTumbaoCongasListaDeGolpesSel'' <*> parseListaDeNAListaDeListaDeN -- ["a" "t"] = ["a", "t"]-- congasN
+
+parseTumbaoCongasListaDeGolpesSel'' :: H ([[N]] -> Layer -> Layer)
+parseTumbaoCongasListaDeGolpesSel'' = tumbaoCongasListaDeGolpesSel <$ (reserved "tumbao" <|> reserved "marcha")
+
+-- ahora es  tumbao ("p" "t" "p" "a") $ cumbia congas pero debe ser  tumbao ("p" "t" "p" "a") $ cumbia congas;
+tumbaoCongasListaDeGolpesSel :: [[N]] -> Layer -> Layer
+tumbaoCongasListaDeGolpesSel xs c = c {style = nuevoE}
+  where
+    -- metre = 1 * (length xs) -- eg. 1 * 2 => [..., ...]
+    -- rs' = fmap (\(m, n) -> if (n == 0) then 0 else (abs $ n - 1)) rs -- [1, 2, 3, 4] a [0, 1, 2, 3]
+    -- rPat = fmap (\(m, n) -> (metre, (realToFrac n) /4)) rs'-- [(1, (realToFrac n') / 4)]
+
+    nuevoE = (style c) {
+      congasRhythmPattern0 = congasRhythmPattern0 (style c), -- [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
+      congasSampleNPattern0 = NPattern2 $ concat xs, -- [("quinto", 0), ("quinto", 1) ...]
+      congasPitchPattern0 = congasPitchPattern0 (style c) -- ("midinote", take 4 $ cycle [("mn", 60, 0)])
+    }
+
+-- marcha ["p" "t" "p" (q "a"), "p" "t" "p" (t "a") (t "a")] [1 2 3 4, 1 2 3 4 4.5] $ cumbia congas;
+parseTumbaoCongasListaDeGolpesYRitmoSel :: H Layer
+parseTumbaoCongasListaDeGolpesYRitmoSel = parseTumbaoCongasListaDeGolpesYRitmoSel' <*> parseLayer
+
+parseTumbaoCongasListaDeGolpesYRitmoSel' :: H (Layer -> Layer)
+parseTumbaoCongasListaDeGolpesYRitmoSel' = parseTumbaoCongasListaDeGolpesYRitmoSel'' <*> parseListasDeListasDeAtaques -- rationalList
+
+parseTumbaoCongasListaDeGolpesYRitmoSel'' :: H ([[Rational]] -> Layer -> Layer)
+parseTumbaoCongasListaDeGolpesYRitmoSel'' = parseTumbaoCongasListaDeGolpesYRitmoSel''' <*> parseListaDeNAListaDeListaDeN
+
+parseTumbaoCongasListaDeGolpesYRitmoSel''' :: H ([[N]] -> [[Rational]] -> Layer -> Layer)
+parseTumbaoCongasListaDeGolpesYRitmoSel''' = tumbaoCongasListaDeGolpesYRitmoSel <$  (reserved "tumbao" <|> reserved "marcha")
+
+tumbaoCongasListaDeGolpesYRitmoSel :: [[N]] -> [[Rational]] -> Layer -> Layer
+tumbaoCongasListaDeGolpesYRitmoSel xs rs c = c {style = nuevoE}
+  where
+    metre = toRational $ length rs -- [[Nothing], [1, 2, 3]] = metre 2 -- (realToFrac $ floor rs') + 1
+    rPat = cambiarRitmo'''' metre rs
+    nPat = take (length rPat) $ concat xs
+    pPat = take (length rPat) $ snd $ congasPitchPattern0 (style c)
+    nuevoE = (style c) {
+      congasRhythmPattern0 = rPat, -- [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
+      congasSampleNPattern0 = NPattern2 nPat, -- [("quinto", 0), ("quinto", 1) ...]
+      congasPitchPattern0 = ("midinote", pPat) -- ("midinote", take 4 $ cycle [("mn", 60, 0)])
+    }
+
+parseUnNAuto :: H (Maybe N)
+parseUnNAuto = do
+  s <- string
+  return $ unNAuto s
+
+unNAuto :: String -> Maybe N
+unNAuto "p" = Just ("quinto", 0)
+unNAuto "t" = Just ("quinto", 1)
+unNAuto "a" = Just ("quinto", 2)
+unNAuto _ = Nothing
+
+parseUnN :: H (Maybe N)
+parseUnN = parseUnN' <*> string
+
+parseUnN' :: H (String -> Maybe N)
+parseUnN' = do
+  s1 <- string
+  return $ \s2 -> unN s2 s2
+
+parseQuinto :: H (Maybe N)
+parseQuinto = parseQuinto' <*> string
+
+parseQuinto' :: H (String -> Maybe N)
+parseQuinto' = (unN "quinto") <$ reserved "q"
+
+parseTumba :: H (Maybe N)
+parseTumba = parseTumba' <*> string
+
+parseTumba' :: H (String -> Maybe N)
+parseTumba' = (unN "tumba") <$ reserved "t"
+
+unN :: String -> String -> Maybe N
+unN f "p" =  Just (f, 0)
+unN f "t" =  Just (f, 1)
+unN f "a" = Just (f, 2)
+unN _ _ =   Nothing
+
+parseCongasN :: H (Maybe N) -- [("quinto", 0), ("quinto", 1) ...]
+parseCongasN = parseUnNAuto
+            <|> parseQuinto --parseUnN
+            <|> parseTumba
+
+parseListaDeNAListaDeListaDeN :: H [[N]]
+parseListaDeNAListaDeListaDeN = list parseNAListaDeN
+
+parseNAListaDeN :: H [N]
+parseNAListaDeN = parseUnNAListaDeN
+               <|> parseDosNAListaDeN
+               <|> parseTresNAListaDeN
+               <|> parseCuatroNAListaDeN
+               <|> parseCincoNAListaDeN
+               <|> parseSeisNAListaDeN
+               <|> parseSieteNAListaDeN
+               <|> parseOchoNAListaDeN
+               <|> parseNueveNAListaDeN
+               <|> parseDiezNAListaDeN
+               <|> parseOnceNAListaDeN
+               <|> parseDoceNAListaDeN
+               <|> parseTreceNAListaDeN
+               <|> parseCatorceNAListaDeN
+               <|> parseQuinceNAListaDeN
+               <|> parseDieciseisNAListaDeN
+
+-- ("p" "t" "p" (t "a") ...)
+parseDieciseisNAListaDeN :: H [N]
+parseDieciseisNAListaDeN = parseDieciseisNAListaDeN' <*> parseCongasN
+
+parseDieciseisNAListaDeN' :: H (Maybe N -> [N])
+parseDieciseisNAListaDeN' = parseDieciseisNAListaDeN'' <*> parseCongasN
+
+parseDieciseisNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN'' = parseDieciseisNAListaDeN''' <*> parseCongasN
+
+parseDieciseisNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN''' = parseDieciseisNAListaDeN'''' <*> parseCongasN
+
+parseDieciseisNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN'''' = parseDieciseisNAListaDeN''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN''''' = parseDieciseisNAListaDeN'''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN'''''' = parseDieciseisNAListaDeN''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN''''''' = parseDieciseisNAListaDeN'''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN'''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN'''''''' = parseDieciseisNAListaDeN''''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN''''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN''''''''' = parseDieciseisNAListaDeN'''''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN'''''''''' :: H (Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN'''''''''' = parseDieciseisNAListaDeN''''''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN''''''''''' = parseDieciseisNAListaDeN'''''''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN'''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN'''''''''''' = parseDieciseisNAListaDeN''''''''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN''''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN''''''''''''' = parseDieciseisNAListaDeN'''''''''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN'''''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN'''''''''''''' = parseDieciseisNAListaDeN''''''''''''''' <*> parseCongasN
+
+parseDieciseisNAListaDeN''''''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDieciseisNAListaDeN''''''''''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 n16 -> dieciseisNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 n16
+
+dieciseisNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+dieciseisNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 n16 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16]
+
+-- ("p" "t" "p" (t "a") ...)
+parseQuinceNAListaDeN :: H [N]
+parseQuinceNAListaDeN = parseQuinceNAListaDeN' <*> parseCongasN
+
+parseQuinceNAListaDeN' :: H (Maybe N -> [N])
+parseQuinceNAListaDeN' = parseQuinceNAListaDeN'' <*> parseCongasN
+
+parseQuinceNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN'' = parseQuinceNAListaDeN''' <*> parseCongasN
+
+parseQuinceNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN''' = parseQuinceNAListaDeN'''' <*> parseCongasN
+
+parseQuinceNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN'''' = parseQuinceNAListaDeN''''' <*> parseCongasN
+
+parseQuinceNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN''''' = parseQuinceNAListaDeN'''''' <*> parseCongasN
+
+parseQuinceNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN'''''' = parseQuinceNAListaDeN''''''' <*> parseCongasN
+
+parseQuinceNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN''''''' = parseQuinceNAListaDeN'''''''' <*> parseCongasN
+
+parseQuinceNAListaDeN'''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN'''''''' = parseQuinceNAListaDeN''''''''' <*> parseCongasN
+
+parseQuinceNAListaDeN''''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN''''''''' = parseQuinceNAListaDeN'''''''''' <*> parseCongasN
+
+parseQuinceNAListaDeN'''''''''' :: H (Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN'''''''''' = parseQuinceNAListaDeN''''''''''' <*> parseCongasN
+
+parseQuinceNAListaDeN''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN''''''''''' = parseQuinceNAListaDeN'''''''''''' <*> parseCongasN
+
+parseQuinceNAListaDeN'''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN'''''''''''' = parseQuinceNAListaDeN''''''''''''' <*> parseCongasN
+
+parseQuinceNAListaDeN''''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN''''''''''''' = parseQuinceNAListaDeN'''''''''''''' <*> parseCongasN
+
+parseQuinceNAListaDeN'''''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseQuinceNAListaDeN'''''''''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 -> quinceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15
+
+quinceNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+quinceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15]
+
+-- ("p" "t" "p" (t "a") ...)
+parseCatorceNAListaDeN :: H [N]
+parseCatorceNAListaDeN = parseCatorceNAListaDeN' <*> parseCongasN
+
+parseCatorceNAListaDeN' :: H (Maybe N -> [N])
+parseCatorceNAListaDeN' = parseCatorceNAListaDeN'' <*> parseCongasN
+
+parseCatorceNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN'' = parseCatorceNAListaDeN''' <*> parseCongasN
+
+parseCatorceNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN''' = parseCatorceNAListaDeN'''' <*> parseCongasN
+
+parseCatorceNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN'''' = parseCatorceNAListaDeN''''' <*> parseCongasN
+
+parseCatorceNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN''''' = parseCatorceNAListaDeN'''''' <*> parseCongasN
+
+parseCatorceNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN'''''' = parseCatorceNAListaDeN''''''' <*> parseCongasN
+
+parseCatorceNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN''''''' = parseCatorceNAListaDeN'''''''' <*> parseCongasN
+
+parseCatorceNAListaDeN'''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN'''''''' = parseCatorceNAListaDeN''''''''' <*> parseCongasN
+
+parseCatorceNAListaDeN''''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN''''''''' = parseCatorceNAListaDeN'''''''''' <*> parseCongasN
+
+parseCatorceNAListaDeN'''''''''' :: H (Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN'''''''''' = parseCatorceNAListaDeN''''''''''' <*> parseCongasN
+
+parseCatorceNAListaDeN''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN''''''''''' = parseCatorceNAListaDeN'''''''''''' <*> parseCongasN
+
+parseCatorceNAListaDeN'''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN'''''''''''' = parseCatorceNAListaDeN''''''''''''' <*> parseCongasN
+
+parseCatorceNAListaDeN''''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCatorceNAListaDeN''''''''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 -> catorceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14
+
+catorceNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+catorceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14]
+
+-- ("p" "t" "p" (t "a") ...)
+parseTreceNAListaDeN :: H [N]
+parseTreceNAListaDeN = parseTreceNAListaDeN' <*> parseCongasN
+
+parseTreceNAListaDeN' :: H (Maybe N -> [N])
+parseTreceNAListaDeN' = parseTreceNAListaDeN'' <*> parseCongasN
+
+parseTreceNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN'' = parseTreceNAListaDeN''' <*> parseCongasN
+
+parseTreceNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN''' = parseTreceNAListaDeN'''' <*> parseCongasN
+
+parseTreceNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN'''' = parseTreceNAListaDeN''''' <*> parseCongasN
+
+parseTreceNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN''''' = parseTreceNAListaDeN'''''' <*> parseCongasN
+
+parseTreceNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN'''''' = parseTreceNAListaDeN''''''' <*> parseCongasN
+
+parseTreceNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN''''''' = parseTreceNAListaDeN'''''''' <*> parseCongasN
+
+parseTreceNAListaDeN'''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN'''''''' = parseTreceNAListaDeN''''''''' <*> parseCongasN
+
+parseTreceNAListaDeN''''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN''''''''' = parseTreceNAListaDeN'''''''''' <*> parseCongasN
+
+parseTreceNAListaDeN'''''''''' :: H (Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN'''''''''' = parseTreceNAListaDeN''''''''''' <*> parseCongasN
+
+parseTreceNAListaDeN''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN''''''''''' = parseTreceNAListaDeN'''''''''''' <*> parseCongasN
+
+parseTreceNAListaDeN'''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseTreceNAListaDeN'''''''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 -> treceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13
+
+treceNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+treceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13]
+
+-- ("p" "t" "p" (t "a") ...)
+parseDoceNAListaDeN :: H [N]
+parseDoceNAListaDeN = parseDoceNAListaDeN' <*> parseCongasN
+
+parseDoceNAListaDeN' :: H (Maybe N -> [N])
+parseDoceNAListaDeN' = parseDoceNAListaDeN'' <*> parseCongasN
+
+parseDoceNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN'' = parseDoceNAListaDeN''' <*> parseCongasN
+
+parseDoceNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN''' = parseDoceNAListaDeN'''' <*> parseCongasN
+
+parseDoceNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN'''' = parseDoceNAListaDeN''''' <*> parseCongasN
+
+parseDoceNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN''''' = parseDoceNAListaDeN'''''' <*> parseCongasN
+
+parseDoceNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN'''''' = parseDoceNAListaDeN''''''' <*> parseCongasN
+
+parseDoceNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN''''''' = parseDoceNAListaDeN'''''''' <*> parseCongasN
+
+parseDoceNAListaDeN'''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN'''''''' = parseDoceNAListaDeN''''''''' <*> parseCongasN
+
+parseDoceNAListaDeN''''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN''''''''' = parseDoceNAListaDeN'''''''''' <*> parseCongasN
+
+parseDoceNAListaDeN'''''''''' :: H (Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN'''''''''' = parseDoceNAListaDeN''''''''''' <*> parseCongasN
+
+parseDoceNAListaDeN''''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDoceNAListaDeN''''''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 -> doceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12
+
+doceNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+doceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12]
+
+-- ("p" "t" "p" (t "a") ...)
+parseOnceNAListaDeN :: H [N]
+parseOnceNAListaDeN = parseOnceNAListaDeN' <*> parseCongasN
+
+parseOnceNAListaDeN' :: H (Maybe N -> [N])
+parseOnceNAListaDeN' = parseOnceNAListaDeN'' <*> parseCongasN
+
+parseOnceNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN'' = parseOnceNAListaDeN''' <*> parseCongasN
+
+parseOnceNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN''' = parseOnceNAListaDeN'''' <*> parseCongasN
+
+parseOnceNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN'''' = parseOnceNAListaDeN''''' <*> parseCongasN
+
+parseOnceNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN''''' = parseOnceNAListaDeN'''''' <*> parseCongasN
+
+parseOnceNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN'''''' = parseOnceNAListaDeN''''''' <*> parseCongasN
+
+parseOnceNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN''''''' = parseOnceNAListaDeN'''''''' <*> parseCongasN
+
+parseOnceNAListaDeN'''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN'''''''' = parseOnceNAListaDeN''''''''' <*> parseCongasN
+
+parseOnceNAListaDeN''''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN''''''''' = parseOnceNAListaDeN'''''''''' <*> parseCongasN
+
+parseOnceNAListaDeN'''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOnceNAListaDeN'''''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 -> onceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11
+
+onceNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+onceNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11]
+
+-- ("p" "t" "p" (t "a") ...)
+parseDiezNAListaDeN :: H [N]
+parseDiezNAListaDeN = parseDiezNAListaDeN' <*> parseCongasN
+
+parseDiezNAListaDeN' :: H (Maybe N -> [N])
+parseDiezNAListaDeN' = parseDiezNAListaDeN'' <*> parseCongasN
+
+parseDiezNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseDiezNAListaDeN'' = parseDiezNAListaDeN''' <*> parseCongasN
+
+parseDiezNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseDiezNAListaDeN''' = parseDiezNAListaDeN'''' <*> parseCongasN
+
+parseDiezNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDiezNAListaDeN'''' = parseDiezNAListaDeN''''' <*> parseCongasN
+
+parseDiezNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDiezNAListaDeN''''' = parseDiezNAListaDeN'''''' <*> parseCongasN
+
+parseDiezNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDiezNAListaDeN'''''' = parseDiezNAListaDeN''''''' <*> parseCongasN
+
+parseDiezNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDiezNAListaDeN''''''' = parseDiezNAListaDeN'''''''' <*> parseCongasN
+
+parseDiezNAListaDeN'''''''' :: H (Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDiezNAListaDeN'''''''' = parseDiezNAListaDeN''''''''' <*> parseCongasN
+
+parseDiezNAListaDeN''''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseDiezNAListaDeN''''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 -> diezNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10
+
+diezNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> Maybe N -> [N]
+diezNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10]
+
+-- ("p" "t" "p" (t "a") ...)
+parseNueveNAListaDeN :: H [N]
+parseNueveNAListaDeN = parseNueveNAListaDeN' <*> parseCongasN
+
+parseNueveNAListaDeN' :: H (Maybe N -> [N])
+parseNueveNAListaDeN' = parseNueveNAListaDeN'' <*> parseCongasN
+
+parseNueveNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseNueveNAListaDeN'' = parseNueveNAListaDeN''' <*> parseCongasN
+
+parseNueveNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseNueveNAListaDeN''' = parseNueveNAListaDeN'''' <*> parseCongasN
+
+parseNueveNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseNueveNAListaDeN'''' = parseNueveNAListaDeN''''' <*> parseCongasN
+
+parseNueveNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseNueveNAListaDeN''''' = parseNueveNAListaDeN'''''' <*> parseCongasN
+
+parseNueveNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseNueveNAListaDeN'''''' = parseNueveNAListaDeN''''''' <*> parseCongasN
+
+parseNueveNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseNueveNAListaDeN''''''' = parseNueveNAListaDeN'''''''' <*> parseCongasN
+
+parseNueveNAListaDeN'''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseNueveNAListaDeN'''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 -> nueveNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9
+
+nueveNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> Maybe N -> [N]
+nueveNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 n9 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8, n9]
+
+-- ("p" "t" "p" (t "a") ...)
+parseOchoNAListaDeN :: H [N]
+parseOchoNAListaDeN = parseOchoNAListaDeN' <*> parseCongasN
+
+parseOchoNAListaDeN' :: H (Maybe N -> [N])
+parseOchoNAListaDeN' = parseOchoNAListaDeN'' <*> parseCongasN
+
+parseOchoNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseOchoNAListaDeN'' = parseOchoNAListaDeN''' <*> parseCongasN
+
+parseOchoNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseOchoNAListaDeN''' = parseOchoNAListaDeN'''' <*> parseCongasN
+
+parseOchoNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOchoNAListaDeN'''' = parseOchoNAListaDeN''''' <*> parseCongasN
+
+parseOchoNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOchoNAListaDeN''''' = parseOchoNAListaDeN'''''' <*> parseCongasN
+
+parseOchoNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOchoNAListaDeN'''''' = parseOchoNAListaDeN''''''' <*> parseCongasN
+
+parseOchoNAListaDeN''''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseOchoNAListaDeN''''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 n8 -> ochoNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8
+
+ochoNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N ->  Maybe N -> [N]
+ochoNAListaDeN n1 n2 n3 n4 n5 n6 n7 n8 = catMaybes [n1, n2, n3, n4, n5, n6, n7, n8]
+
+-- ("p" "t" "p" (t "a") ...)
+parseSieteNAListaDeN :: H [N]
+parseSieteNAListaDeN = parseSieteNAListaDeN' <*> parseCongasN
+
+parseSieteNAListaDeN' :: H (Maybe N -> [N])
+parseSieteNAListaDeN' = parseSieteNAListaDeN'' <*> parseCongasN
+
+parseSieteNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseSieteNAListaDeN'' = parseSieteNAListaDeN''' <*> parseCongasN
+
+parseSieteNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseSieteNAListaDeN''' = parseSieteNAListaDeN'''' <*> parseCongasN
+
+parseSieteNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseSieteNAListaDeN'''' = parseSieteNAListaDeN''''' <*> parseCongasN
+
+parseSieteNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseSieteNAListaDeN''''' = parseSieteNAListaDeN'''''' <*> parseCongasN
+
+parseSieteNAListaDeN'''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseSieteNAListaDeN'''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 n7 -> sieteNAListaDeN n1 n2 n3 n4 n5 n6 n7
+
+sieteNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+sieteNAListaDeN n1 n2 n3 n4 n5 n6 n7 = catMaybes [n1, n2, n3, n4, n5, n6, n7]
+
+-- ("p" "t" "p" (t "a") ...)
+parseSeisNAListaDeN :: H [N]
+parseSeisNAListaDeN = parseSeisNAListaDeN' <*> parseCongasN
+
+parseSeisNAListaDeN' :: H (Maybe N -> [N])
+parseSeisNAListaDeN' = parseSeisNAListaDeN'' <*> parseCongasN
+
+parseSeisNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseSeisNAListaDeN'' = parseSeisNAListaDeN''' <*> parseCongasN
+
+parseSeisNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseSeisNAListaDeN''' = parseSeisNAListaDeN'''' <*> parseCongasN
+
+parseSeisNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseSeisNAListaDeN'''' = parseSeisNAListaDeN''''' <*> parseCongasN
+
+parseSeisNAListaDeN''''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseSeisNAListaDeN''''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 n6 -> seisNAListaDeN n1 n2 n3 n4 n5 n6
+
+seisNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+seisNAListaDeN n1 n2 n3 n4 n5 n6 = catMaybes [n1, n2, n3, n4, n5, n6]
+
+-- ("p" "t" "p" (t "a") ...)
+parseCincoNAListaDeN :: H [N]
+parseCincoNAListaDeN = parseCincoNAListaDeN' <*> parseCongasN
+
+parseCincoNAListaDeN' :: H (Maybe N -> [N])
+parseCincoNAListaDeN' = parseCincoNAListaDeN'' <*> parseCongasN
+
+parseCincoNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseCincoNAListaDeN'' = parseCincoNAListaDeN''' <*> parseCongasN
+
+parseCincoNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseCincoNAListaDeN''' = parseCincoNAListaDeN'''' <*> parseCongasN
+
+parseCincoNAListaDeN'''' :: H (Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N])
+parseCincoNAListaDeN'''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 n5 -> cincoNAListaDeN n1 n2 n3 n4 n5
+
+cincoNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N -> Maybe N -> [N]
+cincoNAListaDeN n1 n2 n3 n4 n5 = catMaybes [n1, n2, n3, n4, n5]
+
+
+-- ("p" "t" "p" $ t "a")
+parseCuatroNAListaDeN :: H [N]
+parseCuatroNAListaDeN = parseCuatroNAListaDeN' <*> parseCongasN
+
+parseCuatroNAListaDeN' :: H (Maybe N -> [N])
+parseCuatroNAListaDeN' = parseCuatroNAListaDeN'' <*> parseCongasN
+
+parseCuatroNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseCuatroNAListaDeN'' = parseCuatroNAListaDeN''' <*> parseCongasN
+
+parseCuatroNAListaDeN''' :: H (Maybe N -> Maybe N -> Maybe N -> [N])
+parseCuatroNAListaDeN''' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 n4 -> cuatroNAListaDeN n1 n2 n3 n4
+
+cuatroNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> Maybe N ->  [N]
+cuatroNAListaDeN n1 n2 n3 n4 = catMaybes [n1, n2, n3, n4]
+
+-- ("a" t "t" "a")
+parseTresNAListaDeN :: H [N]
+parseTresNAListaDeN = parseTresNAListaDeN' <*> parseCongasN
+
+parseTresNAListaDeN' :: H (Maybe N -> [N])
+parseTresNAListaDeN' = parseTresNAListaDeN'' <*> parseCongasN
+
+parseTresNAListaDeN'' :: H (Maybe N -> Maybe N -> [N])
+parseTresNAListaDeN'' = do
+  n1 <- parseCongasN
+  return $ \n2 n3 -> tresNAListaDeN n1 n2 n3
+
+tresNAListaDeN :: Maybe N -> Maybe N -> Maybe N -> [N]
+tresNAListaDeN n1 n2 n3 = catMaybes [n1, n2, n3]
+
+-- ("a", t "a")
+parseDosNAListaDeN :: H [N]
+parseDosNAListaDeN = parseDosNAListaDeN' <*> parseCongasN
+
+parseDosNAListaDeN' :: H (Maybe N -> [N])
+parseDosNAListaDeN' = do
+  n1 <- parseCongasN
+  return $ \n2 -> dosNAListaDeN n1 n2
+
+dosNAListaDeN :: Maybe N -> Maybe N -> [N]
+dosNAListaDeN n1 n2 = catMaybes [n1, n2]
+
+-- ("a")
+parseUnNAListaDeN :: H [N]
+parseUnNAListaDeN = do
+  n <- parseCongasN
+  return $ unNAListaDeN n
+
+unNAListaDeN :: Maybe N -> [N]
+unNAListaDeN n = catMaybes [n]
+
 parseTumbao :: H Layer
 parseTumbao = parseTumbao' <*> parseLayer
 
@@ -367,34 +1136,68 @@ parseTumbao'' = tumbao <$ reserved "tumbao"
 tumbao :: Int -> Layer -> Layer -- ?
 
 tumbao 0 c = c {style = nuevoE}
-  where nuevoE = (style c) {bassPitchPattern0 = bassPitchPattern0 (style c), bassRhythmPattern0 = bassRhythmPattern0 (style c)}
+  where nuevoE = (style c) {
+  bassPitchPattern0 = bassPitchPattern0 (style c),
+  bassRhythmPattern0 = bassRhythmPattern0 (style c),
+
+  congasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
+  congasSampleNPattern0 = NPattern2 [("quinto", 0), ("quinto", 1), ("quinto", 0), ("quinto", 1)],
+  congasPitchPattern0 = ("midinote", take 4 $ cycle [("mn", 60, 0)]),
+
+  tecladoPitchPattern0 = tecladoPitchPattern2 (style c),
+  tecladoRhythmPattern0 = tecladoRhythmPattern2 (style c)
+  -- tecladoSampleNPattern0 = tecladoSampleNPattern2 (style c)
+}
 
 -- tonicaQuinta
 tumbao 1 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassPitchPattern0 =  ("intervalo", [(intervalo "unisono" 0), (intervalo "5a" 0)]), -- index from list of pitches i.e. [60, 67]
-                            bassRhythmPattern0 = [(1, 0), (1, 0.5)]  --i.e. [♩ 𝄽  ♩ 𝄽 ],
+                            bassRhythmPattern0 = [(1, 0), (1, 0.5)],  --i.e. [♩ 𝄽  ♩ 𝄽 ],
+
+                            congasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
+                            congasSampleNPattern0 = NPattern2 [("quinto", 2), ("quinto", 1), ("quinto", 0), ("quinto", 1)],
+                            congasPitchPattern0 = ("midinote", take 4 $ cycle [("mn", 60, 0)]),
+
+                            tecladoPitchPattern0 = tecladoPitchPattern3 (style c),
+                            tecladoRhythmPattern0 = tecladoRhythmPattern3 (style c)
+                            -- tecladoSampleNPattern0 = tecladoSampleNPattern3 (style c)
                             }
 -- tonicaQuinta2
 tumbao 2 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
-                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "5a" (-1)]) -- index from list of pitches i.e. [60, 64, 67]
+                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "5a" (-1)]), -- index from list of pitches i.e. [60, 64, 67]
+
+                            congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.75)],
+                            congasSampleNPattern0 = NPattern2 [("quinto", 2), ("quinto", 2), ("quinto", 1), ("quinto", 0), ("quinto", 1)],
+                            congasPitchPattern0 = ("midinote", take 5 $ cycle [("mn", 60, 0)])
+
                           }
 -- tonicaAuintaOctava
 tumbao 3 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
-                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "8a" 0]) -- index from list of pitches i.e. [60, 64, 67]
+                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "8a" 0]), -- index from list of pitches i.e. [60, 64, 67]
+
+                            congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.75)],
+                            congasSampleNPattern0 = NPattern2 [("quinto", 0), ("quinto", 2), ("quinto", 1), ("quinto", 0), ("quinto", 1)],
+                            congasPitchPattern0 = ("midinote", take 5 $ cycle [("mn", 60, 0)])
+
                           }
 -- tonicaQuintaTercera
 tumbao 4 c = c {style = nuevoE}
   where nuevoE = (style c) {
                             bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],
-                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "3a" 0]) -- index from list of pitches i.e. [60, 64, 67]
+                            bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0, intervalo "3a" 0]), -- index from list of pitches i.e. [60, 64, 67]
+
+                            congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.625), (1, 0.75)],
+                            congasSampleNPattern0 = NPattern2 [("quinto", 0), ("quinto", 2), ("quinto", 1), ("quinto", 0), ("tumba", 0), ("quinto", 1)],
+                            congasPitchPattern0 = ("midinote", take 6 $ cycle [("mn", 60, 0)])
                           }
 
 tumbao _ c = c
+
 -- transforms the preset bass to just fundamental and fifth of the chord
 -- e.g  (tonicaYquinta cumbia) bajo
 
@@ -455,45 +1258,6 @@ tonicaQtercera c = c {style = nuevoE}
                           }
 --
 
-parseTumbaoCongas :: H Layer
-parseTumbaoCongas = parseTumbaoCongas' <*> parseLayer
-
-parseTumbaoCongas' :: H (Layer -> Layer)
-parseTumbaoCongas' = parseTumbaoCongas'' <*> int
-
-parseTumbaoCongas'' :: H (Int -> Layer -> Layer)
-parseTumbaoCongas'' = tumbaoCongas <$ reserved "tumbao"
-
-tumbaoCongas :: Int ->   Layer -> Layer
-tumbaoCongas 0 c = c {style = nuevoE}
-  where nuevoE = (style c) {
-  congasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
-  congasSampleNPattern0 = [1, 2, 1, 2]
-                          }
-
-tumbaoCongas 1 c = c {style = nuevoE}
-  where nuevoE = (style c) {
-  congasRhythmPattern0 = [(1, 0), (1, 0.25), (1, 0.5), (1, 0.75)],
-  congasSampleNPattern0 = [3, 2, 1, 2]
-                          }
-
-tumbaoCongas 2 c = c {style = nuevoE}
-  where nuevoE = (style c) {
-  congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.75)],
-  congasSampleNPattern0 = [3, 3, 2, 1, 2]
-                          }
-
-tumbaoCongas 3 c = c {style = nuevoE}
-  where nuevoE = (style c) {
-  congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.75)],
-  congasSampleNPattern0 = [1, 3, 2, 1, 2]
-                          }
-
-tumbaoCongas 4 c = c {style = nuevoE}
-  where nuevoE = (style c) {
-  congasRhythmPattern0 = [(1, 0), (1, 0.125),  (1, 0.25), (1, 0.5), (1, 0.625), (1, 0.75)],
-  congasSampleNPattern0 = [1, 3, 2, 1, 3, 2]
-                          }
 -- a function for changing the preset pitch pattern provided by the style
 parseCambiarNotas :: H Layer
 parseCambiarNotas = parseCambiarNotas' <*> parseLayer
@@ -508,7 +1272,8 @@ cambiarNotas :: [Double] -> Layer -> Layer
 cambiarNotas ps c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
-                            pianoPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                            acordeonPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                            tecladoPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             bassPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             efectoPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             altavozPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
@@ -517,6 +1282,7 @@ cambiarNotas ps c = c {style = nuevoE}
                             contrasPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             extrasPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             clavePitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                            jamblockPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             congasPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps)
                            }
 
@@ -537,7 +1303,8 @@ cambiarNota :: Double -> Layer -> Layer
 cambiarNota ps c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("midinote", [("mn", ps, 0)]),
-                            pianoPitchPattern0 = ("midinote", [("mn", ps, 0)]),
+                            acordeonPitchPattern0 = ("midinote", [("mn", ps, 0)]),
+                            tecladoPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             bassPitchPattern0= ("midinote", [("mn", ps, 0)]),
                             efectoPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             altavozPitchPattern0 = ("midinote", [("mn", ps, 0)]),
@@ -546,6 +1313,7 @@ cambiarNota ps c = c {style = nuevoE}
                             guiraPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             extrasPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             clavePitchPattern0 = ("midinote", [("mn", ps, 0)]),
+                            jamblockPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             congasPitchPattern0 = ("midinote", [("mn", ps, 0)])
                              }
 
@@ -580,7 +1348,8 @@ cambiarIntervalosDoubleConOctava is c = c {style = nuevoE}
     is' = fmap (\(index, octava) -> intervaloDouble index octava) is
     nuevoE = (style c) {
                               cuerdaPitchPattern0 = ("intervalo", is'),
-                              pianoPitchPattern0 = ("intervalo", is'),
+                              acordeonPitchPattern0 = ("intervalo", is'),
+                              tecladoPitchPattern0 = ("intervalo", is'),
                               bassPitchPattern0= ("intervalo", is'),
                               efectoPitchPattern0 = ("intervalo", is'),
                               altavozPitchPattern0 = ("intervalo", is'),
@@ -589,6 +1358,7 @@ cambiarIntervalosDoubleConOctava is c = c {style = nuevoE}
                               contrasPitchPattern0 = ("intervalo", is'),
                               extrasPitchPattern0 = ("intervalo", is'),
                               congasPitchPattern0 = ("intervalo", is'),
+                              jamblockPitchPattern0 = ("intervalo", is'),
                               clavePitchPattern0 = ("intervalo", is')
                               }
 --
@@ -609,7 +1379,8 @@ cambiarIntervaloDoubleConOctava index octava c = c {style = nuevoE}
   where
     nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
-                            pianoPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
+                            acordeonPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
+                            tecladoPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             bassPitchPattern0= ("intervalo", [intervaloDouble index octava]),
                             efectoPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             altavozPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
@@ -618,6 +1389,7 @@ cambiarIntervaloDoubleConOctava index octava c = c {style = nuevoE}
                             contrasPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             extrasPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             congasPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
+                            jamblockPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             clavePitchPattern0 = ("intervalo", [intervaloDouble index octava])
 
                             }
@@ -637,7 +1409,8 @@ cambiarIntervalosDouble indices c = c {style = nuevoE}
     indices' = fmap (\index -> intervaloDouble index 0) indices
     nuevoE = (style c) {
                               cuerdaPitchPattern0 = ("intervalo", indices'),
-                              pianoPitchPattern0 = ("intervalo", indices'),
+                              acordeonPitchPattern0 = ("intervalo", indices'),
+                              tecladoPitchPattern0 = ("intervalo", indices'),
                               bassPitchPattern0= ("intervalo", indices'),
                               efectoPitchPattern0 = ("intervalo", indices'),
                               altavozPitchPattern0 = ("intervalo", indices'),
@@ -646,6 +1419,7 @@ cambiarIntervalosDouble indices c = c {style = nuevoE}
                               tarolaPitchPattern0 = ("intervalo", indices'),
                               extrasPitchPattern0 = ("intervalo", indices'),
                               clavePitchPattern0 = ("intervalo", indices'),
+                              jamblockPitchPattern0 = ("intervalo", indices'),
                               congasPitchPattern0 = ("intervalo", indices')
                               }
 
@@ -663,7 +1437,8 @@ cambiarIntervaloDouble index c = c {style = nuevoE}
   where
     nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
-                            pianoPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
+                            acordeonPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
+                            tecladoPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             bassPitchPattern0= ("intervalo", [intervaloDouble index 0]),
                             efectoPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             tarolaPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
@@ -672,6 +1447,7 @@ cambiarIntervaloDouble index c = c {style = nuevoE}
                             altavozPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             extrasPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             congasPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
+                            jamblockPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             clavePitchPattern0 = ("intervalo", [intervaloDouble index 0])
                             }
 -- provee una lista de intervalos con una octava seleccionable, e.g. intervalo ["3a" 1, "5a" 2]
@@ -710,7 +1486,8 @@ cambiarIntervalosConOctava is c = c {style = nuevoE}
     is' = fmap (\x -> intervalo (indice x) (octava x)) is
     nuevoE = (style c) {
                               cuerdaPitchPattern0 = ("intervalo", is'),
-                              pianoPitchPattern0 = ("intervalo", is'),
+                              acordeonPitchPattern0 = ("intervalo", is'),
+                              tecladoPitchPattern0 = ("intervalo", is'),
                               bassPitchPattern0= ("intervalo", is'),
                               efectoPitchPattern0 = ("intervalo", is'),
                               altavozPitchPattern0 = ("intervalo", is'),
@@ -719,6 +1496,7 @@ cambiarIntervalosConOctava is c = c {style = nuevoE}
                               contrasPitchPattern0 = ("intervalo", is'),
                               extrasPitchPattern0 = ("intervalo", is'),
                               congasPitchPattern0 = ("intervalo", is'),
+                              jamblockPitchPattern0 = ("intervalo", is'),
                               clavePitchPattern0 = ("intervalo", is')
                               }
 
@@ -740,7 +1518,8 @@ cambiarIntervaloConOctava index octava c = c {style = nuevoE}
   where
     nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("intervalo", [intervalo index octava]),
-                            pianoPitchPattern0 = ("intervalo", [intervalo index octava]),
+                            acordeonPitchPattern0 = ("intervalo", [intervalo index octava]),
+                            tecladoPitchPattern0 = ("intervalo", [intervalo index octava]),
                             bassPitchPattern0= ("intervalo", [intervalo index octava]),
                             efectoPitchPattern0 = ("intervalo", [intervalo index octava]),
                             tarolaPitchPattern0 = ("intervalo", [intervalo index octava]),
@@ -749,6 +1528,7 @@ cambiarIntervaloConOctava index octava c = c {style = nuevoE}
                             altavozPitchPattern0 = ("intervalo", [intervalo index octava]),
                             extrasPitchPattern0 = ("intervalo", [intervalo index octava]),
                             congasPitchPattern0 = ("intervalo", [intervalo index octava]),
+                            jamblockPitchPattern0 = ("intervalo", [intervalo index octava]),
                             clavePitchPattern0 = ("intervalo", [intervalo index octava])
                             }
 
@@ -769,7 +1549,8 @@ cambiarIntervalos indices c = c {style = nuevoE}
     indices' = fmap (\index -> intervalo index 0) indices
     nuevoE = (style c) {
                               cuerdaPitchPattern0 = ("intervalo", indices'),
-                              pianoPitchPattern0 = ("intervalo", indices'),
+                              acordeonPitchPattern0 = ("intervalo", indices'),
+                              tecladoPitchPattern0 = ("intervalo", indices'),
                               bassPitchPattern0= ("intervalo", indices'),
                               efectoPitchPattern0 = ("intervalo", indices'),
                               tarolaPitchPattern0 = ("intervalo", indices'),
@@ -778,6 +1559,7 @@ cambiarIntervalos indices c = c {style = nuevoE}
                               altavozPitchPattern0 = ("intervalo", indices'),
                               extrasPitchPattern0 = ("intervalo", indices'),
                               congasPitchPattern0 = ("intervalo", indices'),
+                              jamblockPitchPattern0 = ("intervalo", indices'),
                               clavePitchPattern0 = ("intervalo", indices')
                               }
 -- provee el intervalo con respecto a la tonica y cualidad del acorde
@@ -794,7 +1576,8 @@ cambiarIntervalo :: String -> Layer -> Layer
 cambiarIntervalo index c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("intervalo", [intervalo index 0]),
-                            pianoPitchPattern0 = ("intervalo", [intervalo index 0]),
+                            acordeonPitchPattern0 = ("intervalo", [intervalo index 0]),
+                            tecladoPitchPattern0 = ("intervalo", [intervalo index 0]),
                             bassPitchPattern0= ("intervalo", [intervalo index 0]),
                             efectoPitchPattern0 = ("intervalo", [intervalo index 0]),
                             altavozPitchPattern0 = ("intervalo", [intervalo index 0]),
@@ -803,39 +1586,71 @@ cambiarIntervalo index c = c {style = nuevoE}
                             tarolaPitchPattern0 = ("intervalo", [intervalo index 0]),
                             extrasPitchPattern0 = ("intervalo", [intervalo index 0]),
                             congasPitchPattern0 = ("intervalo", [intervalo index 0]),
+                            jamblockPitchPattern0 = ("intervalo", [intervalo index 0]),
                             clavePitchPattern0 = ("intervalo", [intervalo index 0])
                             }
--- ritmo [0.25, 0.5]. si [0.1] => 1 [0.1] => metre = ceiling $ last attacks
+-- ritmo [1 2, 1 2 3 4]
 parseCambiarRitmosAuto :: H Layer
 parseCambiarRitmosAuto =  parseCambiarRitmosAuto' <*> parseLayer
 
 parseCambiarRitmosAuto' :: H (Layer -> Layer)
-parseCambiarRitmosAuto' =  parseCambiarRitmosAuto'' <*> rationalList
+parseCambiarRitmosAuto' =  parseCambiarRitmosAuto'' <*> parseListasDeListasDeAtaques -- rationalList
 
-parseCambiarRitmosAuto'' :: H ([Rational] -> Layer -> Layer)
+parseCambiarRitmosAuto'' :: H ([[Rational]] -> Layer -> Layer)
 parseCambiarRitmosAuto'' = cambiarRitmosAuto <$ reserved "ritmo"
 
-cambiarRitmosAuto :: [Rational] -> Layer -> Layer
+cambiarRitmosAuto :: [[Rational]] -> Layer -> Layer
+cambiarRitmosAuto [x] c = c {style = nuevoE}
+  where
+    -- [x'] = concat [x]
+    -- attack' = (x' - 1) / 4 -- metre? [1, 2, 3, 4]  => 1 [0, 0.25, 0.5, 0.75]
+    -- metre |x' <= 0 = 1
+          -- |otherwise = (realToFrac $ floor attack') + 1
+    metre = toRational $ length [x] -- [[Nothing], [1, 2, 3]] = metre 2 -- (realToFrac $ floor rs') + 1
+    rPat = cambiarRitmo'''' metre [x]
+    nuevoE = (style c) {
+                            cuerdaRhythmPattern0 = rPat,
+                            acordeonRhythmPattern0 = rPat,
+                            tecladoRhythmPattern0 = rPat,
+                            bassRhythmPattern0 = rPat,
+                            guiraRhythmPattern0 = rPat,
+                            contrasRhythmPattern0 = rPat,
+                            tarolaRhythmPattern0 = rPat,
+                            efectoRhythmPattern0 = rPat,
+                            altavozRhythmPattern0 = rPat,
+                            extrasRhythmPattern0 = rPat,
+                            claveRhythmPattern0 = rPat,
+                            jamblockRhythmPattern0 = rPat,
+                            congasRhythmPattern0 = rPat
+                            }
+
 cambiarRitmosAuto attacks c = c {style = nuevoE}
   where
-    attack = last attacks
-    metre = (realToFrac $ floor attack) + 1
+    -- attacks' = concat attacks
+    -- attack' = ((maximum attacks') - 1) / 4 -- metre? [1, 2, 3, 4]  => 1 [0, 0.25, 0.5, 0.75]
+    -- metre = (realToFrac $ floor attack') + 1
+    metre = toRational $ length attacks -- [[Nothing], [1, 2, 3]] = metre 2 -- (realToFrac $ floor rs') + 1
+    rPat = cambiarRitmo'''' metre attacks
+
     nuevoE = (style c) {
-                            cuerdaRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            pianoRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            bassRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            guiraRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            contrasRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            tarolaRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            efectoRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            altavozRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            extrasRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            claveRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            congasRhythmPattern0 = cambiarRitmo'' metre attacks
+                            cuerdaRhythmPattern0 = rPat,
+                            acordeonRhythmPattern0 = rPat,
+                            tecladoRhythmPattern0 = rPat,
+                            bassRhythmPattern0 = rPat,
+                            guiraRhythmPattern0 = rPat,
+                            contrasRhythmPattern0 = rPat,
+                            tarolaRhythmPattern0 = rPat,
+                            efectoRhythmPattern0 = rPat,
+                            altavozRhythmPattern0 = rPat,
+                            extrasRhythmPattern0 = rPat,
+                            claveRhythmPattern0 = rPat,
+                            jamblockRhythmPattern0 = rPat,
+                            congasRhythmPattern0 = rPat
                             }
+
 -- ritmo 4  cumbia cuerda, ritmo 1
 parseCambiarRitmoAuto :: H Layer
-parseCambiarRitmoAuto =  parseCambiarRitmo' <*> parseLayer
+parseCambiarRitmoAuto =  parseCambiarRitmoAuto' <*> parseLayer
 
 parseCambiarRitmoAuto' :: H (Layer -> Layer)
 parseCambiarRitmoAuto' = parseCambiarRitmoAuto'' <*> rationalOrInteger
@@ -846,11 +1661,14 @@ parseCambiarRitmoAuto'' = cambiarRitmoMetreAuto <$ reserved "ritmo"
 cambiarRitmoMetreAuto :: Rational -> Layer -> Layer
 cambiarRitmoMetreAuto attack c = c {style = nuevoE}
   where
-    metre = (realToFrac $ floor attack) + 1
+    attack' = (attack - 1) / 4
+    metre |attack <= 0 = 1 -- avoid metre of 0
+          |otherwise = (realToFrac $ floor attack') + 1 -- metre? [1, 2, 3, 4]  => 1 [0, 0.25, 0.5, 0.75]
 
     nuevoE = (style c) {
                             cuerdaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
-                            pianoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            acordeonRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            tecladoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             bassRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             guiraRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             contrasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
@@ -859,6 +1677,7 @@ cambiarRitmoMetreAuto attack c = c {style = nuevoE}
                             altavozRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             extrasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             congasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            jamblockRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             claveRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)]
                             }
 
@@ -880,7 +1699,8 @@ cambiarRitmo :: Rational -> Rational -> Layer -> Layer
 cambiarRitmo metre attack c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
-                            pianoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            acordeonRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            tecladoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             bassRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             guiraRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             contrasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
@@ -889,47 +1709,76 @@ cambiarRitmo metre attack c = c {style = nuevoE}
                             altavozRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             extrasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             congasRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            jamblockRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             claveRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)]
                             }
 
-cambiarRitmo' :: Rational -> Rational -> Maybe (Rational, Rational)
-cambiarRitmo' metre attack = metreAndAttack
-  where
-    cuartosPorCompas = 4 * metre
-    metreAndAttack | (attack >= metre) && (attack < (metre + cuartosPorCompas)) = Just (metre, attack') -- e.g. ritmo 1 [1 2 3 4] => ritmo 1 [0, 0.25, 0.5, 0.75], 2 [1 2 3 4, 5 6 7 8] => ritmo 2 [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75]
-                   | otherwise = Nothing
-                   where attack' = (attack - 1) / 4
 --e.g. ritmo 1 [0.125, 0.25] cumbia cuerda, deberia ser ritmo 1 [1 1.25 1.5 1.75], ritmo 2 [1 2]
 parseCambiarRitmos :: H Layer
 parseCambiarRitmos =  parseCambiarRitmos' <*> parseLayer
 
 parseCambiarRitmos' :: H (Layer -> Layer)
-parseCambiarRitmos' =  parseCambiarRitmos'' <*> rationalList
+parseCambiarRitmos' =  parseCambiarRitmos'' <*> parseListasDeListasDeAtaques -- rationalList
 
-parseCambiarRitmos'' :: H ([Rational] -> Layer -> Layer)
+parseCambiarRitmos'' :: H ([[Rational]] -> Layer -> Layer)
 parseCambiarRitmos'' = parseCambiarRitmos''' <*> rationalOrInteger
 
-parseCambiarRitmos''' :: H (Rational -> [Rational] -> Layer -> Layer)
+parseCambiarRitmos''' :: H (Rational -> [[Rational]] -> Layer -> Layer)
 parseCambiarRitmos''' = cambiarRitmos <$ reserved "ritmo"
 
-cambiarRitmos :: Rational -> [Rational] -> Layer -> Layer
-cambiarRitmos metre attacks c = c {style = nuevoE}
-  where nuevoE = (style c) {
-                            cuerdaRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            pianoRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            bassRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            guiraRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            contrasRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            tarolaRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            efectoRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            altavozRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            extrasRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            claveRhythmPattern0 = cambiarRitmo'' metre attacks,
-                            congasRhythmPattern0 = cambiarRitmo'' metre attacks
+cambiarRitmos :: Rational -> [[Rational]] -> Layer -> Layer
+cambiarRitmos metre rs c = c {style = nuevoE}
+  where
+    -- attacks' = concat attacks
+    nuevoE = (style c) {
+                            cuerdaRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            acordeonRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            tecladoRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            bassRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            guiraRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            contrasRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            tarolaRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            efectoRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            altavozRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            extrasRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            claveRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            jamblockRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            congasRhythmPattern0 = cambiarRitmo'''' metre rs
                             }
 
+-- a function to change the attacks
+cambiarRitmo' :: Rational -> Rational -> Maybe (Rational, Rational)
+cambiarRitmo' metre attack = metreAndAttack
+  where
+    cuartosPorCompas = 4 * metre
+    metreAndAttack | (attack >= 1) && (attack < (cuartosPorCompas + 1)) = Just (metre, attack') -- e.g. ritmo 1 [1 2 3 4] => ritmo 1 [0, 0.25, 0.5, 0.75], 2 [1 2 3 4, 5 6 7 8] => ritmo 2 [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75]
+                   | otherwise = Nothing
+                   where attack' = (attack - 1) / 4
+                   -- where attack' = ((attack - 1) / 4) + indice
+
 cambiarRitmo'' :: Rational -> [Rational] -> [(Rational, Rational)]
-cambiarRitmo'' metre attacks = catMaybes $ fmap (cambiarRitmo' metre) attacks
+cambiarRitmo'' metre  attacks = catMaybes $ fmap (cambiarRitmo' metre) attacks
+
+
+cambiarRitmoSinMetre' :: Rational -> Rational -> Maybe Rational
+cambiarRitmoSinMetre' metre attack = metreAndAttack
+  where
+    cuartosPorCompas = 4 * metre
+    metreAndAttack | (attack >= 1) && (attack < (cuartosPorCompas + 1)) = Just attack' -- e.g. ritmo 1 [1 2 3 4] => ritmo 1 [0, 0.25, 0.5, 0.75], 2 [1 2 3 4, 5 6 7 8] => ritmo 2 [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75]
+                   | otherwise = Nothing
+                   where attack' = (attack - 1) / 4
+
+cambiarRitmoSinMetre''' :: Rational -> [Rational] -> [Maybe Rational]
+cambiarRitmoSinMetre''' metre  attacks = fmap (cambiarRitmoSinMetre' metre) attacks
+
+-- nota: falta dividir en /4 y luego sumar, ahora suma primero y divide despues pero no es lo mismo
+cambiarRitmo'''' :: Rational -> [[Rational]] -> [(Rational, Rational)] -- [(metre, attack)]
+cambiarRitmo'''' metre attacks = do
+  let dividirAttacks = fmap (cambiarRitmoSinMetre''' metre) attacks -- [[Maybe Rational]]
+  let zipIAttacks = zip [toRational 0 .. (metre - 1)] dividirAttacks -- [(0, [Just 1, Just 2.. ])), ...)]
+  let sumarIaAttacks = fmap (\(i, xs) -> fmap (\x ->  (+) <$> x <*> Just i) xs) zipIAttacks -- [[1,2, 3], [4, 5, 6]]
+  let attacks' = catMaybes $ concat sumarIaAttacks
+  fmap (\attack -> (metre, attack)) attacks'
 
 -- cambia el gain
 parseCambiarGain :: H Layer
@@ -945,7 +1794,8 @@ cambiarGain :: Double -> Layer -> Layer
 cambiarGain gain c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaGainPattern0 = gain,
-                            pianoGainPattern0 = gain,
+                            acordeonGainPattern0 = gain,
+                            tecladoGainPattern0 = gain,
                             bassGainPattern0 = gain,
                             guiraGainPattern0 = gain,
                             contrasGainPattern0 = gain,
@@ -954,6 +1804,7 @@ cambiarGain gain c = c {style = nuevoE}
                             altavozGainPattern0 = gain,
                             extrasGainPattern0 = gain,
                             congasGainPattern0 = gain,
+                            jamblockGainPattern0 = gain,
                             claveGainPattern0 = gain
                             }
 
@@ -971,7 +1822,8 @@ cambiarPaneo :: Double -> Layer -> Layer
 cambiarPaneo pan c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPanPattern0 = pan,
-                            pianoPanPattern0 = pan,
+                            acordeonPanPattern0 = pan,
+                            tecladoPanPattern0 = pan,
                             bassPanPattern0 = pan,
                             guiraPanPattern0 = pan,
                             contrasPanPattern0 = pan,
@@ -980,6 +1832,7 @@ cambiarPaneo pan c = c {style = nuevoE}
                             altavozPanPattern0 = pan,
                             extrasPanPattern0 = pan,
                             congasPanPattern0 = pan,
+                            jamblockPanPattern0 = pan,
                             clavePanPattern0 = pan
                             }
 
@@ -997,13 +1850,17 @@ parsePreset'' = preset <$ reserved "preset"
 preset :: Int -> Layer -> Layer
 preset 0 c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            pianoRhythmPattern0 = pianoRhythmPattern0 (style c), -- ie.  [𝄽  𝄽  𝄽  ♩],
-                            pianoSampleNPattern0 = pianoSampleNPattern0 (style c),
-                            pianoPitchPattern0 = pianoPitchPattern0 (style c),
+                            tecladoRhythmPattern0 = tecladoRhythmPattern0 (style c), -- ie.  [𝄽  𝄽  𝄽  ♩],
+                            tecladoSampleNPattern0 = tecladoSampleNPattern0 (style c),
+                            tecladoPitchPattern0 = tecladoPitchPattern0 (style c),
 
                             cuerdaRhythmPattern0 = cuerdaRhythmPattern0 (style c),
                             cuerdaSampleNPattern0 = cuerdaSampleNPattern0 (style c),
-                            cuerdaPitchPattern0 = cuerdaPitchPattern0 (style c), -- or double? (nota [0, 2, 3] cumbia) cuerda
+                            cuerdaPitchPattern0 = cuerdaPitchPattern0 (style c), -- or double? (nota [0, 2, 3]
+
+                            acordeonRhythmPattern0 = acordeonRhythmPattern0 (style c),
+                            acordeonSampleNPattern0 = acordeonSampleNPattern0 (style c),
+                            acordeonPitchPattern0 = acordeonPitchPattern0 (style c), -- or double? (nota [0, 2, 3] cumbia) cuerda
 
                             bassRhythmPattern0 = bassRhythmPattern0 (style c),  --i.e. [♩ 𝄽  ♩ ♩],
                             bassSampleNPattern0 = bassSampleNPattern0 (style c),
@@ -1038,82 +1895,95 @@ preset 0 c = c {style = nuevoE}
                             claveRhythmPattern0 = claveRhythmPattern0 (style c),
                             claveSampleNPattern0 = claveSampleNPattern0 (style c),
                             clavePitchPattern0 = clavePitchPattern0 (style c)
+
                           }
 
 preset 1 c = c {style = nuevoE}
   where nuevoE = (style c) {
-                            pianoRhythmPattern0 = pianoRhythmPattern1 (style c), -- ie. [𝄽 ♩ 𝄽 ♩],
-                            pianoSampleNPattern0 = pianoSampleNPattern1 (style c),
+                            tecladoRhythmPattern0 = tecladoRhythmPattern1 (style c), -- ie. [𝄽 ♩ 𝄽 ♩],
+                            tecladoSampleNPattern0 = tecladoSampleNPattern1 (style c),
 
                             bassRhythmPattern0 = bassRhythmPattern1 (style c),  --i.e. [♩ 𝄽  ♩ 𝄽 ],
-                            bassSampleNPattern0 = pianoSampleNPattern0 (style c),
-                            bassPitchPattern0 = bassPitchPattern1 (style c)
+                            bassSampleNPattern0 = tecladoSampleNPattern0 (style c),
+                            bassPitchPattern0 = bassPitchPattern1 (style c),
+
+                            claveRhythmPattern0 = claveRhythmPattern1 (style c),
+                            claveSampleNPattern0 = claveSampleNPattern1 (style c),
+                            clavePitchPattern0 = clavePitchPattern1 (style c)
                           }
 
 preset 2 c = c {style = nuevoE}
    where nuevoE = (style c) {
                             bassRhythmPattern0 = bassRhythmPattern2 (style c),  --i.e. [♩ 𝄽  ♩ 𝄽 ],
-                            bassSampleNPattern0 = pianoSampleNPattern0 (style c),
-                            bassPitchPattern0 = bassPitchPattern2 (style c)
+                            bassSampleNPattern0 = tecladoSampleNPattern0 (style c),
+                            bassPitchPattern0 = bassPitchPattern2 (style c),
+
+                            claveRhythmPattern0 = claveRhythmPattern2 (style c),
+                            claveSampleNPattern0 = claveSampleNPattern2 (style c),
+                            clavePitchPattern0 = clavePitchPattern2 (style c)
                             }
 preset _ c = preset 0 c
 
--- funcion que modifica los acordes del piano -- acompanamiento 2 =>  acompanamiento [0, 0.25, 0.5, 0.75]
+-- funcion que modifica los acordes del teclado -- acompanamiento 2 =>  no más de 4.99
 parseacompanamiento :: H Layer
 parseacompanamiento = parseacompanamiento' <*> parseLayer
 
 parseacompanamiento' :: H (Layer -> Layer)
-parseacompanamiento' = parseacompanamiento'' <*> double
+parseacompanamiento' = parseacompanamiento'' <*> rationalOrInteger
 
-parseacompanamiento'' :: H (Double -> Layer -> Layer)
+parseacompanamiento'' :: H (Rational -> Layer -> Layer)
 parseacompanamiento'' = acompanamiento <$ (reserved "acompañamiento" <|> reserved "acompanamiento")
 
-acompanamiento :: Double -> Layer -> Layer
-acompanamiento n c = c {style = nuevoE}
+acompanamiento :: Rational -> Layer -> Layer
+acompanamiento attack c = c {style = nuevoE}
   where
-    n' | n == 0 = 0
-       |otherwise = abs $ n - 1
+    -- n' | n == 0 = 0
+       -- |otherwise = abs $ n - 1
+    attack' = (attack - 1) / 4
+    metre = (realToFrac $ floor attack') + 1 -- metre? [1, 2, 3, 4]  => 1 [0, 0.25, 0.5, 0.75]
+    rPat = catMaybes [cambiarRitmo' metre attack] -- fmap (\n -> (metre, (realToFrac n) /4)) ns'
     nuevoE = (style c) {
-                            pianoRhythmPattern0 = [(1, (realToFrac n') / 4)],
-                            pianoSampleNPattern0 = pianoSampleNPattern0 (style c),
-                            pianoPitchPattern0 = pianoPitchPattern0 (style c) -- ("acorde", [note])
+                            tecladoRhythmPattern0 = rPat, -- [(1, (realToFrac n') / 4)],
+                            tecladoSampleNPattern0 = tecladoSampleNPattern0 (style c),
+                            tecladoPitchPattern0 = tecladoPitchPattern0 (style c) -- ("acorde", [note])
                           }
-
 
 -- acompanamientoTest :: Double -> Layer -> Layer
 acompanamientoTest n notes = do
 
   let  n' | n == 0 = 0
           |otherwise = abs $ n - 1
-  let pianoRhythmPattern = [(1, (realToFrac n') / 4)]
-  let pianoSampleNPattern = [0]
-  let pianoPitchPattern = notes
-  (show pianoRhythmPattern, show pianoSampleNPattern, show pianoPitchPattern)
+  let tecladoRhythmPattern = [(1, (realToFrac n') / 4)]
+  let tecladoSampleNPattern = [0]
+  let tecladoPitchPattern = notes
+  (show tecladoRhythmPattern, show tecladoSampleNPattern, show tecladoPitchPattern)
 
 
--- funcion que modifica los acordes del piano -- acompanamiento [2, 4] =>  acompanamiento [0, 0.25, 0.5, 0.75]
+-- funcion que modifica los acordes del teclado -- acompanamiento (2 4)
 
 parseacompanamientos :: H Layer
 parseacompanamientos = parseacompanamientos' <*> parseLayer
 
 parseacompanamientos' :: H (Layer -> Layer)
-parseacompanamientos' = parseacompanamientos'' <*> doubleList
+parseacompanamientos' = parseacompanamientos'' <*> parseAtaquesAListaDeAtaques -- rationalList
 
-parseacompanamientos'' :: H ([Double] -> Layer -> Layer)
+parseacompanamientos'' :: H ([Rational] -> Layer -> Layer)
 parseacompanamientos'' = acompanamientos <$ (reserved "acompañamiento" <|> reserved "acompanamiento")
 
-acompanamientos :: [Double] -> Layer -> Layer
+acompanamientos :: [Rational] -> Layer -> Layer
 acompanamientos ns c = c {style = nuevoE}
   where
-    ns' = fmap (\n -> if (n == 0) then 0 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
-    metre = 1
-    notes = replicate (length ns) (snd $ pianoPitchPattern0 (style c)) -- [[Note]]
-    rPat = fmap (\n -> (metre, (realToFrac n) /4)) ns'
-    nPat = concat $ fmap (\x -> replicate (length ns) x) (pianoSampleNPattern0 (style c))
+    -- ns' = fmap (\n -> if (n == 0) then 0 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
+    -- rs' = ((maximum ns') - 1) / 4 -- metre? [1, 2, 3, 4]  => 1 [0, 0.25, 0.5, 0.75]
+    ns' = ((maximum ns) - 1) / 4 -- metre? [1, 2, 3, 4]  => 1 [0, 0.25, 0.5, 0.75]
+    metre = (realToFrac $ floor ns') + 1
+    -- metre = 1
+    rPat = cambiarRitmo'' metre ns -- fmap (\n -> (metre, (realToFrac n) /4)) ns'
+    nPat (NPattern1 xs) = NPattern1 $ concat $ replicate (length ns) xs
     nuevoE = (style c) {
-                            pianoRhythmPattern0 = rPat, -- listaDeStringsARhythmicPattern rPat notes,
-                            pianoSampleNPattern0 = concat $ replicate (length ns) $ pianoSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
-                            pianoPitchPattern0 = pianoPitchPattern0 (style c) -- ("acorde", concat $ notes) -- (PitchType, [Note])
+                            tecladoRhythmPattern0 = rPat, -- listaDeStringsARhythmicPattern rPat notes,
+                            tecladoSampleNPattern0 = nPat $ tecladoSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
+                            tecladoPitchPattern0 = tecladoPitchPattern0 (style c) -- ("acorde", concat $ notes) -- (PitchType, [Note])
                           }
 
 acompanamientosTest :: [Double] -> [Note] -> (String, String, String)
@@ -1122,43 +1992,39 @@ acompanamientosTest ns notes = do
   let metre = 1
   let notes' = replicate (length ns)  [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0] -- [[Note]]
   let rPat = fmap (\n -> (metre, (realToFrac n) /4)) ns'
-  let nPat = concat $ fmap (\x -> replicate (length ns) x) [0]
-  let pianoRhythmPattern =  listaDeStringsARhythmicPattern rPat notes'
-  let pianoSampleNPattern = listaDeStringsANPattern nPat notes'
-  let pianoPitchPattern = ("acorde", concat $ notes')
-  (show pianoRhythmPattern, show pianoSampleNPattern, show pianoPitchPattern)
+  let nPat = NPattern1 $ concat $ fmap (\x -> replicate (length ns) x) [0]
+  let tecladoRhythmPattern =  listaDeStringsARhythmicPattern rPat notes'
+  let tecladoSampleNPattern = listaDeStringsANPattern nPat notes'
+  let tecladoPitchPattern = ("acorde", concat $ notes')
+  (show tecladoRhythmPattern, show tecladoSampleNPattern, show tecladoPitchPattern)
 
--- funcion que modifica los acordes del piano -- acompanamiento 2 ["f" "3a" "5a"] =>  acompanamiento [0, 0.25, 0.5, 0.75]
--- si ["f" "3a" "5a", ...] => [["f", "3a", "5a"], ...]
-
+-- funcion que modifica los acordes del teclado -- acompanamiento 2 ("f" "3a" "5a") o acompanamiento 2 $ "f" ("3a" (-1)) "5a"
 parseAcompanamientoConVoicingSel :: H Layer
 parseAcompanamientoConVoicingSel = parseAcompanamientoConVoicingSel' <*> parseLayer
 
 parseAcompanamientoConVoicingSel' :: H (Layer -> Layer)
--- parseAcompanamientoConVoicingSel' = parseAcompanamientoConVoicingSel'' <*> parseNote
-parseAcompanamientoConVoicingSel' = parseAcompanamientoConVoicingSel'' <*> praseListaDeListaStringAListaDeAcordes
+parseAcompanamientoConVoicingSel' = parseAcompanamientoConVoicingSel'' <*> parseStringsAListaDeNotes --
 
--- parseAcompanamientoConVoicingSel'' :: H ([[String]] -> Layer -> Layer)
-parseAcompanamientoConVoicingSel'' :: H ([[Note]] -> Layer -> Layer)
-parseAcompanamientoConVoicingSel'' = parseAcompanamientoConVoicingSel''' <*> double
+parseAcompanamientoConVoicingSel'' :: H ([Note] -> Layer -> Layer)
+parseAcompanamientoConVoicingSel'' = parseAcompanamientoConVoicingSel''' <*> rationalOrInteger
 
--- parseAcompanamientoConVoicingSel''' :: H (Double -> [[String]] -> Layer -> Layer)
-parseAcompanamientoConVoicingSel''' :: H (Double -> [[Note]] -> Layer -> Layer)
+parseAcompanamientoConVoicingSel''' :: H (Rational -> [Note] -> Layer -> Layer)
 parseAcompanamientoConVoicingSel''' = acompanamientoConVoicingSel <$ (reserved "acompañamiento" <|> reserved "acompanamiento")
 
--- acompanamientoConVoicingSel :: Double -> [[String]] -> Layer -> Layer
-acompanamientoConVoicingSel :: Double -> [[Note]] -> Layer -> Layer
-acompanamientoConVoicingSel n notes c = c {style = nuevoE}
+acompanamientoConVoicingSel :: Rational -> [Note] -> Layer -> Layer
+acompanamientoConVoicingSel attack notes c = c {style = nuevoE}
   where
-    n' | n == 0 = 1
-       |otherwise = abs $ n - 1
-    rPat = [(1, (realToFrac n') / 4)]
-    nPat = pianoSampleNPattern0 (style c)
+    attack' = (attack - 1) / 4
+    metre = (realToFrac $ floor attack') + 1 -- metre? [1, 2, 3, 4]  => 1 [0, 0.25, 0.5, 0.75]
+    rPat = catMaybes [cambiarRitmo' metre attack] -- fmap (\n -> (metre, (realToFrac n) /4)) ns'
+
+    nPat = tecladoSampleNPattern0 (style c)
     nuevoE = (style c) {
-                            pianoRhythmPattern0 = listaDeStringsARhythmicPattern rPat notes,
-                            pianoSampleNPattern0 = listaDeStringsANPattern nPat notes,
-                            pianoPitchPattern0 = ("intervalo", listaDeStringsANote notes)
+                            tecladoRhythmPattern0 = rPat, -- listaDeStringsARhythmicPattern rPat notes,
+                            tecladoSampleNPattern0 = nPat, -- listaDeStringsANPattern nPat notes,
+                            tecladoPitchPattern0 = ("acorde", notes)-- ("acorde", [note])
                           }
+
 ---- test
 -- p test this by taking the layer out
 -- acompanamientoConVoicingSel :: Double -> [[Note]] -> Layer -> Layer
@@ -1166,45 +2032,41 @@ acompanamientoConVoicingSelTest n notes = do
     let  n' | n == 0 = 1
             |otherwise = abs $ n - 1
     let rPat = [(1, (realToFrac n') / 4)]
-    let nPat = [0]
-    let pianoRhythmPattern = listaDeStringsARhythmicPattern rPat notes
-    let pianoSampleNPattern = listaDeStringsANPattern nPat notes
-    let pianoPitchPattern = ("intervalo", listaDeStringsANote notes)
-    (show pianoRhythmPattern, show pianoSampleNPattern, show pianoPitchPattern)
+    let nPat = NPattern1 [0]
+    let tecladoRhythmPattern = listaDeStringsARhythmicPattern rPat notes
+    let tecladoSampleNPattern = listaDeStringsANPattern nPat notes
+    let tecladoPitchPattern = ("intervalo", listaDeStringsANote notes)
+    (show tecladoRhythmPattern, show tecladoSampleNPattern, show tecladoPitchPattern)
 
--- acompanamiento [2, 4] ["f" "3a" "5a", "3a" "5a"]
+-- acompanamiento (2 4) ("f" "3a" $ "5a" (-1))
 parseAcompanamientosConVoicingSel :: H Layer
 parseAcompanamientosConVoicingSel = parseAcompanamientosConVoicingSel' <*> parseLayer
 
 parseAcompanamientosConVoicingSel' :: H (Layer -> Layer)
-parseAcompanamientosConVoicingSel' = parseAcompanamientosConVoicingSel'' <*> praseListaDeListaStringAListaDeAcordes
+parseAcompanamientosConVoicingSel' = parseAcompanamientosConVoicingSel'' <*> parseStringsAListaDeNotes -- parseStringsAListaDeNotes -- praseListaDeListaStringAListaDeAcordes
 
-parseAcompanamientosConVoicingSel'' :: H ([[Note]] -> Layer -> Layer)
-parseAcompanamientosConVoicingSel'' = parseAcompanamientosConVoicingSel''' <*> doubleList
+parseAcompanamientosConVoicingSel'' :: H ([Note] -> Layer -> Layer)
+parseAcompanamientosConVoicingSel'' = parseAcompanamientosConVoicingSel''' <*> parseAtaquesAListaDeAtaques -- rationalList
 
-parseAcompanamientosConVoicingSel''' :: H ([Double] -> [[Note]] -> Layer -> Layer)
+parseAcompanamientosConVoicingSel''' :: H ([Rational] -> [Note] -> Layer -> Layer)
 parseAcompanamientosConVoicingSel''' = acompanamientosConVoicingSel <$ (reserved "acompañamiento" <|> reserved "acompanamiento")
 
-acompanamientosConVoicingSel :: [Double] -> [[Note]] -> Layer -> Layer
-acompanamientosConVoicingSel ns notes c = c {style = nuevoE}
+acompanamientosConVoicingSel :: [Rational] -> [Note] -> Layer -> Layer
+acompanamientosConVoicingSel rs notes c = c {style = nuevoE}
   where
-    metre = 1
-    ns' = fmap (\n -> if (n == 0) then 1 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
-    rPat = fmap (\n -> (metre, (realToFrac n) /4)) ns'-- [(1, (realToFrac n') / 4)]
-    nPat = pianoSampleNPattern0 (style c)
-    nuevoE = (style c) {
-                            pianoRhythmPattern0 = listaDeStringsARhythmicPattern rPat notes,
-                            pianoSampleNPattern0 = listaDeStringsANPattern nPat notes,
-                            pianoPitchPattern0 = ("intervalo", listaDeStringsANote notes)
-                          }
--- e.g. [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]
--- type Note = (Relacion, Double, Octava)
--- type PitchPattern = (PitchType, [Note])
--- ("acorde", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0])
--- type RhythmicPattern = [(Metre, Attack)]
--- type NPattern = [Int]
--- para [["f", "3a", "5a"], ...] => [[((m, a), "f"), ...]]
+    -- metre = 1
+    -- ns' = fmap (\n -> if (n == 0) then 0 else (abs $ n - 1)) ns -- [1, 2, 3, 4] a [0, 1, 2, 3]
+    -- rPat = fmap (\n -> (metre, (realToFrac n) /4)) ns'-- [(1, (realToFrac n') / 4)]
+    rs' = ((maximum rs) - 1) / 4 -- metre? [1, 2, 3, 4]  => 1 [0, 0.25, 0.5, 0.75]
+    metre = (realToFrac $ floor rs') + 1
+    rPat = cambiarRitmo'' metre rs
 
+    nPat (NPattern1 xs) = NPattern1 $ concat $ replicate (length rs) xs
+    nuevoE = (style c) {
+                            tecladoRhythmPattern0 = rPat, -- listaDeStringsARhythmicPattern rPat notes,
+                            tecladoSampleNPattern0 =  nPat $ tecladoSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
+                            tecladoPitchPattern0 = ("acorde", notes)-- ("intervalo", listaDeStringsANote notes)
+                          }
 
 parseNote :: H Note --(Relacion, Double, Octava)
 parseNote = parseNoteConOctava
@@ -1240,9 +2102,9 @@ listaDeStringsARhythmicPattern rs xs = do
 
 -- listaDeStringsANPattern :: NPattern -> [[String]] -> NPattern
 listaDeStringsANPattern :: NPattern -> [[Note]] -> NPattern
-listaDeStringsANPattern ns xs = do
+listaDeStringsANPattern (NPattern1 ns) xs = do
   let z = zip xs ns -- [([String], Int)]
-  listaDeListaDeStringAN z --[Int]
+  NPattern1 $ listaDeListaDeStringAN z --[Int]
 
 -- listaDeListaDeStringARhythmicP :: [([String], RhythmicPosition)] -> RhythmicPattern
 listaDeListaDeStringARhythmicP :: [([Note], RhythmicPosition)] -> RhythmicPattern
@@ -1274,12 +2136,12 @@ stringANote s = intervalo s 0
 
 --
 praseListaDeListaStringAListaDeAcordes :: H [[Note]]
-praseListaDeListaStringAListaDeAcordes = list parseStringsAListaDeAcordes
+praseListaDeListaStringAListaDeAcordes = list parseStringsAListaDeNotes
 
 -- acompanamiento 2 ["f" "3a" "5a", ]
--- parseStringsAListaDeAcordes :: H [String]
-parseStringsAListaDeAcordes :: H [Note]
-parseStringsAListaDeAcordes = parseUnStringAListadeNotas
+-- parseStringsAListaDeNotes :: H [String]
+parseStringsAListaDeNotes :: H [Note]
+parseStringsAListaDeNotes = parseUnStringAListadeNotas
                           <|> parseDosStringsAListadeNotas
                           <|> parseTresStringsAListadeNotas
                           <|> parseCuatroStringsAListadeNotas
@@ -1340,6 +2202,7 @@ stringsAListadeTresNotas s1 s2 s3 = [s1, s2, s3]
 stringsAListadeCuatroNotas :: Note -> Note -> Note -> Note -> [Note]
 stringsAListadeCuatroNotas s1 s2 s3 s4 = [s1, s2, s3, s4]
 
+
 -- [60 64 67] [59 62 67]
 -- ["f" "3a" "5a", "3a" (-1) "5a" (-1) "f" (-1)]
 --
@@ -1368,10 +2231,10 @@ parseLayerToLayerFunc = parseSeleccionarEstilo'
                       <|> parseTonicaQtercera'
                       <|> parseCambiarNota'
                       <|> parseCambiarNotas'
-                      <|> parseCambiarRitmo'
-                      <|> parseCambiarRitmos'
                       <|> parseCambiarRitmoAuto'
                       <|> parseCambiarRitmosAuto'
+                      <|> parseCambiarRitmo'
+                      <|> parseCambiarRitmos'
                       <|> parseCambiarIntervalo'
                       <|> parseCambiarIntervalos'
                       <|> parseCambiarIntervaloConOctava'
@@ -1385,7 +2248,13 @@ parseLayerToLayerFunc = parseSeleccionarEstilo'
                       <|> parseCambiarGain'
                       <|> parseCambiarPaneo'
                       <|> parseTumbao'
-                      <|> parseTumbaoCongas'
+                      <|> parseaTumbaoBajoVoicingSel'
+                      <|> parseaTumbaoBajoVoicingYRitmoSel'
+                      <|> parseaTumbaoBajoVoicingsYRitmoSel'
+                      <|> parseTumbaoCongasGolpesSel'
+                      <|> parseTumbaoCongasGolpesYRitmoSel'
+                      <|> parseTumbaoCongasListaDeGolpesSel'
+                      <|> parseTumbaoCongasListaDeGolpesYRitmoSel'
                       <|> parseacompanamiento'
                       <|> parseacompanamientos'
                       <|> parseAcompanamientoConVoicingSel'
@@ -1528,12 +2397,542 @@ intList = list $ fromIntegral <$> integer
 int :: H Int
 int = fromIntegral <$> integer
 
+parseNPattern1 :: H NPattern
+parseNPattern1 = do
+  ix <- intList
+  return $ NPattern1 ix
+
 double :: H Double
 double = fromRational <$> rationalOrInteger
 
 doubleList :: H [Double]
 doubleList = list double
 
+--
+parseListasDeListasDeAtaques ::  H [[Rational]]
+parseListasDeListasDeAtaques = list parseAtaquesAListaDeAtaques
+
+parseAtaquesAListaDeAtaques :: H [Rational]
+parseAtaquesAListaDeAtaques = parseUnAtaqueAListDeAtaques
+               <|> parseDosAtaquesAListDeAtaques
+               <|> parseTresAtaquesAListDeAtaques
+               <|> parseCuatroAtaquesAListDeAtaques
+               <|> parseCincoAtaquesAListDeAtaques
+               <|> parseSeisAtaquesAListDeAtaques
+               <|> parseSieteAtaquesAListDeAtaques
+               <|> parseOchoAtaquesAListDeAtaques
+               <|> parseNueveAtaquesAListDeAtaques
+               <|> parseDiezAtaquesAListDeAtaques
+               <|> parseOnceAtaquesAListDeAtaques
+               <|> parseDoceAtaquesAListDeAtaques
+               <|> parseTreceAtaquesAListDeAtaques
+               <|> parseCatorceAtaquesAListDeAtaques
+               <|> parseQuinceAtaquesAListDeAtaques
+               <|> parseDieciseisAtaquesAListDeAtaques
+
+parseDieciseisAtaquesAListDeAtaques :: H [Rational]
+parseDieciseisAtaquesAListDeAtaques = parseDieciseisAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques' = parseDieciseisAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques'' = parseDieciseisAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques''' = parseDieciseisAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques'''' = parseDieciseisAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques''''' = parseDieciseisAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques'''''' = parseDieciseisAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques''''''' = parseDieciseisAtaquesAListDeAtaques'''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques'''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques'''''''' = parseDieciseisAtaquesAListDeAtaques''''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques''''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques''''''''' = parseDieciseisAtaquesAListDeAtaques'''''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques'''''''''' :: H (Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques'''''''''' = parseDieciseisAtaquesAListDeAtaques''''''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques''''''''''' :: H (Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques''''''''''' = parseDieciseisAtaquesAListDeAtaques'''''''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques'''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques'''''''''''' = parseDieciseisAtaquesAListDeAtaques''''''''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques''''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques''''''''''''' = parseDieciseisAtaquesAListDeAtaques'''''''''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques'''''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques'''''''''''''' = parseDieciseisAtaquesAListDeAtaques''''''''''''''' <*> rationalOrInteger
+
+parseDieciseisAtaquesAListDeAtaques''''''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDieciseisAtaquesAListDeAtaques''''''''''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 n16 -> dieciseisAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 n16
+
+dieciseisAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational]
+dieciseisAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 n16 =  [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15, n16]
+
+-- ("p" "t" "p" (t "a") ...)
+parseQuinceAtaquesAListDeAtaques :: H [Rational]
+parseQuinceAtaquesAListDeAtaques = parseQuinceAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques' = parseQuinceAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques'' = parseQuinceAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques''' = parseQuinceAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques'''' = parseQuinceAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques''''' = parseQuinceAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques'''''' = parseQuinceAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques''''''' = parseQuinceAtaquesAListDeAtaques'''''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques'''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques'''''''' = parseQuinceAtaquesAListDeAtaques''''''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques''''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques''''''''' = parseQuinceAtaquesAListDeAtaques'''''''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques'''''''''' :: H (Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques'''''''''' = parseQuinceAtaquesAListDeAtaques''''''''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques''''''''''' :: H (Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques''''''''''' = parseQuinceAtaquesAListDeAtaques'''''''''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques'''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques'''''''''''' = parseQuinceAtaquesAListDeAtaques''''''''''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques''''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques''''''''''''' = parseQuinceAtaquesAListDeAtaques'''''''''''''' <*> rationalOrInteger
+
+parseQuinceAtaquesAListDeAtaques'''''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseQuinceAtaquesAListDeAtaques'''''''''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 -> quinceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15
+
+quinceAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational]
+quinceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 n15 =  [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14, n15]
+
+-- ("p" "t" "p" (t "a") ...)
+parseCatorceAtaquesAListDeAtaques :: H [Rational]
+parseCatorceAtaquesAListDeAtaques = parseCatorceAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques' = parseCatorceAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques'' = parseCatorceAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques''' = parseCatorceAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques'''' = parseCatorceAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques''''' = parseCatorceAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques'''''' = parseCatorceAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques''''''' = parseCatorceAtaquesAListDeAtaques'''''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques'''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques'''''''' = parseCatorceAtaquesAListDeAtaques''''''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques''''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques''''''''' = parseCatorceAtaquesAListDeAtaques'''''''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques'''''''''' :: H (Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques'''''''''' = parseCatorceAtaquesAListDeAtaques''''''''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques''''''''''' :: H (Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques''''''''''' = parseCatorceAtaquesAListDeAtaques'''''''''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques'''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques'''''''''''' = parseCatorceAtaquesAListDeAtaques''''''''''''' <*> rationalOrInteger
+
+parseCatorceAtaquesAListDeAtaques''''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCatorceAtaquesAListDeAtaques''''''''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 -> catorceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14
+
+catorceAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational]
+catorceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 n14 =  [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14]
+
+-- ("p" "t" "p" (t "a") ...)
+parseTreceAtaquesAListDeAtaques :: H [Rational]
+parseTreceAtaquesAListDeAtaques = parseTreceAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques' = parseTreceAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques'' = parseTreceAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques''' = parseTreceAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques'''' = parseTreceAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques''''' = parseTreceAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques'''''' = parseTreceAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques''''''' = parseTreceAtaquesAListDeAtaques'''''''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques'''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques'''''''' = parseTreceAtaquesAListDeAtaques''''''''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques''''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques''''''''' = parseTreceAtaquesAListDeAtaques'''''''''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques'''''''''' :: H (Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques'''''''''' = parseTreceAtaquesAListDeAtaques''''''''''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques''''''''''' :: H (Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques''''''''''' = parseTreceAtaquesAListDeAtaques'''''''''''' <*> rationalOrInteger
+
+parseTreceAtaquesAListDeAtaques'''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseTreceAtaquesAListDeAtaques'''''''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 -> treceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13
+
+treceAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational]
+treceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 n13 =  [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13]
+
+-- ("p" "t" "p" (t "a") ...)
+parseDoceAtaquesAListDeAtaques :: H [Rational]
+parseDoceAtaquesAListDeAtaques = parseDoceAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques' = parseDoceAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques'' = parseDoceAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques''' = parseDoceAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques'''' = parseDoceAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques''''' = parseDoceAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques'''''' = parseDoceAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques''''''' = parseDoceAtaquesAListDeAtaques'''''''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques'''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques'''''''' = parseDoceAtaquesAListDeAtaques''''''''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques''''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques''''''''' = parseDoceAtaquesAListDeAtaques'''''''''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques'''''''''' :: H (Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques'''''''''' = parseDoceAtaquesAListDeAtaques''''''''''' <*> rationalOrInteger
+
+parseDoceAtaquesAListDeAtaques''''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDoceAtaquesAListDeAtaques''''''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 -> doceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12
+
+doceAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> [Rational]
+doceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 n12 =  [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12]
+
+-- ("p" "t" "p" (t "a") ...)
+parseOnceAtaquesAListDeAtaques :: H [Rational]
+parseOnceAtaquesAListDeAtaques = parseOnceAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques' = parseOnceAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques'' = parseOnceAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques''' = parseOnceAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques'''' = parseOnceAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques''''' = parseOnceAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques'''''' = parseOnceAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques''''''' = parseOnceAtaquesAListDeAtaques'''''''' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques'''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques'''''''' = parseOnceAtaquesAListDeAtaques''''''''' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques''''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques''''''''' = parseOnceAtaquesAListDeAtaques'''''''''' <*> rationalOrInteger
+
+parseOnceAtaquesAListDeAtaques'''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOnceAtaquesAListDeAtaques'''''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 -> onceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11
+
+onceAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> [Rational]
+onceAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 n11 =  [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11]
+
+-- ("p" "t" "p" (t "a") ...)
+parseDiezAtaquesAListDeAtaques :: H [Rational]
+parseDiezAtaquesAListDeAtaques = parseDiezAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques' = parseDiezAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques'' = parseDiezAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques''' = parseDiezAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques'''' = parseDiezAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques''''' = parseDiezAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques'''''' = parseDiezAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques''''''' = parseDiezAtaquesAListDeAtaques'''''''' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques'''''''' :: H (Rational -> Rational ->  Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques'''''''' = parseDiezAtaquesAListDeAtaques''''''''' <*> rationalOrInteger
+
+parseDiezAtaquesAListDeAtaques''''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseDiezAtaquesAListDeAtaques''''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 n10 -> diezAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10
+
+diezAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> Rational -> [Rational]
+diezAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 n10 =  [n1, n2, n3, n4, n5, n6, n7, n8, n9, n10]
+
+-- ("p" "t" "p" (t "a") ...)
+parseNueveAtaquesAListDeAtaques :: H [Rational]
+parseNueveAtaquesAListDeAtaques = parseNueveAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseNueveAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseNueveAtaquesAListDeAtaques' = parseNueveAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseNueveAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseNueveAtaquesAListDeAtaques'' = parseNueveAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseNueveAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseNueveAtaquesAListDeAtaques''' = parseNueveAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseNueveAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseNueveAtaquesAListDeAtaques'''' = parseNueveAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseNueveAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseNueveAtaquesAListDeAtaques''''' = parseNueveAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseNueveAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseNueveAtaquesAListDeAtaques'''''' = parseNueveAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseNueveAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseNueveAtaquesAListDeAtaques''''''' = parseNueveAtaquesAListDeAtaques'''''''' <*> rationalOrInteger
+
+parseNueveAtaquesAListDeAtaques'''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseNueveAtaquesAListDeAtaques'''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 n9 -> nueveAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9
+
+nueveAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> Rational -> [Rational]
+nueveAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 n9 =  [n1, n2, n3, n4, n5, n6, n7, n8, n9]
+
+-- ("p" "t" "p" (t "a") ...)
+parseOchoAtaquesAListDeAtaques :: H [Rational]
+parseOchoAtaquesAListDeAtaques = parseOchoAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseOchoAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseOchoAtaquesAListDeAtaques' = parseOchoAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseOchoAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseOchoAtaquesAListDeAtaques'' = parseOchoAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseOchoAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseOchoAtaquesAListDeAtaques''' = parseOchoAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseOchoAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOchoAtaquesAListDeAtaques'''' = parseOchoAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseOchoAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOchoAtaquesAListDeAtaques''''' = parseOchoAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseOchoAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOchoAtaquesAListDeAtaques'''''' = parseOchoAtaquesAListDeAtaques''''''' <*> rationalOrInteger
+
+parseOchoAtaquesAListDeAtaques''''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseOchoAtaquesAListDeAtaques''''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 n8 -> ochoAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8
+
+ochoAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational ->  Rational -> [Rational]
+ochoAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 n8 =  [n1, n2, n3, n4, n5, n6, n7, n8]
+
+-- ("p" "t" "p" (t "a") ...)
+parseSieteAtaquesAListDeAtaques :: H [Rational]
+parseSieteAtaquesAListDeAtaques = parseSieteAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseSieteAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseSieteAtaquesAListDeAtaques' = parseSieteAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseSieteAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseSieteAtaquesAListDeAtaques'' = parseSieteAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseSieteAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseSieteAtaquesAListDeAtaques''' = parseSieteAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseSieteAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseSieteAtaquesAListDeAtaques'''' = parseSieteAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseSieteAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseSieteAtaquesAListDeAtaques''''' = parseSieteAtaquesAListDeAtaques'''''' <*> rationalOrInteger
+
+parseSieteAtaquesAListDeAtaques'''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseSieteAtaquesAListDeAtaques'''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 n7 -> sieteAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7
+
+sieteAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational]
+sieteAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 n7 =  [n1, n2, n3, n4, n5, n6, n7]
+
+-- ("p" "t" "p" (t "a") ...)
+parseSeisAtaquesAListDeAtaques :: H [Rational]
+parseSeisAtaquesAListDeAtaques = parseSeisAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseSeisAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseSeisAtaquesAListDeAtaques' = parseSeisAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseSeisAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseSeisAtaquesAListDeAtaques'' = parseSeisAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseSeisAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseSeisAtaquesAListDeAtaques''' = parseSeisAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseSeisAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseSeisAtaquesAListDeAtaques'''' = parseSeisAtaquesAListDeAtaques''''' <*> rationalOrInteger
+
+parseSeisAtaquesAListDeAtaques''''' :: H (Rational -> Rational -> Rational -> Rational -> Rational -> [Rational])
+parseSeisAtaquesAListDeAtaques''''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 n6 -> seisAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6
+
+seisAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> Rational -> [Rational]
+seisAtaquesAListDeAtaques n1 n2 n3 n4 n5 n6 =  [n1, n2, n3, n4, n5, n6]
+
+-- ("p" "t" "p" (t "a") ...)
+parseCincoAtaquesAListDeAtaques :: H [Rational]
+parseCincoAtaquesAListDeAtaques = parseCincoAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseCincoAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseCincoAtaquesAListDeAtaques' = parseCincoAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseCincoAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseCincoAtaquesAListDeAtaques'' = parseCincoAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseCincoAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseCincoAtaquesAListDeAtaques''' = parseCincoAtaquesAListDeAtaques'''' <*> rationalOrInteger
+
+parseCincoAtaquesAListDeAtaques'''' :: H (Rational -> Rational -> Rational -> Rational -> [Rational])
+parseCincoAtaquesAListDeAtaques'''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 n5 -> cincoAtaquesAListDeAtaques n1 n2 n3 n4 n5
+
+cincoAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational -> Rational -> [Rational]
+cincoAtaquesAListDeAtaques n1 n2 n3 n4 n5 =  [n1, n2, n3, n4, n5]
+
+
+-- ("p" "t" "p" $ t "a")
+parseCuatroAtaquesAListDeAtaques :: H [Rational]
+parseCuatroAtaquesAListDeAtaques = parseCuatroAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseCuatroAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseCuatroAtaquesAListDeAtaques' = parseCuatroAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseCuatroAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseCuatroAtaquesAListDeAtaques'' = parseCuatroAtaquesAListDeAtaques''' <*> rationalOrInteger
+
+parseCuatroAtaquesAListDeAtaques''' :: H (Rational -> Rational -> Rational -> [Rational])
+parseCuatroAtaquesAListDeAtaques''' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 n4 -> cuatroAtaquesAListDeAtaques n1 n2 n3 n4
+
+cuatroAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> Rational ->  [Rational]
+cuatroAtaquesAListDeAtaques n1 n2 n3 n4 =  [n1, n2, n3, n4]
+
+-- ("a" t "t" "a")
+parseTresAtaquesAListDeAtaques :: H [Rational]
+parseTresAtaquesAListDeAtaques = parseTresAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseTresAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseTresAtaquesAListDeAtaques' = parseTresAtaquesAListDeAtaques'' <*> rationalOrInteger
+
+parseTresAtaquesAListDeAtaques'' :: H (Rational -> Rational -> [Rational])
+parseTresAtaquesAListDeAtaques'' = do
+  n1 <- rationalOrInteger
+  return $ \n2 n3 -> tresAtaquesAListDeAtaques n1 n2 n3
+
+tresAtaquesAListDeAtaques :: Rational -> Rational -> Rational -> [Rational]
+tresAtaquesAListDeAtaques n1 n2 n3 =  [n1, n2, n3]
+
+-- ("a", t "a")
+parseDosAtaquesAListDeAtaques :: H [Rational]
+parseDosAtaquesAListDeAtaques = parseDosAtaquesAListDeAtaques' <*> rationalOrInteger
+
+parseDosAtaquesAListDeAtaques' :: H (Rational -> [Rational])
+parseDosAtaquesAListDeAtaques' = do
+  n1 <- rationalOrInteger
+  return $ \n2 -> dosAtaquesAListDeAtaques n1 n2
+
+dosAtaquesAListDeAtaques :: Rational -> Rational -> [Rational]
+dosAtaquesAListDeAtaques n1 n2 = [n1, n2]
+
+-- (1)
+parseUnAtaqueAListDeAtaques :: H [Rational]
+parseUnAtaqueAListDeAtaques = do
+  n <- rationalOrInteger
+  return $ unAtaqueAListDeAtaques n
+
+unAtaqueAListDeAtaques :: Rational -> [Rational]
+unAtaqueAListDeAtaques n = [n]
 
 -- the renderer
 --   getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State InstrumentState [Event]
