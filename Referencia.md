@@ -48,11 +48,7 @@ tumbao 1 $ cumbia bajo
 ```
 > En este ejemplo, escucharás dos notas distintas, en vez de las tres originales que se escuchan en "cumbia bajo".
 
-Tomemos un momento para explorar el bajo en la cumbia. Da click en el siguiente video:
-
-<figure class="video_container">
-  <iframe src="https://www.youtube.com/embed/enMumwvLAug" frameborder="0" allowfullscreen="true"> </iframe>
-</figure>
+Tomemos un momento para explorar el bajo en la cumbia. Da click en el siguiente video: https://www.youtube.com/embed/AwtdcELFpYA
 <!-- blank line -->
 
 
