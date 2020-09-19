@@ -51,9 +51,9 @@ tumbao 1 $ cumbia bajo
 Tomemos un momento para explorar el bajo en la cumbia. Da click en el siguiente video:
 
 <figure class="video_container">
-<iframe width="560" height="315" src="https://www.youtube.com/embed/AwtdcELFpYA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+  <iframe src="https://www.youtube.com/embed/enMumwvLAug" frameborder="0" allowfullscreen="true"> </iframe>
 </figure>
-
+<!-- blank line -->
 
 
 En seis8s podemos explorar la tónica (también llamada fundamental) y la quinta individualmente con el siguiente comando:
