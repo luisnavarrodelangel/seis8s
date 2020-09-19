@@ -3,7 +3,7 @@
 
 La premisa detrás de seis8s es el poder interactuar con colecciones de conocimiento musical representado a través de bloques interlazados de código. En seis8s una coleccion de conocimiento se representa a través de un estilo musical. E.g. cumbia.
 
-Dicho estilo necesita de un "cuerpo" para volverse tangible/visible (i.e. audible en este caso). Por ejemplo un teclado.
+Dicho estilo necesita de un un instrumento para volverse audible. Por ejemplo un teclado.
 
 ```
 cumbia teclado
@@ -44,27 +44,30 @@ nota 60 $ ritmo 0.25 $ teclado
 Para evitar lo anterior y lograr cambios significativos a nuestro código, en seis8s las funciones o comandos también están conectadas con el conocimiento individual de los estilos. Por ejemplo, en la cumbia, una variación común del bajo, es tocar la tónica y la quinta del acorde. Esto se puede conseguir con la siguiente funcion:
 
 ```
-tonicayquinta $ cumbia bajo
+tumbao 1 $ cumbia bajo
 ```
-
 > En este ejemplo, escucharás dos notas distintas, en vez de las tres originales que se escuchan en "cumbia bajo".
 
-En seis8s podemos explorar la tónica y la quinta individualmente con el siguiente comando:
+Tomemos un momento para explorar el bajo en la cumbia. Da click en el siguiente video:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/AwtdcELFpYA" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+En seis8s podemos explorar la tónica (también llamada fundamental) y la quinta individualmente con el siguiente comando:
 
 ```
-intervalo "tónica" $ cumbia quinta
+intervalo "f" $ cumbia quinta
 ```
 > ahora intentalo con intervalo "5a"
 
 Otras funciones del bajo son dentro del estilo de cumbia son:
 
 ```
-tonicayquinta2 $ cumbia bajo
+tumbao 2 $ cumbia bajo
 ```
 >  Aqui, escucharás tres notas distinas, la tónica, la quinta y la quinta una octava abajo (i.e. más grave).
 
 ```
-tonicaQtonica $ cumbia bajo
+tumbao 3 $ cumbia bajo
 ```
 > Arriba, el bajo toca la tónica, la quinta y la octava alta de la tónica.
 
@@ -72,9 +75,9 @@ tonicaQtonica $ cumbia bajo
 ``` -->
 
 ```
-tonicaQtercera  $ cumbia bajo
+tumbao 4  $ cumbia bajo
 ```
-> En este ejemplo, el bajo toca la tónica, la quinta y la tercer del acorde.
+> En este ejemplo, el bajo toca la tónica, la quinta y la tercera del acorde.
 
 <!-- ```saborcolombia $ cumbia bajo
 ``` -->
@@ -83,17 +86,16 @@ tonicaQtercera  $ cumbia bajo
 Otra característica importante en seis8s es la de poder combinar funciones.
 
 ```
-cada 2 (tonicayquinta) $ cumbia bajo
+alternar 2 (tumbao 1) $ cumbia bajo
 ```
-> En el ejemplo arriba, estamos alternando entre el patrón de tres notas y el de tónica y quinta, que contiene dos notas.
+> En el ejemplo arriba, estamos alternando entre un compás con el patrón de tres notas y el de tónica y quinta, que contiene dos notas.
 
 Por lo tanto, el siguiente ejemplo también sería posible:
 
 ```
-cada 2 (tónicayquinta2) $ tonicayquinta $ cumbia bajo
+alternar 2 (tumbao 2) $ tumbao 1 $ cumbia bajo
 ```
-> En el ejemplo arriba, alternamos entre tonicaYquinta y tonicayquinta2
-
+> En el ejemplo arriba, alternamos entre el tumbao 2 y el tumbao 1
 
 
 <!-- adorno tonicayquinta $ cumbia bajo -->
