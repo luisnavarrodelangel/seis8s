@@ -1,6 +1,8 @@
 # seis8s
 
-<img src="fotos/portada.png" title="Seis8s" alt="Seis8s">
+<p align="center">
+<img style src="fotos/portada.png" title="Seis8s" alt="Seis8s">
+</p>
 
 seis8s (pronunciado "seis octavos") es un lenguaje de programación que permite la interacción en tiempo real con audio digital y conocimiento musical localizado, particularmente de músicas de Latinoamérica.
 
