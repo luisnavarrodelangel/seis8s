@@ -14,14 +14,14 @@ seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nu
 
 - [Primeros pasos](#primeros pasos)
 - [Estilos musicales](#estilos_musicales)
-- [Cheat sheet](#cheat)
+- [Cheat sheet](#cheat sheet)
 - [Colaboradorxs](#colaboradorxs)
 - [FAQ](#faq)
 - [Ayuda](#ayuda)
 - [Licencia](#licencia)
 
 ---
-## Cheat
+## Cheat sheet
 
 algo va a aqui
 
