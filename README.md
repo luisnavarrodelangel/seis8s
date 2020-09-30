@@ -12,9 +12,9 @@ seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nu
 
 ## Índice
 
-- [Primeros pasos](#primeros pasos)
+- [Primeros pasos](#primeros)
 - [Estilos musicales](#estilos_musicales)
-- [Cheat sheet](#cheat sheet)
+- [Cheat sheet](#cheat)
 - [Colaboradorxs](#colaboradorxs)
 - [FAQ](#faq)
 - [Ayuda](#ayuda)
