@@ -8,4 +8,21 @@ seis8s (pronunciado "seis octavos") es un lenguaje de programación que permite 
 
 seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nutrirse con conocimiento musical consensuado y desde las diferentes fronteras personales y colectivas que existen en Latinoamérica.
 
+---
+
+## Table of Contents (Optional)
+
+- [Primeros pasos](#primeros pasos)
+- [Estilos musicales](#estilos_musicales)
+- [Cheat sheet](#cheat))
+- [Colaboradorxs](#colaboradorxs)
+- [FAQ](#faq)
+- [Ayuda](#ayuda)
+- [Licencia](#licencia)
+
+---
+## cheat
+
+algo va a aqui
+
 <a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Referencia.md"> ¿Cómo usar seis8s? </a>
