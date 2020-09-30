@@ -10,18 +10,18 @@ seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nu
 
 ---
 
-## Table of Contents (Optional)
+## Índice
 
 - [Primeros pasos](#primeros pasos)
 - [Estilos musicales](#estilos_musicales)
-- [Cheat sheet](#cheat))
+- [Cheat sheet](#cheat)
 - [Colaboradorxs](#colaboradorxs)
 - [FAQ](#faq)
 - [Ayuda](#ayuda)
 - [Licencia](#licencia)
 
 ---
-## cheat
+## Cheat
 
 algo va a aqui
 
