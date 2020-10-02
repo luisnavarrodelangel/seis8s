@@ -35,9 +35,7 @@ sies8s se puede jugar de manera [individual](#individual), así como de manera [
 
 <p align="center">
 <img  src="fotos/estuary/terminal.png" title="terminal de estuary" alt="terminal de estuary">
-</p>
-<p align="center">
-<img style="width:50%;" src="fotos/estuary/fulltexteditor.png;"  title="fulltexteditor en estuary" alt="fulltexteditor en estuary">
+<img style="width:50%;" src="fotos/estuary/fulltexteditor.png"  title="fulltexteditor en estuary" alt="fulltexteditor en estuary">
 </p>
 
 3_Selecciona en el menu el lenguaje seis8s.
