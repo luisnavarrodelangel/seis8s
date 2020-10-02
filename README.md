@@ -39,7 +39,7 @@ De esta forma ahora debes ver en la pantalla una sola caja de texto de tamaño g
 
 <p align="center">
 <img src="fotos/estuary/terminal.png" width="80%"/>
-<img src="fotos/estuary/fulltexteditor.png" width="80%"/>jamblock
+<img src="fotos/estuary/fulltexteditor.png" width="80%"/>
 </p>
 
 3_Selecciona en el menu el lenguaje seis8s.
