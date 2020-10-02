@@ -123,11 +123,11 @@ Con la función <code> tumbao </code> también puedes sobreescribir las notas de
 
 También puedes reesecribir los ritmos de los tumbaos.
 
-<code> tumbao ("f" 5a") (1 3) $ cumbia bajo; </code>
+<code> tumbao ("1a" 5a") (1 3) $ cumbia bajo; </code>
 
 También se pueden hacer listas de notas y ritmos de la siguiente forma.
 
-<code> tumbao ["f" "5a", "f" "3a" "5a"] [1 3, 1 3 4] $ cumbia bajo; </code>
+<code> tumbao ["1a" "5a", "1a" "3a" "5a"] [1 3, 1 3 4] $ cumbia bajo; </code>
 
 ---
 #### Funciones_del_teclado
@@ -151,14 +151,14 @@ También se pueden hacer listas de notas y ritmos de la siguiente forma.
 
 También sirve para modificar las notas del teclado. Acepta hasta un máximo de 4 notas.
 
-<code> acompanamiento 2 ("f" "3a" "5a") $ cumbia teclado; </code> <br>
-<code> acompanamiento (2 4) ("f" "3a" "5a") </code>
+<code> acompanamiento 2 ("1a" "3a" "5a") $ cumbia teclado; </code> <br>
+<code> acompanamiento (2 4) ("1a" "3a" "5a") </code>
 
 También se puede modificar la octava de la nota, es decir que tan grave o agudo suena.
 
 
-<code> acompanamiento 2 ("f" "3a" ("5a" 1)) $ cumbia teclado; </code> <br>
-<code> acompanamiento 2 ("f" "3a" ("5a" (-1)) $ cumbia teclado; </code>
+<code> acompanamiento 2 ("1a" "3a" ("5a" 1)) $ cumbia teclado; </code> <br>
+<code> acompanamiento 2 ("1a" "3a" ("5a" (-1)) $ cumbia teclado; </code>
 
 ---
 #### Funciones_de_las_congas
