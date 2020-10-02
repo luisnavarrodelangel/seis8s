@@ -14,7 +14,7 @@ seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nu
 
 - [Editor_de_texto](#editor_de_texto)
 - [Estilos_musicales](#estilos_musicales)
-- [Cheat_sheet](#cheat)
+- [Referencia_rápida](#referencia_rápida)
 - [Colaboradorxs](#colaboradorxs)
 - [Pregutas_frecuentes](#preguntas_frecuentes)
 - [Ayuda](#ayuda)
@@ -35,7 +35,7 @@ sies8s se puede jugar de manera [individual](#individual), así como de manera [
 
 <p align="center">
 <img src="fotos/estuary/terminal.png" width="80%"/>
-<img src="fotos/estuary/fulltexteditor.png" width="90%"/>
+<img src="fotos/estuary/fulltexteditor.png" width="80%"/>
 </p>
 
 3_Selecciona en el menu el lenguaje seis8s.
@@ -53,11 +53,57 @@ cumbia bajo;
 <img src="fotos/estuary/helloWorld.png" width="80%"/>
 </p>
 
-5_ Continua a la sección [estilos_musicales](#estilos_musicales) o a  [cheat_sheet](#cheat) para continuar jugando con seis8s.
+5_ Continua a la sección [estilos_musicales](#estilos_musicales) o a  [referencia_rápida](#referencia_rápida) para continuar jugando con seis8s.
 
-## Cheat_sheet
+## Referencia_rápida
 
-algo va a aqui
+- [Instrumentos](#instrumentos)
+- [Sintáxis_básica](#sintáxis_básica)
+- [Funciones_del_bajo](#funciones_del_bajo)
+- [Funciones_del_teclado](#funciones_del_teclado)
+- [Funciones_de_las_congas](#funciones_de__las_congas)
+- [Funciones_de_la_guira](#funciones_de_la_guira)
+- [Funciones_del_jamblock](#funciones_del_jamblock)
+
+Esta es la referencia rápida del estilo de cumbia en seis8s.
+
+### instrumentos
+
+```
+teclado; congas; jamblock; guira; bajo;
+```
+Para silenciar los sonidos puedes utilizar el comando
+
+```
+silencio
+```
+
+### Síntaxis_básica
+
+La función de estilo se coloca a la izquierda del instrumento.
+
+```
+cumbia teclado;
+```
+Todas las funciones que modifican el estilo se agregan a la izquierda del instrumento seguidas de un paréntesis o un signo de peso "$".
+
+```
+acompañamiento 2 (cumbia teclado);
+```
+El signo $ es equivalente a los paréntesis.
+
+```
+acompañamiento 2 $ cumbia teclado;
+```
+
+Para silenciar los sonidos puedes utilizar el comando
+
+```
+silencio
+```
+
+###Funciones_del_bajo
+
 
 ## Estilos_musicales
 
