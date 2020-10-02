@@ -103,9 +103,15 @@ Para silenciar los sonidos puedes utilizar el comando
 
 <code> sample 0 $ cumbia bajo;  </code>
 
-<code> tumbao </code> permite accessar a los distintos pre-sets del bajo. Acepta números enteros iguales o mayores que 0.
+<code style="background:orange;"> tumbao </code> permite accessar a los distintos pre-sets del bajo. Acepta números enteros iguales o mayores que 0.
 
 <code> tumbao 1 $ cumbia bajo;  </code>
+
+Con la función <code style="background:orange;">  tumbao </code> también puedes sobreescribir los tumbaos default.
+
+<code> tumbao ("1a" "3a" "5a") $ cumbia bajo; </code>
+
+
 
 ### Funciones_del_teclado
 
