@@ -16,10 +16,9 @@ El primer "módulo" de seis8s produce música influenciada por la cumbia sonider
 - [Referencia_rápida](#referencia_rápida)
 - [Estilos_musicales](#estilos_musicales)
 - [Colaboradorxs](#colaboradorxs)
+- [Licencia](https://github.com/luisnavarrodelangel/seis8s/blob/master/LICENSE)
 <!-- - [Pregutas_frecuentes](#preguntas_frecuentes)
 - [Ayuda](#ayuda) -->
-- [Licencia](https://github.com/luisnavarrodelangel/seis8s/blob/master/LICENSE)
-
 ---
 ## Editor_de_texto
 
@@ -209,4 +208,9 @@ cumbia jamblock;
 ---
 ## Estilos_musicales
 
-<a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Estilos.md"> Estilos musicales </a>
+Para conocer más sobre los estilos musicales disponibles en seis8s vea <a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Estilos.md"> Estilos musicales </a>.
+
+
+## Colaboradorxs
+
+Esta sección esta en construcción.
