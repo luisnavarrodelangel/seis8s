@@ -23,10 +23,10 @@ seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nu
 ---
 ## Editor_de_texto
 
-sies8s se puede jugar de manera [individual] (#individual), así como de manera [colectiva] (#colectiva) a través de la plataforma Estuary (para ver más info sobre estuary haz click aqui: https://github.com/dktr0/estuary).
+sies8s se puede jugar de manera [individual](#individual), así como de manera [colectiva](#colectiva) a través de la plataforma Estuary (para ver más info sobre estuary haz click aqui: https://github.com/dktr0/estuary).
 
 ### individual
-1_ Al a <a href="https://estuary.mcmaster.ca target="_blank">estuary.mcmaster.ca</a> da click en "solo mode".
+1_ Accesa a https://estuary.mcmaster.ca y da click en "solo mode".
 <p align="center">
 <img style src="fotos/estuary/homepage.png" title="home de estuary" alt="home de estuary">
 </p>
@@ -34,11 +34,14 @@ sies8s se puede jugar de manera [individual] (#individual), así como de manera 
 2_ Una vez en "solo mode" veras muchas cajas de texto donde puedes escibir código. Para escribir más cómodamente en una sola caja de texto escribe el siguiente código en la parte de abajo donde dice "Terminal/Chat" y da enter en tu teclado: !presetview fulltexteditor. De esta forma ahora debes ver en la pantalla una sola caja de texto de tamaño grande.
 
 <p align="center">
-<img style="width:50%;" src="fotos/estuary/terminal.png" title="terminal de estuary" alt="terminal de estuary">
+<img  src="fotos/estuary/terminal.png" title="terminal de estuary" alt="terminal de estuary">
 <img style="width:50%;" src="fotos/estuary/fulltexteditor.png;"  title="fulltexteditor en estuary" alt="fulltexteditor en estuary">
 </p>
 
 3_Selecciona en el menu el lenguaje seis8s.
+<p align="center">
+<img  src="fotos/estuary/menu.png" title="menu de estuary" alt="menu de estuary">
+</p>
 
 4_ Prueba seis8s escribiendo el siguiente código.
 ```haskell
