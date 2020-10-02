@@ -59,7 +59,11 @@ y hazlo sonar presionando el boton ▶ o presionando las teclas shift + enter. U
 
 5_ Continua a la sección [estilos_musicales](#estilos_musicales) o a  [referencia_rápida](#referencia_rápida) para continuar jugando con seis8s.
 
+---
+
 ## Referencia_rápida
+
+Esta es la referencia rápida del estilo de cumbia en seis8s.
 
 - [Instrumentos](#instrumentos)
 - [Sintaxis_básica](#sintáxis_básica)
@@ -69,7 +73,7 @@ y hazlo sonar presionando el boton ▶ o presionando las teclas shift + enter. U
 - [Funciones_de_la_guira](#funciones_de_la_guira)
 - [Funciones_del_jamblock](#funciones_del_jamblock)
 
-Esta es la referencia rápida del estilo de cumbia en seis8s.
+---
 
 #### Instrumentos
 
@@ -79,6 +83,7 @@ Para silenciar los sonidos puedes utilizar el comando
 
 <code> silencio </code>
 
+---
 #### Sintaxis_básica
 
 La función de estilo se coloca a la izquierda del instrumento:
@@ -96,7 +101,7 @@ El signo $ es equivalente a los paréntesis:
 Para silenciar los sonidos puedes utilizar el comando:
 <code> silencio </code>
 
-
+---
 #### Funciones_del_bajo
 
 **sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0. Hay 4 pre-sets disponibles.
@@ -119,6 +124,7 @@ También se pueden hacer listas de notas y ritmos de la siguiente forma.
 
 <code> tumbao ["f" "5a", "f" "3a" "5a"] [1 3, 1 3 4] $ cumbia bajo; </code>
 
+---
 #### Funciones_del_teclado
 
 **sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
@@ -145,6 +151,7 @@ También se puede modificar la octava de la nota, es decir que tan grave o agudo
 <code> acompanamiento 2 ("f" "3a" ("5a" 1)) $ cumbia teclado; </code>
 <code> acompanamiento 2 ("f" "3a" ("5a" (-1)) $ cumbia teclado; </code>
 
+---
 #### Funciones_de_las_congas
 
 **tumbao** permite accessar a los distintos pre-sets de las congas como lo hicimos con teclado y el bajo arriba. Acepta números enteros iguales o mayores que 0. Hay 4 disponibles.
@@ -167,16 +174,19 @@ También se pueden hacer listas de notas y ritmos de la siguiente forma.
 
 <code> marcha ["p" "t" "p" "a", "p" "t" "p" (t "a") (t "a")] [1 2 3 4, 1 2 3 4 4.5] $ cumbia congas; </code>
 
+---
 #### Funciones_de_la_guira
 
 **preset** permite accesar a algunos ritmos pre-cargados de la guira. Hay 2 disponibles.
 
 cumbia guira;
 
+---
 #### Funciones_del_jamblock
 
 cumbia jamblock;
 
+---
 ## Estilos_musicales
 
 <a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Referencia.md"> Estilos musicales </a>
