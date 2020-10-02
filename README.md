@@ -81,40 +81,54 @@ Para silenciar los sonidos puedes utilizar el comando
 
 ### Sintaxis_básica
 
-La función de estilo se coloca a la izquierda del instrumento.
+La función de estilo se coloca a la izquierda del instrumento:
 
 <code> cumbia teclado; </code>
 
-Todas las funciones que modifican el estilo se agregan a la izquierda del instrumento seguidas de un paréntesis o un signo de peso "$".
+Todas las funciones que modifican el estilo se agregan a la izquierda del instrumento seguidas de un paréntesis o un signo de peso "$":
 
 <code> acompañamiento 2 (cumbia teclado); </code>
 
-El signo $ es equivalente a los paréntesis.
+El signo $ es equivalente a los paréntesis:
 
 <code> acompañamiento 2 $ cumbia teclado; </code>
 
-Para silenciar los sonidos puedes utilizar el comando
-
+Para silenciar los sonidos puedes utilizar el comando:
 <code> silencio </code>
 
 
 ### Funciones_del_bajo
-> **sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
+**sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
 
 <code> sample 0 $ cumbia bajo;  </code>
 
-> **tumbao** permite accessar a los distintos pre-sets del bajo. Acepta números enteros iguales o mayores que 0.
+**tumbao** permite accessar a los distintos pre-sets del bajo. Acepta números enteros iguales o mayores que 0.
 
 <code> tumbao 1 $ cumbia bajo;  </code>
 
-Con la función <code>  tumbao </code> también puedes sobreescribir los tumbaos default.
+Con la función <code> tumbao </code> también puedes sobreescribir las notas de los tumbaos.
 
 <code> tumbao ("1a" "3a" "5a") $ cumbia bajo; </code>
 
+También puedes reesecribir los ritmos de los tumbaos.
 
+<code> tumbao ("f" 5a") (1 3) $ cumbia bajo; </code>
+
+También se pueden hacer listas de notas y ritmos de la siguiente forma.
+
+<code> tumbao ["f" "5a", "f" "3a" "5a"] [1 3, 1 3 4] $ cumbia bajo; </code>
 
 ### Funciones_del_teclado
 
+**sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
+
+<code> sample 1 $ cumbia teclado;  </code>
+
+**tumbao** permite accessar a los distintos pre-sets del teclado como lo hicimos con el bajo arriba. Acepta números enteros iguales o mayores que 0.
+
+<code> tumbao 2 $ cumbia teclado;  </code>
+
+**tumbao**
 ### Funciones_de_las_congas
 
 ## Estilos_musicales
