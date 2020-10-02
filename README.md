@@ -48,10 +48,8 @@ De esta forma ahora debes ver en la pantalla una sola caja de texto de tamaño g
 
 4_ Prueba seis8s escribiendo el siguiente código
 
-```haskell
+<code> cumbia bajo; </code>
 
-cumbia bajo;
-```
 y hazlo sonar presionando el boton ▶ o presionando las teclas shift + enter. Una vez que lo ejecutes debes escuchar el sonido de un bajo con el ritmo base de la cumbia.
 
 <p align="center">
@@ -74,38 +72,30 @@ Esta es la referencia rápida del estilo de cumbia en seis8s.
 
 ### Instrumentos
 
-```
-teclado; congas; jamblock; guira; bajo;
-```
+<code> teclado; congas; jamblock; guira; bajo; </code>
+
 Para silenciar los sonidos puedes utilizar el comando
 
-```
-```
-silencio
+<code> silencio </code>
 
 ### Sintaxis_básica
 
 La función de estilo se coloca a la izquierda del instrumento.
 
-```
-cumbia teclado;
-```
+<code> cumbia teclado; </code>
+
 Todas las funciones que modifican el estilo se agregan a la izquierda del instrumento seguidas de un paréntesis o un signo de peso "$".
 
-```
-acompañamiento 2 (cumbia teclado);
-```
+<code> acompañamiento 2 (cumbia teclado); </code>
+
 El signo $ es equivalente a los paréntesis.
 
-```
-acompañamiento 2 $ cumbia teclado;
-```
+<code> acompañamiento 2 $ cumbia teclado; </code>
 
 Para silenciar los sonidos puedes utilizar el comando
 
-```
-silencio
-```
+<code> silencio </code>
+
 
 ### Funciones_del_bajo
 <code> sample </code> permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
