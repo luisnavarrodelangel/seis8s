@@ -33,7 +33,10 @@ sies8s se puede jugar de manera [individual](#individual), así como de manera [
 
 2_ Una vez en "solo mode" veras muchas cajas de texto donde puedes escibir código. Para escribir más cómodamente en una sola caja de texto escribe el siguiente código en la parte de abajo donde dice "Terminal/Chat" y da enter en tu teclado: !presetview fulltexteditor. De esta forma ahora debes ver en la pantalla una sola caja de texto de tamaño grande.
 
-<img src="fotos/estuary/terminal.png" width="50%"/> | <img src="fotos/estuary/fulltexteditor.png" width="50%"/>
+<p align="center">
+<img src="fotos/estuary/terminal.png" width="80%"/>
+<img src="fotos/estuary/fulltexteditor.png" width="90%"/>
+</p>
 
 3_Selecciona en el menu el lenguaje seis8s.
 <p align="center">
