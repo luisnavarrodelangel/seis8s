@@ -8,7 +8,7 @@ seis8s (pronunciado "seis octavos") es un lenguaje de programación que permite 
 
 Seis8s también espera ser una crítica ideológica del sistema mundial de música por computadora dominante en lugar de una abstracción acrítica de las distintas visiones del mundo.
 
-El primer "módulo" de seis8s produce música influenciada por la cumbia sonidera, un estilo particular de la clase trabajadora mexicana en México y Estados Unidos. Para obtener más información sobre Cumbia sonidera, consulte el libro <a href="http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf" target="_blank">Sonideros en las aceras, véngase a gozadera</a>. Para comenzar a usar seis8s continue al índice que esta abajo.
+El primer "módulo" de seis8s produce música influenciada por la cumbia sonidera, un estilo particular de la clase trabajadora mexicana en México y Estados Unidos. Para obtener más información sobre Cumbia sonidera, consulte el libro <a href="http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf" target="_blank">Sonideros en las aceras, véngase a gozadera</a>. Para comenzar a usar seis8s continue al [índice](#índice) que esta abajo.
 
 ---
 
@@ -212,8 +212,15 @@ cumbia jamblock;
 
 ## Videos
 
+Da click en cualquiera de los siguientes videos.
+
+<p align="center">
+
 [![prueba_1](fotos/videos/prueba1.png)](https://youtu.be/jASFjeV_1vM)
 
+[![prueba_3](fotos/videos/prueba3.png)](https://youtu.be/nKfUPtoL5jE)
+
+</p>
 
 ## Estilos_musicales
 
