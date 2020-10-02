@@ -40,10 +40,11 @@ sies8s se puede jugar de manera [individual](#individual), así como de manera [
 
 3_Selecciona en el menu el lenguaje seis8s.
 <p align="center">
-<img  src="fotos/estuary/menu.png" title="menu de estuary" alt="menu de estuary">
+<img  src="fotos/estuary/menu1.png" title="menu de estuary" alt="menu de estuary">
 </p>
 
-4_ Prueba seis8s escribiendo el siguiente código.
+4_ Prueba seis8s escribiendo el siguiente código y hazlo sonar presionando el boton "▶" o presionando las teclas shift + enter. Una vez que lo ejecutes debes escuchar el sonido de un bajo con el ritmo base de la cumbia.
+
 ```haskell
 
 cumbia bajo;
