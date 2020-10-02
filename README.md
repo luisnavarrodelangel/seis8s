@@ -28,7 +28,7 @@ sies8s se puede jugar de manera [individual](#individual), así como de manera [
 ### individual
 1_ Accesa a https://estuary.mcmaster.ca y da click en "solo mode".
 <p align="center">
-<img style src="fotos/estuary/homepage.png" width:"80%" title="home de estuary" alt="home de estuary" />
+<img style src="fotos/estuary/homepage.png" width:"80%" />
 </p>
 
 2_ Una vez en "solo mode" veras muchas cajas de texto donde puedes escibir código. Para escribir más cómodamente en una sola caja de texto escribe el siguiente código en la parte de abajo donde dice "Terminal/Chat" y da enter en tu teclado: !presetview fulltexteditor. De esta forma ahora debes ver en la pantalla una sola caja de texto de tamaño grande.
@@ -39,7 +39,7 @@ sies8s se puede jugar de manera [individual](#individual), así como de manera [
 
 3_Selecciona en el menu el lenguaje seis8s.
 <p align="center">
-<img  src="fotos/estuary/menu1.png" width:"80%" title="menu de estuary" alt="menu de estuary" />
+<img  src="fotos/estuary/menu1.png" width:"80%" />
 </p>
 
 4_ Prueba seis8s escribiendo el siguiente código y hazlo sonar presionando el boton ▶ o presionando las teclas shift + enter. Una vez que lo ejecutes debes escuchar el sonido de un bajo con el ritmo base de la cumbia.
