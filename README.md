@@ -99,11 +99,11 @@ Para silenciar los sonidos puedes utilizar el comando
 
 
 ### Funciones_del_bajo
-<code> sample </code> permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
+<b> sample </b> permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
 
 <code> sample 0 $ cumbia bajo;  </code>
 
-<code style="background:orange;"> tumbao </code> permite accessar a los distintos pre-sets del bajo. Acepta números enteros iguales o mayores que 0.
+<b style="background:orange;"> tumbao </b> permite accessar a los distintos pre-sets del bajo. Acepta números enteros iguales o mayores que 0.
 
 <code> tumbao 1 $ cumbia bajo;  </code>
 
