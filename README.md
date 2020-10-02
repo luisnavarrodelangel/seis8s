@@ -98,7 +98,7 @@ Para silenciar los sonidos puedes utilizar el comando:
 
 
 ### Funciones_del_bajo
-**sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
+**sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0. Hay 4 pre-sets disponibles.
 
 <code> sample 0 $ cumbia bajo;  </code>
 
@@ -128,10 +128,54 @@ También se pueden hacer listas de notas y ritmos de la siguiente forma.
 
 <code> tumbao 2 $ cumbia teclado;  </code>
 
-**tumbao**
+**acompanamiento** o **acompañamiento** modifica el ritmo en el que se tocan los acordes o bloques de notas del teclado.
+
+<code> acompanamiento 2 $ cumbia taclado; </code>
+<code> acompanamiento (2 4) $ cumbia taclado; </code>
+
+También sirve para modificar las notas del teclado. Acepta hasta un máximo de 4 notas.
+
+<code> acompanamiento 2 ("f" "3a" "5a") $ cumbia teclado; </code>
+<code> acompanamiento (2 4) ("f" "3a" "5a") </code>
+
+También se puede modificar la octava de la nota, es decir que tan grave o agudo suena.
+
+
+<code> acompanamiento 2 ("f" "3a" ("5a" 1)) $ cumbia teclado; </code>
+<code> acompanamiento 2 ("f" "3a" ("5a" (-1)) $ cumbia teclado; </code>
+
 ### Funciones_de_las_congas
+
+**tumbao** permite accessar a los distintos pre-sets de las congas como lo hicimos con teclado y el bajo arriba. Acepta números enteros iguales o mayores que 0. Hay 4 disponibles.
+
+<code> tumbao 4 $ cumbia congas;  </code>
+
+**marcha** permite asignar los golpes de la palma, tapado y abierto a las congas. Por default suena el tambor quinto de la conga.
+
+<code> marcha ("p" "t" "p" "a") $ cumbia congas </code>
+
+También permite escribir el rimto de las congas.
+
+<code> marcha ("p" "t" "p" "a" "a") (1 2 3 4 4.5) $ cumbia congas </code>
+
+También permite accesar a otros tambores de las congas como la  tumbadora.
+
+<code> marcha ("p" "t" "p" (t "a") (t "a")) (1 2 3 4 4.5) $ cumbia congas </code>
+
+También se pueden hacer listas de notas y ritmos de la siguiente forma.
+
+<code> marcha ["p" "t" "p" "a", "p" "t" "p" (t "a") (t "a")] [1 2 3 4, 1 2 3 4 4.5] $ cumbia congas; </code>
+
+### Funciones_de_la_guira
+
+**preset** permite accesar a algunos ritmos pre-cargados de la guira. Hay 2 disponibles.
+
+cumbia guira;
+
+### Funciones_del_jamblock
+
+cumbia jamblock;
 
 ## Estilos_musicales
 
-
-<a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Referencia.md"> ¿Cómo usar seis8s? </a>
+<a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Referencia.md"> Estilos musicales </a>
