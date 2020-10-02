@@ -27,13 +27,14 @@ sies8s se puede jugar de manera [individual](#individual), así como de manera [
 
 ### individual
 1_ Accesa a https://estuary.mcmaster.ca y da click en "solo mode".
+
 <p align="center">
 <img style src="fotos/estuary/homepage.png" width="80%" title="home de estuary" alt="home de estuary" />
 </p>
 
-2_ Una vez en "solo mode" veras muchas cajas de texto donde puedes escibir código. Para escribir más cómodamente en una sola caja de texto escribe el siguiente código en la parte de abajo donde dice "Terminal/Chat" y da enter en tu teclado: ```
-!presetview fulltexteditor.
-```
+2_ Una vez en "solo mode" veras muchas cajas de texto donde puedes escibir código. Para escribir más cómodamente en una sola caja de texto escribe el siguiente código en la parte de abajo donde dice "Terminal/Chat" y da enter en tu teclado:
+<code> !presetview fulltexteditor. </code>
+
 De esta forma ahora debes ver en la pantalla una sola caja de texto de tamaño grande.
 
 <p align="center">
