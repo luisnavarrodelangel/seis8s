@@ -21,11 +21,11 @@ seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nu
 - [Licencia](#licencia)
 
 ---
-#Editor_de_texto
+## Editor_de_texto
 
 sies8s se puede jugar de manera [individual] (#individual), así como de manera [colectiva] (#colectiva) a través de la plataforma Estuary (para ver más info sobre estuary haz click aqui: https://github.com/dktr0/estuary).
 
-###individual
+### individual
 1_ Al a <a href="https://estuary.mcmaster.ca target="_blank">estuary.mcmaster.ca</a> da click en "solo mode".
 <p align="center">
 <img style src="fotos/estuary/homepage.png" title="home de estuary" alt="home de estuary">
@@ -52,6 +52,6 @@ cumbia bajo;
 
 algo va a aqui
 
-#Estilos_musicales
+## Estilos_musicales
 
 <a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Referencia.md"> ¿Cómo usar seis8s? </a>
