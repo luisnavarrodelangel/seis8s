@@ -144,8 +144,8 @@ También se pueden hacer listas de notas y ritmos de la siguiente forma.
 
 **acompanamiento** o **acompañamiento** modifica el ritmo en el que se tocan los acordes o bloques de notas del teclado.
 
-<code> acompanamiento 2 $ cumbia taclado; </code> <br>
-<code> acompanamiento (2 4) $ cumbia taclado; </code>
+<code> acompanamiento 2 $ cumbia teclado; </code> <br>
+<code> acompanamiento (2 4) $ cumbia teclado; </code>
 
 También sirve para modificar las notas del teclado. Acepta hasta un máximo de 4 notas.
 
