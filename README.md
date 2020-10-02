@@ -13,12 +13,12 @@ El primer "módulo" de seis8s produce música influenciada por la cumbia sonider
 ## Índice
 
 - [Editor_de_texto](#editor_de_texto)
-- [Estilos_musicales](#estilos_musicales)
 - [Referencia_rápida](#referencia_rápida)
+- [Estilos_musicales](#estilos_musicales)
 - [Colaboradorxs](#colaboradorxs)
-- [Pregutas_frecuentes](#preguntas_frecuentes)
-- [Ayuda](#ayuda)
-- [Licencia](#licencia)
+<!-- - [Pregutas_frecuentes](#preguntas_frecuentes)
+- [Ayuda](#ayuda) -->
+- [Licencia](#https://github.com/luisnavarrodelangel/seis8s/blob/master/LICENSE)
 
 ---
 ## Editor_de_texto
