@@ -25,7 +25,7 @@ seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nu
 
 sies8s se puede jugar de manera [individual](#individual), así como de manera [colectiva](#colectiva) a través de la plataforma Estuary (para ver más info sobre estuary haz click aqui: https://github.com/dktr0/estuary).
 
-### individual
+####Forma #### Individual
 1_ Accesa a https://estuary.mcmaster.ca y da click en "solo mode".
 
 <p align="center">
