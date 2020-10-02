@@ -6,9 +6,7 @@
 
 seis8s (pronunciado "seis octavos") es un lenguaje de programación que permite la interacción en tiempo real con audio digital y conocimiento musical localizado, particularmente de músicas de Latinoamérica. Seis8s es un proyecto reciente que pretende ser colaborativo, a través de conocimiento musical consensuado desde las diferentes fronteras personales y colectivas que existen en conexión con América Latina. Seis8s también espera ser una crítica ideológica del sistema mundial de música por computadora dominante en lugar de una abstracción acrítica de las visiones del mundo.
 
-El primer "módulo" de seis8s produce música influenciada por la cumbia sonidera, un estilo particular de la clase trabajadora mexicana en México y Estados Unidos. Para obtener más información sobre Cumbia sonidera, consulte el libro <a href="http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf" target="_blank">Sonideros en las aceras, véngase a gozadera</a>
- <!-- “Sonideros en las aceras, véngase a gozadera” disponible en http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera% 20-% 20PDFvert.pdf). Para obtener más información sobre Seis8, consulte
-https://github.com/luisnavarrodelangel/seis8s. -->
+El primer "módulo" de seis8s produce música influenciada por la cumbia sonidera, un estilo particular de la clase trabajadora mexicana en México y Estados Unidos. Para obtener más información sobre Cumbia sonidera, consulte el libro <a href="http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf" target="_blank">Sonideros en las aceras, véngase a gozadera</a>. Para comenzar a usar seis8s continue al índice que esta abajo.
 
 ---
 
