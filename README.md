@@ -58,7 +58,7 @@ y hazlo sonar presionando el boton ▶ o presionando las teclas shift + enter. U
 <img src="fotos/estuary/helloWorld.png" width="80%"/>
 </p>
 
-5_ Continua a la sección [estilos_musicales](#estilos_musicales) o a  [referencia_rápida](#referencia_rápida) para continuar jugando con seis8s.
+5_ Continua a la sección  [referencia_rápida](#referencia_rápida) o a [estilos_musicales](#estilos_musicales) para continuar jugando con seis8s.
 
 ---
 
