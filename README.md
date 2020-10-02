@@ -23,9 +23,9 @@ seis8s es un proyecto reciente que pretende ser colaborativo, el cual pretene nu
 ---
 ## Editor_de_texto
 
-sies8s se puede jugar de manera [individual](#individual), así como de manera [colectiva](#colectiva) a través de la plataforma Estuary (para ver más info sobre estuary haz click aqui: https://github.com/dktr0/estuary).
+sies8s se puede jugar de [forma_individual](#forma_individual), así como de manera [colectiva](#colectiva) a través de la plataforma Estuary (para ver más info sobre estuary haz click aqui: https://github.com/dktr0/estuary).
 
-#### Forma #### Individual
+#### Forma_Individual
 1_ Accesa a https://estuary.mcmaster.ca y da click en "solo mode".
 
 <p align="center">
@@ -39,7 +39,7 @@ De esta forma ahora debes ver en la pantalla una sola caja de texto de tamaño g
 
 <p align="center">
 <img src="fotos/estuary/terminal.png" width="80%"/>
-<img src="fotos/estuary/fulltexteditor.png" width="80%"/>
+<img src="fotos/estuary/fulltexteditor.png" width="80%"/>jamblock
 </p>
 
 3_Selecciona en el menu el lenguaje seis8s.
@@ -104,6 +104,10 @@ Para silenciar los sonidos puedes utilizar el comando:
 ---
 #### Funciones_del_bajo
 
+<p align="center">
+<img src="fotos/instrumentos/bajo.png" width="30%"/>
+</p>
+
 **sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0. Hay 4 pre-sets disponibles.
 
 <code> sample 0 $ cumbia bajo;  </code>
@@ -127,6 +131,10 @@ También se pueden hacer listas de notas y ritmos de la siguiente forma.
 ---
 #### Funciones_del_teclado
 
+<p align="center">
+<img src="fotos/instrumentos/teclado.png" width="30%"/>
+</p>
+
 **sample** permite cambiar la muestra de audio o sample. Acepta números enteros iguales o mayores que 0.
 
 <code> sample 1 $ cumbia teclado;  </code>
@@ -137,22 +145,26 @@ También se pueden hacer listas de notas y ritmos de la siguiente forma.
 
 **acompanamiento** o **acompañamiento** modifica el ritmo en el que se tocan los acordes o bloques de notas del teclado.
 
-<code> acompanamiento 2 $ cumbia taclado; </code>
+<code> acompanamiento 2 $ cumbia taclado; </code> <br>
 <code> acompanamiento (2 4) $ cumbia taclado; </code>
 
 También sirve para modificar las notas del teclado. Acepta hasta un máximo de 4 notas.
 
-<code> acompanamiento 2 ("f" "3a" "5a") $ cumbia teclado; </code>
+<code> acompanamiento 2 ("f" "3a" "5a") $ cumbia teclado; </code> <br>
 <code> acompanamiento (2 4) ("f" "3a" "5a") </code>
 
 También se puede modificar la octava de la nota, es decir que tan grave o agudo suena.
 
 
-<code> acompanamiento 2 ("f" "3a" ("5a" 1)) $ cumbia teclado; </code>
+<code> acompanamiento 2 ("f" "3a" ("5a" 1)) $ cumbia teclado; </code> <br>
 <code> acompanamiento 2 ("f" "3a" ("5a" (-1)) $ cumbia teclado; </code>
 
 ---
 #### Funciones_de_las_congas
+
+<p align="center">
+<img src="fotos/instrumentos/congas.png" width="30%"/>
+</p>
 
 **tumbao** permite accessar a los distintos pre-sets de las congas como lo hicimos con teclado y el bajo arriba. Acepta números enteros iguales o mayores que 0. Hay 4 disponibles.
 
@@ -177,6 +189,10 @@ También se pueden hacer listas de notas y ritmos de la siguiente forma.
 ---
 #### Funciones_de_la_guira
 
+<p align="center">
+<img src="fotos/instrumentos/guira.png" width="30%"/>
+</p>
+
 **preset** permite accesar a algunos ritmos pre-cargados de la guira. Hay 2 disponibles.
 
 cumbia guira;
@@ -184,9 +200,13 @@ cumbia guira;
 ---
 #### Funciones_del_jamblock
 
+<p align="center">
+<img src="fotos/instrumentos/jam.png" width="30%"/>
+</p>
+
 cumbia jamblock;
 
 ---
 ## Estilos_musicales
 
-<a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Referencia.md"> Estilos musicales </a>
+<a href="https://github.com/luisnavarrodelangel/seis8s/blob/master/Estilos.md"> Estilos musicales </a>
