@@ -47,7 +47,7 @@ sies8s se puede jugar de manera [individual](#individual), así como de manera [
 cumbia bajo;
 ```
 
-<img src="fotos/estuary/helloWorld.png" width="425"/>
+<img src="fotos/estuary/helloWorld.png" width="50%"/>
 
 
 5_ Continua a la sección [estilos_musicales](#estilos_musicales) o a  [cheat_sheet](#cheat) para continuar jugando con seis8s.
