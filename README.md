@@ -214,13 +214,9 @@ cumbia jamblock;
 
 Da click en cualquiera de los siguientes videos.
 
-<p align="center">
-
 [![prueba_1](fotos/videos/prueba1.png)](https://youtu.be/jASFjeV_1vM)
 
 [![prueba_3](fotos/videos/prueba3.png)](https://youtu.be/nKfUPtoL5jE)
-
-</p>
 
 ## Estilos_musicales
 
