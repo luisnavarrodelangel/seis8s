@@ -77,6 +77,17 @@
   (major1) == 2 && (major2) == 2 && (minor) <= 2)
 #endif /* MIN_VERSION_mtl */
 
+/* package split-0.2.3.4 */
+#ifndef VERSION_split
+#define VERSION_split "0.2.3.4"
+#endif /* VERSION_split */
+#ifndef MIN_VERSION_split
+#define MIN_VERSION_split(major1,major2,minor) (\
+  (major1) <  0 || \
+  (major1) == 0 && (major2) <  2 || \
+  (major1) == 0 && (major2) == 2 && (minor) <= 3)
+#endif /* MIN_VERSION_split */
+
 /* package tempi-1.0.2.0 */
 #ifndef VERSION_tempi
 #define VERSION_tempi "1.0.2.0"
@@ -232,10 +243,10 @@
 #endif /* MIN_TOOL_VERSION_strip */
 
 #ifndef CURRENT_PACKAGE_KEY
-#define CURRENT_PACKAGE_KEY "seis8s-0.0.0.1-AG9LsUdkEDz7w9jB5VYnqY"
+#define CURRENT_PACKAGE_KEY "seis8s-0.0.0.1-25SeVcDHGU64A1M6vJs2R6"
 #endif /* CURRENT_PACKAGE_KEY */
 #ifndef CURRENT_COMPONENT_ID
-#define CURRENT_COMPONENT_ID "seis8s-0.0.0.1-AG9LsUdkEDz7w9jB5VYnqY"
+#define CURRENT_COMPONENT_ID "seis8s-0.0.0.1-25SeVcDHGU64A1M6vJs2R6"
 #endif /* CURRENT_COMPONENT_ID */
 #ifndef CURRENT_PACKAGE_VERSION
 #define CURRENT_PACKAGE_VERSION "0.0.0.1"

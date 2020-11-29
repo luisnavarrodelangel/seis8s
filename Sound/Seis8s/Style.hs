@@ -172,7 +172,7 @@ defaultStyle = Style {
    cuerdaSampleNPattern0 = NPattern1 [0],
    cuerdaPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
    cuerdaPanPattern0 = 0.5,
-   cuerdaGainPattern0 = 1,
+   cuerdaGainPattern0 = 0.75,
 
    bassSampleNPattern0 = NPattern1 [0],
    bassSampleNPattern1 = NPattern1 [0],
@@ -227,6 +227,12 @@ defaultStyle = Style {
   congasPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
   congasPanPattern0 = 0.5,
   congasGainPattern0 = 1,
+
+  jamblockRhythmPattern0 = [(1, 0)],
+  jamblockSampleNPattern0 = NPattern1 [0],
+  jamblockPitchPattern0 = ("midinote", [("mn", 60, 0)]),
+  jamblockPanPattern0 = 0.5,
+  jamblockGainPattern0 = 1,
 
   claveRhythmPattern0 = [(1, 0)],
   claveSampleNPattern0 = NPattern1 [0],

@@ -20,13 +20,13 @@ import qualified Data.Map as Map
 import qualified Sound.OSC as H
 import qualified Data.Text as T
 import qualified Data.List as List
+import Data.List.Split (splitOn)
 import Data.Bifunctor
 import Data.Tempo
 import Data.Time
 import Data.Fixed
 import Data.Maybe
 import qualified Sound.OSC as H
-
 
 type H = Haskellish GlobalMaterial
 
@@ -46,11 +46,31 @@ parseLang s | s == "" = return ([emptyLayer], defaultGlobalMaterial)
       f (Exts.ParseOk x) = runHaskellish layers defaultGlobalMaterial x -- Either String (a, st)
       f (Exts.ParseFailed l s) = Left s
 
+-- working on functions for comments
+-- parseLang' :: String -> Either String (String, ())
+-- parseLang' s = do
+--   let sourceAsList = "[" ++ (List.intercalate "," $ fmap (++ " _0") $ splitOn ";" s) ++ "\n]"
+--   (f . Exts.parseExp) $ sourceAsList
+--     where
+--       f (Exts.ParseOk x) = runHaskellish test () x -- Either String (a, st)
+--       f (Exts.ParseFailed _ s) = Left s
+--
+--
+-- listTest :: Haskellish () [String]
+-- listTest = list test
+--
+-- test :: Haskellish () String
+-- test = _0Arg'$ reserved "test" >> return "testOk"
+--
+-- _0Arg' :: Haskellish () a -> Haskellish () a
+-- _0Arg' p = fmap fst (functionApplication p $ reserved "_0")
+
+
 layers :: H [Layer]
 layers =  listOfDoStatements statement
 
 statement :: H Layer
-statement =  parseLayer <|> globalStatement <|> silencio -- programaLiteral <|> programaConEstiloEInst
+statement =  parseLayer <|> globalStatement <|> silencio
 
 -- GlobalMaterial
 -- e.g. clave dosTres --gets parsed 1st that changes the state
@@ -58,7 +78,7 @@ statement =  parseLayer <|> globalStatement <|> silencio -- programaLiteral <|> 
 -- then clave tresDos -- 3rd -- and changes the state
 
 globalStatement :: H Layer
-globalStatement = do
+globalStatement =  do
   f <- globalMaterialFunctions -- progressionToGm
   st <- get
   let newState = f st
@@ -66,7 +86,7 @@ globalStatement = do
   return emptyLayer
 
 silencio :: H Layer
-silencio = emptyLayer <$ reserved "silencio"
+silencio =  emptyLayer <$ reserved "silencio"
 
 globalMaterialFunctions :: H (GlobalMaterial -> GlobalMaterial)
 globalMaterialFunctions = parseSetChordProg
@@ -96,16 +116,25 @@ parseSetChordProgWMetre' :: H ([Chord] -> GlobalMaterial -> GlobalMaterial)
 parseSetChordProgWMetre' = parseSetChordProgWMetre'' <*> rationalOrInteger
 
 parseSetChordProgWMetre'' :: H (Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial)
-parseSetChordProgWMetre'' = (setChordProg <$ reserved "armonia")
-
-parseSetChordProgMetreAuto :: H (GlobalMaterial -> GlobalMaterial)
-parseSetChordProgMetreAuto = (reserved "armonia" >> return setChordProgMetreAuto) <*>  chordListMetreAuto
+parseSetChordProgWMetre'' = setChordProg <$ (reserved "armonia" <|> reserved "acordes")
 
 setChordProg :: Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial
-setChordProg metre hs gm = gm { harmony = castProgression metre (compas gm) hs}
+setChordProg metre hs gm = gm { harmony = castProgression metre (compas gm) (multiplicarCompasInicioYFinal (compas gm) hs)}
 
-setChordProgMetreAuto ::[Chord] -> GlobalMaterial -> GlobalMaterial
-setChordProgMetreAuto hs gm = gm { harmony = castProgressionMetreAuto hs (compas gm)}
+-- parseSetChordProgMetreAuto :: H (GlobalMaterial -> GlobalMaterial)
+-- parseSetChordProgMetreAuto = (reserved "armonia" >> return setChordProgMetreAuto) <*>  chordListMetreAuto
+
+parseSetChordProgMetreAuto :: H (GlobalMaterial -> GlobalMaterial)
+parseSetChordProgMetreAuto =  parseSetChordProgMetreAuto' <*> listaDePitchOrPitchType -- chordListMetreAuto
+
+parseSetChordProgMetreAuto' :: H ([(Pitch, ChordType)] -> GlobalMaterial -> GlobalMaterial)
+parseSetChordProgMetreAuto' =  setChordProgMetreAuto <$ (reserved "armonia" <|> reserved "acordes")
+
+setChordProgMetreAuto :: [(Pitch, ChordType)] -> GlobalMaterial -> GlobalMaterial
+setChordProgMetreAuto hs gm = gm { harmony = castProgressionMetreAuto (compas gm) (listaDePitchOPitchWType hs)}
+
+-- listaDePitchOPitchWType :: Double -> [(Pitch, ChordType)] -> [Chord]
+
 
 chordList :: H [Chord]
 chordList = list $ (chordParser <|> chordParserMajAuto)
@@ -139,9 +168,10 @@ chordParserMajAuto'' = do
 
 --parses a list of chords with default dur of 1c, e.g. armonia [c maj, d maj]
 chordListMetreAuto :: H [Chord]
-chordListMetreAuto = chordListMetreAuto'
-                  <|> parsePitchtochord
+chordListMetreAuto = parsePitchtochord
+                  <|> chordListMetreAuto'
 
+--
 --
 parsePitchtochord :: H [Chord]
 parsePitchtochord = do
@@ -152,7 +182,10 @@ pitchtochord :: [Pitch] -> [Chord]
 pitchtochord ps = do
   let startandend = fmap (\s -> (toRational s, toRational s+1)) [0 .. (length ps)]
   let zipXSwithStartEnd = zip ps startandend --[(x,())]
-  fmap (\(p, (s,e)) -> Chord p major (s*0.5,e*0.5)) zipXSwithStartEnd
+  fmap (\(p, (s,e)) -> Chord p major (s,e)) zipXSwithStartEnd
+
+pitchAPicthYTipo :: Pitch -> (Pitch, ChordType)
+pitchAPicthYTipo p = (p, major)
 
 --
 chordListMetreAuto' :: H [Chord]
@@ -181,49 +214,91 @@ pitchandtypetochord xs = do
   let zipXSwithStartEnd = zip xs startandend --[((),())]
   fmap (\((p,t), (s,e)) -> Chord p t (s,e)) zipXSwithStartEnd
 
+--
+-- parsePitchandtypetoPitchType :: H ()
+
+listaDePitchOrPitchType :: H [(Pitch, ChordType)]
+listaDePitchOrPitchType = list (parsePitchToPitchType <|> parsePitchandtypetoPitchType)
+
+parsePitchToPitchType :: H (Pitch, ChordType)
+parsePitchToPitchType = do
+  p <- pitchParser
+  return $ pitchToPitchType p
+
+pitchToPitchType :: Pitch -> (Pitch, ChordType)
+pitchToPitchType p = (p, major)
+
+
+parsePitchandtypetoPitchType :: H (Pitch, ChordType)
+parsePitchandtypetoPitchType = parsePitchandtypetoPitchType' <*> chordTypeParser
+
+
+parsePitchandtypetoPitchType' :: H (ChordType -> (Pitch, ChordType))
+parsePitchandtypetoPitchType' = do
+  p <- pitchParser
+  return $ \t -> pitchandtypetoPitchType p t
+
+pitchandtypetoPitchType :: Pitch -> ChordType -> (Pitch, ChordType)
+pitchandtypetoPitchType p t = (p, t)
+
+--
+listaDePitchOPitchWType :: [(Pitch, ChordType)] -> [Chord]
+listaDePitchOPitchWType xs = do
+  let startandend = fmap (\s -> (toRational s, toRational s+1)) [0 .. (length xs)]
+  let zipXSwithStartEnd = zip xs startandend --[((),())]
+  fmap (\((p,t), (s,e)) -> Chord p t (s, e)) zipXSwithStartEnd
+
+--
+multiplicarCompasInicioYFinal :: Double -> [Chord] -> [Chord]
+multiplicarCompasInicioYFinal compas hs = fmap (multiplicarCompasInicioYFinal' compas) hs
+
+multiplicarCompasInicioYFinal' :: Double -> Chord -> Chord
+multiplicarCompasInicioYFinal' compas (Chord p t (s, e)) = Chord p t (s * toRational compas, e * toRational compas)
+
 -- armonia 1 [C maj 0 1]
 castProgression :: Rational -> Double -> [Chord] -> Progression
 castProgression metre compas cs  = Progression (metre * toRational compas) cs
 
 -- armonia 1 [C maj 0 1]
-castProgressionMetreAuto :: [Chord] -> Double -> Progression
-castProgressionMetreAuto cs compas = do
+castProgressionMetreAuto :: Double -> [Chord] -> Progression
+castProgressionMetreAuto compas cs = do
   let metre = realToFrac $ length cs
-  Progression (metre/ toRational compas) cs
+  let cs' = multiplicarCompasInicioYFinal compas cs
+  Progression (metre * toRational compas) cs'
 
 castHarmony :: Pitch -> ChordType -> Rational -> Rational ->  Chord
-castHarmony p t s e = Chord p t (s*0.5, e*0.5)
+castHarmony p t s e = Chord p t (s, e)
 
 castHarmonyMajAuto :: Pitch -> Rational -> Rational -> Chord
-castHarmonyMajAuto p s e = Chord p major (s*0.5, e*0.5)
+castHarmonyMajAuto p s e = Chord p major (s, e)
 
 
 pitchParser :: H Pitch
 pitchParser =
-               c <$ reserved "c"
-           <|> cs <$ reserved "c'"
-           <|> cs <$ reserved "db"
-           <|> d <$ reserved "d"
-           <|> ds <$ reserved "d'"
-           <|> ds <$ reserved "eb"
-           <|> e <$ reserved "e"
-           <|> f <$ reserved "f"
-           <|> fs <$ reserved "f'"
-           <|> fs <$ reserved "gb"
-           <|> g <$ reserved "g"
-           <|> gs <$ reserved "g'"
-           <|> gs <$ reserved "ab"
-           <|> a <$ reserved "a"
-           <|> as <$ reserved "a'"
-           <|> as <$ reserved "bb"
-           <|> b <$ reserved "b"
+               c <$ (reserved "c" <|> reserved "di")
+           <|> cs <$ (reserved "c'" <|> reserved "do'")
+           <|> cs <$ (reserved "db" <|> reserved "reb")
+           <|> d <$ (reserved "d" <|> reserved "re")
+           <|> ds <$ (reserved "d'" <|> reserved "re'")
+           <|> ds <$ (reserved "eb" <|> reserved "mib")
+           <|> e <$ (reserved "e" <|> reserved "mi")
+           <|> f <$ (reserved "f" <|> reserved "fa")
+           <|> fs <$ (reserved "f'" <|> reserved "fa'")
+           <|> fs <$ (reserved "gb" <|> reserved "solb")
+           <|> g <$ (reserved "g" <|> reserved "sol")
+           <|> gs <$ (reserved "g'" <|> reserved "sol'")
+           <|> gs <$ (reserved "ab" <|> reserved "lab")
+           <|> a <$ (reserved "a" <|> reserved "la")
+           <|> as <$ (reserved "a'" <|> reserved "la'")
+           <|> as <$ (reserved "bb" <|> reserved "sib")
+           <|> b <$ (reserved "b" <|> reserved "si")
 
 chordTypeParser :: H ChordType
 chordTypeParser =
-                  major <$ reserved "maj"
-              <|> minor <$ reserved "min"
-              <|> major7 <$ reserved "maj7"
-              <|> minor7 <$ reserved "min7"
+                  major <$ (reserved "maj" <|> reserved "M")
+              <|> minor <$ (reserved "min" <|> reserved "m")
+              <|> major7 <$ (reserved "maj7" <|> reserved "M7")
+              <|> minor7 <$ (reserved "min7" <|> reserved "m7")
               <|> dom <$ reserved "dom"
               <|> fifths <$ reserved "quintas"
               <|> sus4 <$ reserved "sus4"
@@ -263,6 +338,8 @@ transformadoresDeLayer =  parseSeleccionarEstilo
                       <|> parseAlternar
                       <|> parseCambiarGain
                       <|> parseCambiarPaneo
+                      <|> parsePunteo
+                      <|> parsePunteos
                       <|> parseTumbao
                       <|> parseaTumbaoBajoVoicingSel
                       <|> parseaTumbaoBajoVoicingYRitmoSel
@@ -365,10 +442,105 @@ seleccionarSample index c =  c {style = nuevoE}
                              congasSampleNPattern0 = NPattern1 [index]
                             }
 
--- bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],  --i.e. [♩ 𝄽  ♩ ♩],
--- bassSampleNPattern0 = [0, 0, 0],
--- bassPitchPattern0 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]), -- index
--- PitchPattern = (PitchType, [Note])
+-- TO DO:  punteo [mi do] ... Y CON MIDINOTE
+-- punteo "1a" 3 $ cumbia teclado;
+-- parsePunteoConMidiNote :: H Layer
+-- parsePunteoConMidiNote = parsePunteoConMidiNote' <*> parseLayer
+--
+-- parsePunteoConMidiNote' :: H (Layer -> Layer)
+-- parsePunteoConMidiNote' =  parsePunteoConMidiNote'' <*> rationalOrInteger
+--
+-- parsePunteoConMidiNote'' :: H (Rational -> Layer -> Layer)
+-- parsePunteoConMidiNote'' = parsePunteoConMidiNote''' <*>  parseUnNAListaDeN
+--
+-- parsePunteoConMidiNote''' :: H ([N] -> Rational -> Layer -> Layer)
+-- parsePunteoConMidiNote''' = punteoConMidiNote <$ (reserved "punteo")
+--
+-- punteoConMidiNote :: [N] -> Rational -> Layer -> Layer
+-- punteoConMidiNote nota ataque c = c {style = nuevoE}
+--   where
+--     rPat = cambiarRitmo'''' 1 [[ataque]]
+--     nuevoE = (style c) {
+--                     tecladoRhythmPattern0 = rPat, --
+--                     tecladoPitchPattern0 = ("midinote", nota), --new ("intervalo", concat notes)-- ("acorde", [note])
+--                     acordeonRhythmPattern0 =  rPat,
+--                     acordeonPitchPattern0 = ("midinote", nota),
+--
+--                     cuerdaRhythmPattern0 =  rPat,
+--                     cuerdaPitchPattern0 = ("midinote", nota),
+--
+--                     extrasRhythmPattern0 =  rPat,
+--                     extrasPitchPattern0 = ("midinote", nota)
+--   }
+
+-- punteo "1a" 3 $ cumbia teclado;
+parsePunteo :: H Layer
+parsePunteo = parsePunteo' <*> parseLayer
+
+parsePunteo' :: H (Layer -> Layer)
+parsePunteo' =  parsePunteo'' <*> rationalOrInteger
+
+parsePunteo'' :: H (Rational -> Layer -> Layer)
+parsePunteo'' =parsePunteo''' <*> parseUnStringAListadeNotas --
+
+parsePunteo''' :: H ([Note] -> Rational -> Layer -> Layer)
+parsePunteo''' = punteo <$ (reserved "punteo")
+
+punteo :: [Note] -> Rational -> Layer -> Layer
+punteo nota ataque c = c {style = nuevoE}
+  where
+    rPat = cambiarRitmo'''' 1 [[ataque]]
+    nuevoE = (style c) {
+                    tecladoRhythmPattern0 = rPat, --
+                    tecladoPitchPattern0 = ("intervalo", nota), --new ("intervalo", concat notes)-- ("acorde", [note])
+                    acordeonRhythmPattern0 =  rPat,
+                    acordeonPitchPattern0 = ("intervalo", nota),
+
+                    cuerdaRhythmPattern0 =  rPat,
+                    cuerdaPitchPattern0 = ("intervalo", nota),
+
+                    extrasRhythmPattern0 =  rPat,
+                    extrasPitchPattern0 = ("intervalo", nota)
+  }
+
+-- punteo ["f" "5a", "f" "3a" "5a"] [1 3, 1 3 4] $ cumbia acordeon;
+parsePunteos :: H Layer
+parsePunteos = parsePunteos' <*> parseLayer
+
+parsePunteos' :: H (Layer -> Layer)
+parsePunteos' = parsePunteos'' <*> parseListasDeListasDeAtaques -- rationalList --
+
+parsePunteos'' :: H ( [[Rational]] -> Layer -> Layer)
+parsePunteos'' = parsePunteos''' <*> praseListaDeListaStringAListaDeAcordes
+
+parsePunteos''' :: H ([[Note]] -> [[Rational]] -> Layer -> Layer)
+parsePunteos''' = listaDepunteos <$ (reserved "punteo")
+
+listaDepunteos :: [[Note]] -> [[Rational]] -> Layer -> Layer
+listaDepunteos notes rs c = c {style = nuevoE}
+  where
+    metre = toRational $ length rs -- [[Nothing], [1, 2, 3]] = metre 2 -- (realToFrac $ floor rs') + 1
+    rPat = cambiarRitmo'''' metre rs
+    nPat (NPattern1 xs) = NPattern1 $ concat $ replicate (length rPat) xs
+    pPat =  take (length rPat) $ concat notes -- new
+    nuevoE = (style c) {
+                            tecladoRhythmPattern0 = rPat, --
+                            tecladoSampleNPattern0 = nPat $ tecladoSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
+                            tecladoPitchPattern0 = ("intervalo", pPat), --new ("intervalo", concat notes)-- ("acorde", [note])
+
+                            acordeonRhythmPattern0 = rPat,
+                            acordeonSampleNPattern0 = nPat $ acordeonSampleNPattern0 (style c),
+                            acordeonPitchPattern0 = ("intervalo", pPat),
+
+                            cuerdaRhythmPattern0 = rPat,
+                            cuerdaSampleNPattern0 = nPat $ cuerdaSampleNPattern0 (style c),
+                            cuerdaPitchPattern0 = ("intervalo", pPat),
+
+                            extrasRhythmPattern0 = rPat,
+                            extrasSampleNPattern0 = nPat $ extrasSampleNPattern0 (style c),
+                            extrasPitchPattern0 = ("intervalo", pPat)
+                          }
+
 
 -- tumbao ("f" "3a" "5a") $ cumbia bajo;
 parseaTumbaoBajoVoicingSel :: H Layer
@@ -388,7 +560,6 @@ tumbaoBajoVoicingSel notes c = c {style = nuevoE}
                             bassSampleNPattern0 = bassSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
                             bassPitchPattern0 = ("intervalo", notes)-- ("acorde", [note])
                           }
-
 
 -- tumbao ("f" 5a") (1 3) $ cumbia bajo;
 parseaTumbaoBajoVoicingYRitmoSel :: H Layer
@@ -444,17 +615,6 @@ tumbaoBajoVoicingsYRitmoSel notes rs c = c {style = nuevoE}
                             bassSampleNPattern0 = nPat $ bassSampleNPattern0 (style c), -- listaDeStringsANPattern nPat notes,
                             bassPitchPattern0 = ("intervalo", pPat) --new ("intervalo", concat notes)-- ("acorde", [note])
                           }
-
-
--- tumbaoBajoVoicingsYRitmoSelTest :: [[Note]] -> [[Rational]] -> Layer -> Layer
-tumbaoBajoVoicingsYRitmoSelTest notes rs = sumarIaAttacks
-  where
-    zipIAttacks = zip [0 .. ((length rs) - 1)] rs -- [(0, [1, 2, 3]), (1, [1, 2, 3])]
-    sumarIaAttacks = fmap (\(i, xs) -> fmap (\x -> x + (toRational i)) xs) zipIAttacks -- [[1,2, 3], [4, 5, 6]]
-    -- fmap (\(i, ys) -> fmap (\x -> x + (toRational i)) ys) xs
-    rs' = concat sumarIaAttacks
-    rs'' = ((maximum rs') - 1) / 4
-    metre = (realToFrac $ floor rs'') + 1
 
 -- marcha ("p" "t" "p" "a") $ cumbia congas -- accepts only 4 beats
 parseTumbaoCongasGolpesSel :: H Layer
@@ -1750,7 +1910,7 @@ cambiarRitmos metre rs c = c {style = nuevoE}
 cambiarRitmo' :: Rational -> Rational -> Maybe (Rational, Rational)
 cambiarRitmo' metre attack = metreAndAttack
   where
-    cuartosPorCompas = 4 * metre
+    cuartosPorCompas = 4 -- * metre
     metreAndAttack | (attack >= 1) && (attack < (cuartosPorCompas + 1)) = Just (metre, attack') -- e.g. ritmo 1 [1 2 3 4] => ritmo 1 [0, 0.25, 0.5, 0.75], 2 [1 2 3 4, 5 6 7 8] => ritmo 2 [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75]
                    | otherwise = Nothing
                    where attack' = (attack - 1) / 4
@@ -1763,7 +1923,7 @@ cambiarRitmo'' metre  attacks = catMaybes $ fmap (cambiarRitmo' metre) attacks
 cambiarRitmoSinMetre' :: Rational -> Rational -> Maybe Rational
 cambiarRitmoSinMetre' metre attack = metreAndAttack
   where
-    cuartosPorCompas = 4 * metre
+    cuartosPorCompas = 4 -- * metre
     metreAndAttack | (attack >= 1) && (attack < (cuartosPorCompas + 1)) = Just attack' -- e.g. ritmo 1 [1 2 3 4] => ritmo 1 [0, 0.25, 0.5, 0.75], 2 [1 2 3 4, 5 6 7 8] => ritmo 2 [0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75]
                    | otherwise = Nothing
                    where attack' = (attack - 1) / 4
@@ -2247,6 +2407,8 @@ parseLayerToLayerFunc = parseSeleccionarEstilo'
                       <|> parseAlternar'
                       <|> parseCambiarGain'
                       <|> parseCambiarPaneo'
+                      <|> parsePunteo'
+                      <|> parsePunteos'
                       <|> parseTumbao'
                       <|> parseaTumbaoBajoVoicingSel'
                       <|> parseaTumbaoBajoVoicingYRitmoSel'
