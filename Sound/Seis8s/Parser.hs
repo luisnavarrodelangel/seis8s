@@ -2305,6 +2305,248 @@ parseStringsAListaDeNotes = parseUnStringAListadeNotas
                           <|> parseDosStringsAListadeNotas
                           <|> parseTresStringsAListadeNotas
                           <|> parseCuatroStringsAListadeNotas
+                          <|> parseCincoStringsAListadeNotas
+                          <|> parseSeisStringsAListadeNotas
+                          <|> parseSieteStringsAListadeNotas
+                          <|> parseOchoStringsAListadeNotas
+                          <|> parseNueveStringsAListadeNotas
+                          <|> parseDiezStringsAListadeNotas
+                          <|> parseOnceStringsAListadeNotas
+                          <|> parseDoceStringsAListadeNotas
+
+
+
+parseDoceStringsAListadeNotas :: H [Note]
+parseDoceStringsAListadeNotas = parseDoceStringsAListadeNotas' <*> parseNote
+
+parseDoceStringsAListadeNotas' :: H (Note -> [Note])
+parseDoceStringsAListadeNotas' = parseDoceStringsAListadeNotas'' <*> parseNote
+
+parseDoceStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseDoceStringsAListadeNotas'' = parseDoceStringsAListadeNotas''' <*> parseNote
+
+parseDoceStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseDoceStringsAListadeNotas''' = parseDoceStringsAListadeNotas'''' <*> parseNote
+
+parseDoceStringsAListadeNotas'''' :: H (Note -> Note -> Note -> Note -> [Note])
+parseDoceStringsAListadeNotas'''' = parseDoceStringsAListadeNotas''''' <*> parseNote
+
+parseDoceStringsAListadeNotas''''' :: H (Note -> Note -> Note -> Note -> Note -> [Note])
+parseDoceStringsAListadeNotas''''' = parseDoceStringsAListadeNotas'''''' <*> parseNote
+
+parseDoceStringsAListadeNotas'''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseDoceStringsAListadeNotas'''''' = parseDoceStringsAListadeNotas''''''' <*> parseNote
+
+parseDoceStringsAListadeNotas''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseDoceStringsAListadeNotas''''''' = parseDoceStringsAListadeNotas'''''''' <*> parseNote
+
+parseDoceStringsAListadeNotas'''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note ->  Note -> [Note])
+parseDoceStringsAListadeNotas'''''''' = parseDoceStringsAListadeNotas''''''''' <*> parseNote
+
+parseDoceStringsAListadeNotas''''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note ->  Note -> Note -> [Note])
+parseDoceStringsAListadeNotas''''''''' = parseDoceStringsAListadeNotas'''''''''' <*> parseNote
+
+parseDoceStringsAListadeNotas'''''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note ->  Note -> Note -> Note -> [Note])
+parseDoceStringsAListadeNotas'''''''''' = parseDoceStringsAListadeNotas''''''''''' <*> parseNote
+
+parseDoceStringsAListadeNotas''''''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note ->  [Note])
+parseDoceStringsAListadeNotas''''''''''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 -> stringsAListadeDoceNotas s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12
+
+--
+parseOnceStringsAListadeNotas :: H [Note]
+parseOnceStringsAListadeNotas = parseOnceStringsAListadeNotas' <*> parseNote
+
+parseOnceStringsAListadeNotas' :: H (Note -> [Note])
+parseOnceStringsAListadeNotas' = parseOnceStringsAListadeNotas'' <*> parseNote
+
+parseOnceStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseOnceStringsAListadeNotas'' = parseOnceStringsAListadeNotas''' <*> parseNote
+
+parseOnceStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseOnceStringsAListadeNotas''' = parseOnceStringsAListadeNotas'''' <*> parseNote
+
+parseOnceStringsAListadeNotas'''' :: H (Note -> Note -> Note -> Note -> [Note])
+parseOnceStringsAListadeNotas'''' = parseOnceStringsAListadeNotas''''' <*> parseNote
+
+parseOnceStringsAListadeNotas''''' :: H (Note -> Note -> Note -> Note -> Note -> [Note])
+parseOnceStringsAListadeNotas''''' = parseOnceStringsAListadeNotas'''''' <*> parseNote
+
+parseOnceStringsAListadeNotas'''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseOnceStringsAListadeNotas'''''' = parseOnceStringsAListadeNotas''''''' <*> parseNote
+
+parseOnceStringsAListadeNotas''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseOnceStringsAListadeNotas''''''' = parseOnceStringsAListadeNotas'''''''' <*> parseNote
+
+parseOnceStringsAListadeNotas'''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note ->  Note -> [Note])
+parseOnceStringsAListadeNotas'''''''' = parseOnceStringsAListadeNotas''''''''' <*> parseNote
+
+parseOnceStringsAListadeNotas''''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note ->  Note -> Note -> [Note])
+parseOnceStringsAListadeNotas''''''''' = parseOnceStringsAListadeNotas'''''''''' <*> parseNote
+
+parseOnceStringsAListadeNotas'''''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note ->  [Note])
+parseOnceStringsAListadeNotas'''''''''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 -> stringsAListadeOnceNotas s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11
+
+  --
+
+parseDiezStringsAListadeNotas :: H [Note]
+parseDiezStringsAListadeNotas = parseDiezStringsAListadeNotas' <*> parseNote
+
+parseDiezStringsAListadeNotas' :: H (Note -> [Note])
+parseDiezStringsAListadeNotas' = parseDiezStringsAListadeNotas'' <*> parseNote
+
+parseDiezStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseDiezStringsAListadeNotas'' = parseDiezStringsAListadeNotas''' <*> parseNote
+
+parseDiezStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseDiezStringsAListadeNotas''' = parseDiezStringsAListadeNotas'''' <*> parseNote
+
+parseDiezStringsAListadeNotas'''' :: H (Note -> Note -> Note -> Note -> [Note])
+parseDiezStringsAListadeNotas'''' = parseDiezStringsAListadeNotas''''' <*> parseNote
+
+parseDiezStringsAListadeNotas''''' :: H (Note -> Note -> Note -> Note -> Note -> [Note])
+parseDiezStringsAListadeNotas''''' = parseDiezStringsAListadeNotas'''''' <*> parseNote
+
+parseDiezStringsAListadeNotas'''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseDiezStringsAListadeNotas'''''' = parseDiezStringsAListadeNotas''''''' <*> parseNote
+
+parseDiezStringsAListadeNotas''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseDiezStringsAListadeNotas''''''' = parseDiezStringsAListadeNotas'''''''' <*> parseNote
+
+parseDiezStringsAListadeNotas'''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note ->  Note -> [Note])
+parseDiezStringsAListadeNotas'''''''' = parseDiezStringsAListadeNotas''''''''' <*> parseNote
+
+parseDiezStringsAListadeNotas''''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note ->  [Note])
+parseDiezStringsAListadeNotas''''''''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 s5 s6 s7 s8 s9 s10 -> stringsAListadeDiezNotas s1 s2 s3 s4 s5 s6 s7 s8 s9 s10
+
+--
+parseNueveStringsAListadeNotas :: H [Note]
+parseNueveStringsAListadeNotas = parseNueveStringsAListadeNotas' <*> parseNote
+
+parseNueveStringsAListadeNotas' :: H (Note -> [Note])
+parseNueveStringsAListadeNotas' = parseNueveStringsAListadeNotas'' <*> parseNote
+
+parseNueveStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseNueveStringsAListadeNotas'' = parseNueveStringsAListadeNotas''' <*> parseNote
+
+parseNueveStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseNueveStringsAListadeNotas''' = parseNueveStringsAListadeNotas'''' <*> parseNote
+
+parseNueveStringsAListadeNotas'''' :: H (Note -> Note -> Note -> Note -> [Note])
+parseNueveStringsAListadeNotas'''' = parseNueveStringsAListadeNotas''''' <*> parseNote
+
+parseNueveStringsAListadeNotas''''' :: H (Note -> Note -> Note -> Note -> Note -> [Note])
+parseNueveStringsAListadeNotas''''' = parseNueveStringsAListadeNotas'''''' <*> parseNote
+
+parseNueveStringsAListadeNotas'''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseNueveStringsAListadeNotas'''''' = parseNueveStringsAListadeNotas''''''' <*> parseNote
+
+parseNueveStringsAListadeNotas''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseNueveStringsAListadeNotas''''''' = parseNueveStringsAListadeNotas'''''''' <*> parseNote
+
+parseNueveStringsAListadeNotas'''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseNueveStringsAListadeNotas'''''''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 s5 s6 s7 s8 s9 -> stringsAListadeNueveNotas s1 s2 s3 s4 s5 s6 s7 s8 s9
+
+--
+
+parseOchoStringsAListadeNotas :: H [Note]
+parseOchoStringsAListadeNotas = parseOchoStringsAListadeNotas' <*> parseNote
+
+parseOchoStringsAListadeNotas' :: H (Note -> [Note])
+parseOchoStringsAListadeNotas' = parseOchoStringsAListadeNotas'' <*> parseNote
+
+parseOchoStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseOchoStringsAListadeNotas'' = parseOchoStringsAListadeNotas''' <*> parseNote
+
+parseOchoStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseOchoStringsAListadeNotas''' = parseOchoStringsAListadeNotas'''' <*> parseNote
+
+parseOchoStringsAListadeNotas'''' :: H (Note -> Note -> Note -> Note -> [Note])
+parseOchoStringsAListadeNotas'''' = parseOchoStringsAListadeNotas''''' <*> parseNote
+
+parseOchoStringsAListadeNotas''''' :: H (Note -> Note -> Note -> Note -> Note -> [Note])
+parseOchoStringsAListadeNotas''''' = parseOchoStringsAListadeNotas'''''' <*> parseNote
+
+parseOchoStringsAListadeNotas'''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseOchoStringsAListadeNotas'''''' = parseOchoStringsAListadeNotas''''''' <*> parseNote
+
+parseOchoStringsAListadeNotas''''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> Note ->[Note])
+parseOchoStringsAListadeNotas''''''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 s5 s6 s7 s8 -> stringsAListadeOchoNotas s1 s2 s3 s4 s5 s6 s7 s8
+
+--
+
+parseSieteStringsAListadeNotas :: H [Note]
+parseSieteStringsAListadeNotas = parseSieteStringsAListadeNotas' <*> parseNote
+
+parseSieteStringsAListadeNotas' :: H (Note -> [Note])
+parseSieteStringsAListadeNotas' = parseSieteStringsAListadeNotas'' <*> parseNote
+
+parseSieteStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseSieteStringsAListadeNotas'' = parseSieteStringsAListadeNotas''' <*> parseNote
+
+parseSieteStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseSieteStringsAListadeNotas''' = parseSieteStringsAListadeNotas'''' <*> parseNote
+
+parseSieteStringsAListadeNotas'''' :: H (Note -> Note -> Note -> Note -> [Note])
+parseSieteStringsAListadeNotas'''' = parseSieteStringsAListadeNotas''''' <*> parseNote
+
+parseSieteStringsAListadeNotas''''' :: H (Note -> Note -> Note -> Note -> Note -> [Note])
+parseSieteStringsAListadeNotas''''' = parseSieteStringsAListadeNotas'''''' <*> parseNote
+
+parseSieteStringsAListadeNotas'''''' :: H (Note -> Note -> Note -> Note -> Note -> Note -> [Note])
+parseSieteStringsAListadeNotas'''''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 s5 s6 s7 -> stringsAListadeSieteNotas s1 s2 s3 s4 s5 s6 s7
+
+--
+parseSeisStringsAListadeNotas :: H [Note]
+parseSeisStringsAListadeNotas = parseSeisStringsAListadeNotas' <*> parseNote
+
+parseSeisStringsAListadeNotas' :: H (Note -> [Note])
+parseSeisStringsAListadeNotas' = parseSeisStringsAListadeNotas'' <*> parseNote
+
+parseSeisStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseSeisStringsAListadeNotas'' = parseSeisStringsAListadeNotas''' <*> parseNote
+
+parseSeisStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseSeisStringsAListadeNotas''' = parseSeisStringsAListadeNotas'''' <*> parseNote
+
+parseSeisStringsAListadeNotas'''' :: H (Note -> Note -> Note -> Note -> [Note])
+parseSeisStringsAListadeNotas'''' = parseSeisStringsAListadeNotas''''' <*> parseNote
+
+parseSeisStringsAListadeNotas''''' :: H (Note -> Note -> Note -> Note -> Note -> [Note])
+parseSeisStringsAListadeNotas''''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 s5 s6 -> stringsAListadeSeisNotas s1 s2 s3 s4 s5 s6
+
+--
+
+parseCincoStringsAListadeNotas :: H [Note]
+parseCincoStringsAListadeNotas = parseCuatroStringsAListadeNotas' <*> parseNote
+
+parseCincoStringsAListadeNotas' :: H (Note -> [Note])
+parseCincoStringsAListadeNotas' = parseCincoStringsAListadeNotas'' <*> parseNote
+
+parseCincoStringsAListadeNotas'' :: H (Note -> Note -> [Note])
+parseCincoStringsAListadeNotas'' = parseCincoStringsAListadeNotas''' <*> parseNote
+
+parseCincoStringsAListadeNotas''' :: H (Note -> Note -> Note -> [Note])
+parseCincoStringsAListadeNotas''' = parseCincoStringsAListadeNotas'''' <*> parseNote
+
+parseCincoStringsAListadeNotas'''' :: H (Note -> Note -> Note -> Note -> [Note])
+parseCincoStringsAListadeNotas'''' = do
+  s1 <- parseNote
+  return $ \s2 s3 s4 s5 -> stringsAListadeCincoNotas s1 s2 s3 s4 s5
+  --
 
 parseCuatroStringsAListadeNotas :: H [Note]
 parseCuatroStringsAListadeNotas = parseCuatroStringsAListadeNotas' <*> parseNote
@@ -2362,6 +2604,29 @@ stringsAListadeTresNotas s1 s2 s3 = [s1, s2, s3]
 stringsAListadeCuatroNotas :: Note -> Note -> Note -> Note -> [Note]
 stringsAListadeCuatroNotas s1 s2 s3 s4 = [s1, s2, s3, s4]
 
+stringsAListadeCincoNotas :: Note -> Note -> Note -> Note -> Note -> [Note]
+stringsAListadeCincoNotas s1 s2 s3 s4 s5 = [s1, s2, s3, s4, s5]
+
+stringsAListadeSeisNotas :: Note -> Note -> Note -> Note -> Note -> Note -> [Note]
+stringsAListadeSeisNotas s1 s2 s3 s4 s5 s6 = [s1, s2, s3, s4, s5, s6]
+
+stringsAListadeSieteNotas :: Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note]
+stringsAListadeSieteNotas s1 s2 s3 s4 s5 s6 s7 = [s1, s2, s3, s4, s5, s6, s7]
+
+stringsAListadeOchoNotas :: Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note]
+stringsAListadeOchoNotas s1 s2 s3 s4 s5 s6 s7 s8 = [s1, s2, s3, s4, s5, s6, s7, s8]
+
+stringsAListadeNueveNotas :: Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note]
+stringsAListadeNueveNotas s1 s2 s3 s4 s5 s6 s7 s8 s9 = [s1, s2, s3, s4, s5, s6, s7, s8, s9]
+
+stringsAListadeDiezNotas :: Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note]
+stringsAListadeDiezNotas s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10]
+
+stringsAListadeOnceNotas :: Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note ->  [Note]
+stringsAListadeOnceNotas s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11]
+
+stringsAListadeDoceNotas :: Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> Note -> [Note]
+stringsAListadeDoceNotas s1 s2 s3 s4 s5 s6 s7 s8 s9 s10 s11 s12 = [s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12]
 
 -- [60 64 67] [59 62 67]
 -- ["f" "3a" "5a", "3a" (-1) "5a" (-1) "f" (-1)]
