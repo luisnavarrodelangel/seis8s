@@ -88,6 +88,9 @@ emptyEvents _ _ _ _ _ = do
 acordeon :: Layer
 acordeon = Layer {getEvents = acordeonEvents, style = defaultStyle}
 
+zampoña :: Layer
+zampoña = Layer {getEvents = guiraEvents, style = defaultStyle}
+
 cuerda :: Layer
 cuerda = Layer {getEvents = cuerdaEvents, style = defaultStyle}
 
@@ -124,6 +127,26 @@ jamblock = Layer {getEvents = jamblockEvents, style = defaultStyle}
 extras :: Layer
 extras = Layer {getEvents = extrasEvents, style = defaultStyle}
 
+zampoñaEvents gmm style tempo iw ew = do
+  let paneo = zampoñaPanPattern0 style
+  let gain = zampoñaGainPattern0 style
+  let pitchType = (fst $ zampoñaPitchPattern0 style)
+  let equateLists' = equateLists (zampoñaRhythmPattern0 style) (zampoñaSampleNPattern0 style) (snd $ zampoñaPitchPattern0 style)
+  let zampoñaRhythmPattern = sel1 equateLists' -- [(Rational, Rational)]
+  let zampoñaRhythmPattern' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm))) zampoñaRhythmPattern
+
+  let zampoñaSampleNPattern = sel2 equateLists'
+  let zampoñaPitchPattern = sel3 equateLists'
+  let nPat = List.zip zampoñaRhythmPattern' zampoñaSampleNPattern --[(RhythmicPattern, Int)]
+  let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
+  let pat = List.zip zampoñaRhythmPattern' zampoñaPitchPattern -- [(RhythmicPosition, (String, Double))]
+  let pitchPat = pitchPattern pat tempo iw ew --[(Rational, (String, Int, Double))]
+  let zampoñaline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
+  let time = fmap (\c -> countToTime tempo (fst c)) zampoñaline  -- [UTCTime]
+  let instCmap = cmap'' "zampoña" samplePat zampoñaline paneo gain--[Map Text Datum]
+  let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
+
+  return events
 
 acordeonEvents gmm style tempo iw ew = do
   let paneo = acordeonPanPattern0 style
@@ -145,6 +168,7 @@ acordeonEvents gmm style tempo iw ew = do
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
+
 cuerdaEvents gmm style tempo iw ew = do
   let paneo = cuerdaPanPattern0 style
   let gain = cuerdaGainPattern0 style

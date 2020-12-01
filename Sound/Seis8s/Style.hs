@@ -49,6 +49,12 @@ data Style  = Style  {
  acordeonPanPattern0 :: Double,
  acordeonGainPattern0 :: Double,
 
+ zampoñaRhythmPattern0 :: RhythmicPattern,
+ zampoñaSampleNPattern0 :: NPattern,
+ zampoñaPitchPattern0 :: PitchPattern,
+ zampoñaPanPattern0 :: Double,
+ zampoñaGainPattern0 :: Double,
+
  cuerdaRhythmPattern0 :: RhythmicPattern,
  cuerdaSampleNPattern0 :: NPattern,
  cuerdaPitchPattern0 :: PitchPattern,
@@ -167,6 +173,12 @@ defaultStyle = Style {
    acordeonPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
    acordeonPanPattern0 = 0.5,
    acordeonGainPattern0 = 1,
+
+   zampoñaRhythmPattern0 = [(1,0)],
+   zampoñaSampleNPattern0 = NPattern1 [0],
+   zampoñaPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
+   zampoñaPanPattern0 = 0.5,
+   zampoñaGainPattern0 = 1,
 
    cuerdaRhythmPattern0 = [(1,0)],
    cuerdaSampleNPattern0 = NPattern1 [0],
@@ -294,6 +306,12 @@ cumbia = Style {
     acordeonPitchPattern0 = ("intervalo", [intervalo "unisono" 0]), -- or double? (nota [0, 2, 3] cumbia) cuerda
     acordeonPanPattern0 = 0.5,
     acordeonGainPattern0 = 1,
+
+    zampoñaRhythmPattern0 = [(1,0)],
+    zampoñaSampleNPattern0 = NPattern1 [0],
+    zampoñaPitchPattern0 = ("intervalo", [intervalo "unisono" 0]), -- or double? (nota [0, 2, 3] cumbia) cuerda
+    zampoñaPanPattern0 = 0.5,
+    zampoñaGainPattern0 = 1,
 
     cuerdaRhythmPattern0 = [(1,0)],
     cuerdaSampleNPattern0 = NPattern1 [0],

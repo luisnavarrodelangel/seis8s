@@ -361,6 +361,7 @@ inst =
     <|> contras <$ reserved "contratiempos"
     <|> cuerda <$ reserved "cuerda"
     <|> acordeon <$ reserved "acordeon"
+    <|> zampoña <$ (reserved "zampoña" <|> reserved "flauta")
     <|> tarola <$ reserved "tarola"
     <|> efecto <$ reserved "efecto"
     <|> altavoz <$ reserved "altavoz"
@@ -400,6 +401,7 @@ seleccionarSamples :: NPattern -> Layer -> Layer
 seleccionarSamples is c =  c {style = nuevoE}
   where nuevoE = (style c) {
                            acordeonSampleNPattern0 = is,
+                           zampoñaSampleNPattern0 = is,
                            cuerdaSampleNPattern0 = is,
                            tecladoSampleNPattern0 =  is,
                            bassSampleNPattern0 =  is,
@@ -429,6 +431,7 @@ seleccionarSample index c =  c {style = nuevoE}
    where nuevoE = (style c) {
                              cuerdaSampleNPattern0 = NPattern1 [index],
                              acordeonSampleNPattern0 = NPattern1 [index],
+                             zampoñaSampleNPattern0 = NPattern1 [index],
                              tecladoSampleNPattern0 = NPattern1 [index],
                              bassSampleNPattern0 = NPattern1 [index],
                              guiraSampleNPattern0 = NPattern1 [index],
@@ -493,8 +496,12 @@ punteo nota ataque c = c {style = nuevoE}
     nuevoE = (style c) {
                     tecladoRhythmPattern0 = rPat, --
                     tecladoPitchPattern0 = ("intervalo", nota), --new ("intervalo", concat notes)-- ("acorde", [note])
+
                     acordeonRhythmPattern0 =  rPat,
                     acordeonPitchPattern0 = ("intervalo", nota),
+
+                    zampoñaRhythmPattern0 =  rPat,
+                    zampoñaPitchPattern0 = ("intervalo", nota),
 
                     cuerdaRhythmPattern0 =  rPat,
                     cuerdaPitchPattern0 = ("intervalo", nota),
@@ -531,6 +538,10 @@ listaDepunteos notes rs c = c {style = nuevoE}
                             acordeonRhythmPattern0 = rPat,
                             acordeonSampleNPattern0 = nPat $ acordeonSampleNPattern0 (style c),
                             acordeonPitchPattern0 = ("intervalo", pPat),
+
+                            zampoñaRhythmPattern0 = rPat,
+                            zampoñaSampleNPattern0 = nPat $ acordeonSampleNPattern0 (style c),
+                            zampoñaPitchPattern0 = ("intervalo", pPat),
 
                             cuerdaRhythmPattern0 = rPat,
                             cuerdaSampleNPattern0 = nPat $ cuerdaSampleNPattern0 (style c),
@@ -1433,6 +1444,7 @@ cambiarNotas ps c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             acordeonPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
+                            zampoñaPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             tecladoPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             bassPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
                             efectoPitchPattern0 = ("midinote", listDeNotasConRelacion "mn" ps),
@@ -1464,6 +1476,7 @@ cambiarNota ps c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             acordeonPitchPattern0 = ("midinote", [("mn", ps, 0)]),
+                            zampoñaPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             tecladoPitchPattern0 = ("midinote", [("mn", ps, 0)]),
                             bassPitchPattern0= ("midinote", [("mn", ps, 0)]),
                             efectoPitchPattern0 = ("midinote", [("mn", ps, 0)]),
@@ -1509,6 +1522,7 @@ cambiarIntervalosDoubleConOctava is c = c {style = nuevoE}
     nuevoE = (style c) {
                               cuerdaPitchPattern0 = ("intervalo", is'),
                               acordeonPitchPattern0 = ("intervalo", is'),
+                              zampoñaPitchPattern0 = ("intervalo", is'),
                               tecladoPitchPattern0 = ("intervalo", is'),
                               bassPitchPattern0= ("intervalo", is'),
                               efectoPitchPattern0 = ("intervalo", is'),
@@ -1540,6 +1554,7 @@ cambiarIntervaloDoubleConOctava index octava c = c {style = nuevoE}
     nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             acordeonPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
+                            zampoñaPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             tecladoPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
                             bassPitchPattern0= ("intervalo", [intervaloDouble index octava]),
                             efectoPitchPattern0 = ("intervalo", [intervaloDouble index octava]),
@@ -1570,6 +1585,7 @@ cambiarIntervalosDouble indices c = c {style = nuevoE}
     nuevoE = (style c) {
                               cuerdaPitchPattern0 = ("intervalo", indices'),
                               acordeonPitchPattern0 = ("intervalo", indices'),
+                              zampoñaPitchPattern0 = ("intervalo", indices'),
                               tecladoPitchPattern0 = ("intervalo", indices'),
                               bassPitchPattern0= ("intervalo", indices'),
                               efectoPitchPattern0 = ("intervalo", indices'),
@@ -1599,6 +1615,7 @@ cambiarIntervaloDouble index c = c {style = nuevoE}
                             cuerdaPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             acordeonPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             tecladoPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
+                            zampoñaPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             bassPitchPattern0= ("intervalo", [intervaloDouble index 0]),
                             efectoPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
                             tarolaPitchPattern0 = ("intervalo", [intervaloDouble index 0]),
@@ -1647,6 +1664,7 @@ cambiarIntervalosConOctava is c = c {style = nuevoE}
     nuevoE = (style c) {
                               cuerdaPitchPattern0 = ("intervalo", is'),
                               acordeonPitchPattern0 = ("intervalo", is'),
+                              zampoñaPitchPattern0 = ("intervalo", is'),
                               tecladoPitchPattern0 = ("intervalo", is'),
                               bassPitchPattern0= ("intervalo", is'),
                               efectoPitchPattern0 = ("intervalo", is'),
@@ -1679,6 +1697,7 @@ cambiarIntervaloConOctava index octava c = c {style = nuevoE}
     nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("intervalo", [intervalo index octava]),
                             acordeonPitchPattern0 = ("intervalo", [intervalo index octava]),
+                            zampoñaPitchPattern0 = ("intervalo", [intervalo index octava]),
                             tecladoPitchPattern0 = ("intervalo", [intervalo index octava]),
                             bassPitchPattern0= ("intervalo", [intervalo index octava]),
                             efectoPitchPattern0 = ("intervalo", [intervalo index octava]),
@@ -1710,6 +1729,7 @@ cambiarIntervalos indices c = c {style = nuevoE}
     nuevoE = (style c) {
                               cuerdaPitchPattern0 = ("intervalo", indices'),
                               acordeonPitchPattern0 = ("intervalo", indices'),
+                              zampoñaPitchPattern0 = ("intervalo", indices'),
                               tecladoPitchPattern0 = ("intervalo", indices'),
                               bassPitchPattern0= ("intervalo", indices'),
                               efectoPitchPattern0 = ("intervalo", indices'),
@@ -1737,6 +1757,7 @@ cambiarIntervalo index c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPitchPattern0 = ("intervalo", [intervalo index 0]),
                             acordeonPitchPattern0 = ("intervalo", [intervalo index 0]),
+                            zampoñaPitchPattern0 = ("intervalo", [intervalo index 0]),
                             tecladoPitchPattern0 = ("intervalo", [intervalo index 0]),
                             bassPitchPattern0= ("intervalo", [intervalo index 0]),
                             efectoPitchPattern0 = ("intervalo", [intervalo index 0]),
@@ -1771,6 +1792,7 @@ cambiarRitmosAuto [x] c = c {style = nuevoE}
     nuevoE = (style c) {
                             cuerdaRhythmPattern0 = rPat,
                             acordeonRhythmPattern0 = rPat,
+                            zampoñaRhythmPattern0 = rPat,
                             tecladoRhythmPattern0 = rPat,
                             bassRhythmPattern0 = rPat,
                             guiraRhythmPattern0 = rPat,
@@ -1795,6 +1817,7 @@ cambiarRitmosAuto attacks c = c {style = nuevoE}
     nuevoE = (style c) {
                             cuerdaRhythmPattern0 = rPat,
                             acordeonRhythmPattern0 = rPat,
+                            zampoñaRhythmPattern0 = rPat,
                             tecladoRhythmPattern0 = rPat,
                             bassRhythmPattern0 = rPat,
                             guiraRhythmPattern0 = rPat,
@@ -1828,6 +1851,7 @@ cambiarRitmoMetreAuto attack c = c {style = nuevoE}
     nuevoE = (style c) {
                             cuerdaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             acordeonRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            zampoñaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             tecladoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             bassRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             guiraRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
@@ -1860,6 +1884,7 @@ cambiarRitmo metre attack c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             acordeonRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
+                            zampoñaRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             tecladoRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             bassRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
                             guiraRhythmPattern0 = catMaybes [cambiarRitmo' (metre) (attack)],
@@ -1893,6 +1918,7 @@ cambiarRitmos metre rs c = c {style = nuevoE}
     nuevoE = (style c) {
                             cuerdaRhythmPattern0 = cambiarRitmo'''' metre rs,
                             acordeonRhythmPattern0 = cambiarRitmo'''' metre rs,
+                            zampoñaRhythmPattern0 = cambiarRitmo'''' metre rs,
                             tecladoRhythmPattern0 = cambiarRitmo'''' metre rs,
                             bassRhythmPattern0 = cambiarRitmo'''' metre rs,
                             guiraRhythmPattern0 = cambiarRitmo'''' metre rs,
@@ -1955,6 +1981,7 @@ cambiarGain gain c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaGainPattern0 = gain,
                             acordeonGainPattern0 = gain,
+                            zampoñaGainPattern0 = gain,
                             tecladoGainPattern0 = gain,
                             bassGainPattern0 = gain,
                             guiraGainPattern0 = gain,
@@ -1983,6 +2010,7 @@ cambiarPaneo pan c = c {style = nuevoE}
   where nuevoE = (style c) {
                             cuerdaPanPattern0 = pan,
                             acordeonPanPattern0 = pan,
+                            zampoñaPanPattern0 = pan,
                             tecladoPanPattern0 = pan,
                             bassPanPattern0 = pan,
                             guiraPanPattern0 = pan,
@@ -2021,6 +2049,10 @@ preset 0 c = c {style = nuevoE}
                             acordeonRhythmPattern0 = acordeonRhythmPattern0 (style c),
                             acordeonSampleNPattern0 = acordeonSampleNPattern0 (style c),
                             acordeonPitchPattern0 = acordeonPitchPattern0 (style c), -- or double? (nota [0, 2, 3] cumbia) cuerda
+
+                            zampoñaRhythmPattern0 = zampoñaRhythmPattern0 (style c),
+                            zampoñaSampleNPattern0 = zampoñaSampleNPattern0 (style c),
+                            zampoñaPitchPattern0 = zampoñaPitchPattern0 (style c), -- or double? (nota [0, 2, 3]
 
                             bassRhythmPattern0 = bassRhythmPattern0 (style c),  --i.e. [♩ 𝄽  ♩ ♩],
                             bassSampleNPattern0 = bassSampleNPattern0 (style c),
