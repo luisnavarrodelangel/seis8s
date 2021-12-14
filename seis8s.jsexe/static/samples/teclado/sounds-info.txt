@@ -1,0 +1,15 @@
+This folder includes the following sounds released by their creator(s) under the CC0 licence (Public Domain Dedication).
+
+1. teclado0.wav is a piano note tuned in C with short sustain, recorded by PACWAY (available here https://freesound.org/people/PACWAY/sounds/442980/). The sustain was modified by Luis Navarro in 2020.
+
+2. teclado0.wav is a piano note tuned in C with long sustain, recorded by PACWAY (available here https://freesound.org/people/PACWAY/sounds/442980/).
+
+3. teclado1.wav is a "blip" sound tuned in C with short sustain. It was synthesized in Supercollider and recorded by Luis Navarro in 2020. 
+
+4. teclado2.wav is a "blip" sound tuned in C with medium sustain. It was synthesized in Supercollider and recorded by Luis Navarro in 2020. 
+  
+
+5. teclado3.wav is an organ-like sound tuned in C with short sustain. It was synthesized in Supercollider and recorded by Luis Navarro in 2020. 
+
+6. teclado4.wav is a "blip" sound tuned in C with short sustain. It was synthesized in Supercollider and recorded by Luis Navarro in 2020. 
+

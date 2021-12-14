@@ -1,0 +1,15 @@
+{
+"acordeon": ["acordeon/acordeon0.wav"],
+"altavoz": ["altavoz/grupo.wav","altavoz/sensacional.wav"],
+"bajo": ["bajo/bajo0.wav","bajo/bajo1.wav"],
+"contratiempos": ["contratiempos/0ContratiempoCerrado.wav","contratiempos/1ContratiempoAbierto.wav","contratiempos/2ContratiempoCerrado.wav"],
+"cuerdas": ["cuerdas/0cuerda.wav","cuerdas/1cuerda.wav"],
+"efecto": ["efecto/0efecto.wav"],
+"guira": ["guira/0-guira-metal-abajo-corto.wav","guira/1-guira-metal-abajo.wav","guira/2-guira-metal-arriba.wav"],
+"jamblock": ["jamblock/jamblock0.wav"],
+"quinto": ["quinto/0-heel.wav","quinto/1-slap.wav","quinto/2-open.wav"],
+"tarola": ["tarola/0tarola.wav"],
+"teclado": ["teclado/teclado0.wav","teclado/teclado1.wav","teclado/teclado2.wav","teclado/teclado3.wav","teclado/teclado4.wav","teclado/teclado5.wav"],
+"tumba": ["tumba/0congaOpen.wav","tumba/1tumbaOpenE.wav"],
+"zampona": ["zampona/257481__yano1__overall-quality-of-single-note-clarinet-c4.wav","zampona/clarinete-corto.wav"]
+}

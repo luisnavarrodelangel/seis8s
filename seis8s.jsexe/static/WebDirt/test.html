@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<script src="SampleBank.js"></script>
+<script src="WebDirt.js"></script>
+<script src="Graph.js"></script>
+<script>
+var webDirt;
+
+function onload() {
+  webDirt = new WebDirt(null,null,null,function() {
+    console.log("callback from WebDirt constructor completed");
+  });
+}
+
+WebDirt.prototype.testWebAudioIsWorking = function() {
+  this.initializeWebAudio();
+  this.sine = this.ac.createOscillator();
+	this.sine.type = 'sine';
+	this.sine.frequency.value = 440;
+	this.gain = this.ac.createGain();
+	this.sine.connect(this.gain);
+	this.gain.connect(this.ac.destination);
+	this.sine.start();
+	// envelope
+	var now = this.ac.currentTime;
+	this.gain.gain.setValueAtTime(0,now);
+  this.gain.gain.linearRampToValueAtTime(1,now+0.005);
+  this.gain.gain.linearRampToValueAtTime(0,now+0.405);
+}
+
+WebDirt.prototype.testSampleBankGetsBuffer = function() {
+  this.initializeWebAudio();
+  this.sampleBank.ac = this.ac;
+  this.source = this.ac.createBufferSource();
+  this.source.buffer = this.sampleBank.getBuffer('cp',0);
+  this.source.connect(this.ac.destination);
+  var soon = this.ac.currentTime+0.2;
+  this.source.start(soon);
+}
+
+WebDirt.prototype.testPlaybackOfSimpleMessage = function(){
+  var msg = { sample_name: 'cp', sample_n:0};
+  this.playSample(msg);
+}
+
+WebDirt.prototype.testComplexMessage = function() {
+  this.initializeWebAudio();
+  var msg = {};
+  msg.sample_name = document.getElementById('sample_name').value;
+  msg.sample_n = document.getElementById('sample_n').value;
+  msg.speed = document.getElementById('speed').value;
+  msg.cutoff = document.getElementById('cutoff').value;
+  msg.resonance = document.getElementById('resonance').value;
+  msg.accelerate = document.getElementById('accelerate').value;
+  msg.shape = document.getElementById('shape').value;
+  msg.hcutoff = document.getElementById('hcutoff').value;
+  msg.hresonance = document.getElementById('hresonance').value;
+  msg.bandf = document.getElementById('bandf').value;
+  msg.bandq = document.getElementById('bandq').value;
+  msg.vowel = document.getElementById('vowel').value;
+  msg.coarse = document.getElementById('coarse').value;
+  msg.crush = document.getElementById('crush').value;
+  msg.pan = document.getElementById('pan').value;
+  msg.gain = document.getElementById('gain').value;
+  msg.delay = document.getElementById('delay').value;
+  msg.delaytime = document.getElementById('delaytime').value;
+  msg.delayfeedback = document.getElementById('delayfeedback').value;
+  msg.loop = document.getElementById('loop').value;
+  msg.begin = document.getElementById('begin').value;
+  msg.end = document.getElementById('end').value;
+  msg.cut = document.getElementById('cut').value;
+  msg.unit = document.getElementById('unit').value;
+  msg.when = this.ac.currentTime+0.5;
+
+
+  this.playSample(msg);
+}
+
+function testRenderAndPlayScore() {
+  var serverUrl = document.getElementById('renderServer').value;
+  var pattern = document.getElementById('renderPattern').value;
+  var cps = document.getElementById('renderCps').value;
+  var cycles = document.getElementById('renderCycles').value;
+  webDirt.renderAndPlayScore(serverUrl,pattern,cps,cycles,0.05,
+    function() { console.log("received readyCallback") },
+    function() { console.log("received finishedCallback") }
+  );
+}
+
+</script>
+</head>
+<body onload="onload()">
+  <div>WebDirt test page</div>
+  <button onclick="webDirt.testWebAudioIsWorking()">testWebAudioIsWorking</button>
+  <button onclick="webDirt.testSampleBankGetsBuffer()">testSampleBankGetsBuffer</button>
+  <button onclick="webDirt.testPlaybackOfSimpleMessage()">testPlaybackOfSimpleMessage</button>
+  <div border="1px solid black">
+    <canvas id="soundMeter"></canvas>
+    <div>sample_name: <textarea id="sample_name" rows="1"></textarea></div>
+    <div>sample_n: <textarea id="sample_n"></textarea></div>
+    <div>speed: <textarea id="speed"></textarea></div>
+    <div>cutoff: <textarea id="cutoff"></textarea></div>
+    <div>resonance: <textarea id="resonance"></textarea></div>
+    <div>accelerate: <textarea id="accelerate"></textarea></div>
+    <div>shape: <textarea id="shape"></textarea></div>
+    <div>hcutoff: <textarea id="hcutoff"></textarea></div>
+    <div>hresonance: <textarea id="hresonance"></textarea></div>
+    <div>bandf: <textarea id="bandf"></textarea></div>
+    <div>bandq: <textarea id="bandq"></textarea></div>
+    <div>vowel: <textarea id="vowel"></textarea></div>
+    <div>coarse: <textarea id="coarse"></textarea></div>
+    <div>crush: <textarea id="crush"></textarea></div>
+    <div>pan: <textarea id="pan"></textarea></div>
+    <div>gain: <textarea id="gain"></textarea></div>
+    <div>delay: <textarea id="delay"></textarea></div>
+    <div>delaytime: <textarea id="delaytime"></textarea></div>
+    <div>delayfeedback: <textarea id="delayfeedback"></textarea></div>
+    <div>loop: <textarea id="loop"></textarea></div>
+    <div>begin: <textarea id="begin"></textarea></div>
+    <div>end: <textarea id="end"></textarea></div>
+    <div>cut: <textarea id="cut"></textarea></div>
+    <div>unit: <textarea id="unit"></textarea></div>
+
+
+    <button onclick="webDirt.testComplexMessage()">testComplexMessage</button>
+  </div>
+  <div>
+    <textarea id="renderServer"></textarea>
+    <textarea id="renderPattern"></textarea>
+    <textarea id="renderCps"></textarea>
+    <textarea id="renderCycles"></textarea>
+    <button onclick="testRenderAndPlayScore()">testRenderAndPlayScore</button>
+  <div>
+  <button onclick="webDirt.subscribeToTidalSocket('127.0.0.1:7771',true)">subscribeToTidalSocket</button>
+</body>
+</html>
