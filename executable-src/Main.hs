@@ -51,7 +51,7 @@ data RenderState = RenderState {
      t0 :: UTCTime,
      tSystemInit :: UTCTime,
      tempo :: Tempo,
-     pVar :: Maybe ([Layer], GlobalMaterial) -- ([emptyLayer], defaultGlobalMaterial)
+     pVar :: ([Layer], GlobalMaterial) -- ([emptyLayer], defaultGlobalMaterial)
      }
 
 main :: IO ()
@@ -171,10 +171,12 @@ performEvaluate' mv e = performEvent_ $ ffor e $ \textAreaCode -> liftIO $ do
     Right x -> do
       print $ "Just evaled"
       tNow <- getCurrentTime
+      -- modifyMVar_ mv $ \z -> return $ z {pVar = ([emptyLayer], defaultGlobalMaterial)} -- MVar a -> (a -> IO a) -> IO ()
       rs <- takeMVar mv
       putMVar mv $ rs {
-        pVar = Just x
+        pVar = x
       }
+      -- modifyMVar_ mv $ \z -> return $ z {pVar = x, tEval = tNow} -- MVar a -> (a -> IO a) -> IO ()
     Left x -> print x
 
 
@@ -186,7 +188,7 @@ forkRenderThreads wd = do
        t0 = tNow,
        tSystemInit = tNow,
        tempo = Tempo {freq = 0.50, time=tNow, Data.Tempo.count=0},
-       pVar = Nothing -- ([emptyLayer], defaultGlobalMaterial) -- Nothing -- Just ([emptyLayer], defaultGlobalMaterial)
+       pVar = ([emptyLayer], defaultGlobalMaterial) -- Nothing -- Just ([emptyLayer], defaultGlobalMaterial)
        }
   forkIO $ renderThread wd mv -- tNow evalT tempo wd pVar
   return mv
@@ -197,41 +199,35 @@ renderThread :: WebDirt -> MVar RenderState ->  IO ()
 renderThread wd mv  =  do
   mv' <- takeMVar mv
   mv'' <- renderer wd mv'
-  let freq' = (freq $ tempo mv'') -- to be used later to calculate the latency according to the tempo.
-  -- mv' <- readMVar mv
-  let latency = diffUTCTime (t0 $ mv'') (tSystemInit $ mv'') -- NominalDiffTime
-  let threadDelay' | (mod (round latency) 5) == 0 = 180000
-                   | (mod (round latency) 10) == 0 = 200000
-                   | (mod (round latency) 50) == 0 = 190000
-                   | (mod (round latency) 100) == 0 = 205000
-                   | (mod (round latency) 200) == 0 = 210000
-                   | (mod (round latency) 500) == 0 = 100000
-                   | otherwise = 227000
-  -- let iw = t0 mv'
-  -- let ew = addUTCTime (0.25 {-0.5-}:: NominalDiffTime) iw --UTC
-  -- let rend = render (fromJust $ pVar mv') (tempo mv') iw ew-- render (fromJust $ pVar mv) (tempo mv) iw ew --  [Event],  i.e. Event = (UTCTime, M.Map T.Text Datum)
-  -- let singleJSValevents = fmap (\(u, m) -> (realToFrac $ diffUTCTime u (tSystemInit mv'),  fmap datumToJSVal m)) rend -- [IO JSVal]
-  -- renderedCodes <- sequence $ fmap mapTextJSValToJSVal singleJSValevents -- IO [JSVal]
-  -- sequence_ $ fmap (\r -> playSample wd r) renderedCodes -- [IO ()] -> IO ()
-  -- print $ "latency: " ++ (show latency)
   putMVar mv mv''
-  threadDelay threadDelay' -- 200000 {-450000-}
+
+  let renderEnd = (t0 mv'')
+  let targetWakeUpTime = addUTCTime (-0.1) renderEnd
+  tNow <- liftIO $ getCurrentTime --currentTime
+  let diff = diffUTCTime targetWakeUpTime tNow
+  when (diff > 0) $ liftIO $ threadDelay $ floor $ realToFrac $ diff * 1000000
+  print $ "renderEnd: " ++ (show renderEnd)
+  print $ "targetWakeUpTime: " ++ (show targetWakeUpTime)
+  print $ "tNow: " ++ (show tNow)
+  print $ "diff: " ++ (show diff)
+
   renderThread wd mv
 
 -- 10.1 - 10 = 0.1 -> dif entre evento y systime
 -- 10.1 - 0.1 = 10 = 0s
 renderer :: WebDirt -> RenderState -> IO RenderState
-renderer wd mv =   if (isNothing $ pVar mv) then return mv else do
-  let iw = (t0 mv)
-  let ew = addUTCTime (0.25 {-0.5-}:: NominalDiffTime) iw
-  let rend = renderForStandalone (fromJust $ pVar mv) iw ew-- render (fromJust $ pVar mv) (tempo mv) iw ew --  [Event],  i.e. Event = (UTCTime, M.Map T.Text Datum)
+renderer wd mv = do
+  let iw = t0 mv
+  let ew = addUTCTime (0.1 :: NominalDiffTime) iw
+  let rend = renderForStandalone (pVar mv) iw ew --render (fromJust $ pVar mv) (tempo mv) iw ew --  [Event],  i.e. Event = (UTCTime, M.Map T.Text Datum)
   let singleJSValevents = fmap (\(u, m) -> (realToFrac $ diffUTCTime u (tSystemInit mv),  fmap datumToJSVal m)) (fst rend) -- [IO JSVal]
   renderedCodes <- sequence $ fmap mapTextJSValToJSVal singleJSValevents -- IO [JSVal]
   sequence_ $ fmap (\r -> playSample wd r) renderedCodes -- [IO ()] -> IO ()
-  -- print $ "ew: " ++ (show ew)
+  print $ "iw: " ++ (show iw)
+  print $ "ew: " ++ (show ew)
   -- print $ "latency: " ++ (show latency)
   -- print $ show (t0 mv)
-  -- print $ "iw: " ++ (show iw)
+
   -- print $ "systemTime: " ++ (show systemTime)
   -- print $ "tSystemInit: " ++ (show (tSystemInit mv))
   -- print $ "diffIwSyst: " ++ (show $ diffUTCTime iw (tSystemInit mv))
@@ -242,6 +238,19 @@ renderer wd mv =   if (isNothing $ pVar mv) then return mv else do
   -- print $ latencyActions systemTime iw
   return $ mv {t0 = ew, tempo = snd rend}
 
+
+-- how to modify the values in mvar so I the times after I evaluate are updated and no tail of events create issues with lateness.
+
+  -- accumultaion 0.05 secs everytime that loop repeat, the two processes should advance toegether, these are consuming resouces also. These times should be lined. 2) threadDelay doesnt give you exactly that amount time. At the very least the delayThread in 210 should be a variable, that the delay wakes up at an appropiate  to do the render.
+  -- sleepIfNecessary :: R () -- makes sure that the thread wakes up on time for the next block that needs to be rendered. Also sleeping when the block has been calculated.
+  -- sleepIfNecessary = do
+  --   let targetTime = addUTCTime (-0.1) renderEnd
+  --   tNow <- liftIO $ getCurrentTime --currentTime
+  --   let diff = diffUTCTime targetTime tNow
+  --   when (diff > 0) $ liftIO $ threadDelay $ floor $ realToFrac $ diff * 1000000
+
+    -- 235 i calculaitin a utc time
+    -- renderEnd is a variable with the last render window, so that is used to calcultate the wake up time. if redder 0.2 sec and the endthing render is 1 sec (these are utctimes). The next to render is 1 - 1.2, so my next begining is my previous rendering. So I have to do the rendering before 1 si i cant wake up at 1 or after 1. So my target wake up time could be 0.1 seconds after the next render time. let target = addUtcTime (-0.1) nextRenderTime
 
 tabMapEscogerIdioma :: MonadWidget t m => Map.Map Int (Text, m ())
 tabMapEscogerIdioma = Map.fromList[ (1, ("Español", tabMapEspanol')),

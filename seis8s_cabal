@@ -1,0 +1,77 @@
+name:                seis8s
+version:             0.0.0.1
+synopsis:            Live coding language
+description:         Please see README.md
+homepage:            https://github.com/luisnavarrodelangel/seis8s/blob/master/README.md
+license:             GPL-3
+license-file:        LICENSE
+author:              Luis N. Del Angel & David Ogborn
+maintainer:          navarrol@mcmaster.ca
+copyright:           2020 Luis N. Del Angel & David Ogborn
+category:            Web
+build-type:          Simple
+cabal-version:       >=1.10
+extra-source-files:
+
+source-repository head
+  type: git
+  location: https://github.com/luisnavarrodelangel/seis8s.git
+
+Library
+  hs-source-dirs:    library-src
+  Build-Depends:
+      reflex,
+      reflex-dom,
+      ghcjs-base,
+      ghcjs-dom-jsffi,
+      reflex-dom-contrib,
+      mtl,
+      base,
+      time,
+      hosc,
+      text,
+      tempi,
+      tuple,
+      split,
+      containers,
+      haskellish >= 0.2.0 && <0.3,
+      haskell-src-exts >= 1.21.0
+
+  GHC-Options:       -Wall -fwarn-tabs -fno-warn-unused-do-bind
+  Exposed-modules:   Sound.Seis8s.Generic
+                     Sound.Seis8s.GlobalMaterial
+                     Sound.Seis8s.Harmony
+                     Sound.Seis8s.Layer
+                     Sound.Seis8s.LayerState
+                     Sound.Seis8s.Parser
+                     Sound.Seis8s.Program
+                     Sound.Seis8s.Rhythm
+                     Sound.Seis8s.Style
+
+  other-modules:
+  default-language:  Haskell2010
+  
+  executable punctual
+  hs-source-dirs:    executable-src
+  main-is:           Main.hs
+  build-depends:
+      reflex,
+      reflex-dom,
+      ghcjs-base,
+      ghcjs-dom-jsffi,
+      reflex-dom-contrib,
+      mtl,
+      base,
+      time,
+      hosc,
+      text,
+      tempi,
+      tuple,
+      split,
+      containers,
+      haskellish >= 0.2.0 && <0.3,
+      haskell-src-exts >= 1.21.0
+  other-modules: 
+  default-language:  Haskell2010
+  
+  
