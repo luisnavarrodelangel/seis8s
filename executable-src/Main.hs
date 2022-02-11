@@ -38,13 +38,12 @@ import qualified Control.Concurrent as Con
 import Debug.Trace
 import Data.Char as C
 import Language.Javascript.JSaddle
-
+import Sound.MusicW
 
 import Sound.Seis8s.Program
 import Sound.Seis8s.Layer (Layer, emptyLayer)
 import Sound.Seis8s.Parser
 import Sound.Seis8s.GlobalMaterial
-import Sound.MusicW
 
 
 data RenderState = RenderState {
@@ -127,12 +126,6 @@ ejemplo7 = "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia te
 
 bodyElement :: MonadWidget t m => WebDirt -> m ()
 bodyElement wd =  do
-  -- tNow <- liftIO getCurrentTime
-  -- let evalT = tNow -- se va a actualizar cuando haga click
-  -- -- liftIO $ print $ "tNow: " ++ (show tNow)
-  -- -- liftIO $ print $ "evalT: " ++ (show evalT)
-  -- pVar <- liftIO $ newMVar ([emptyLayer], defaultGlobalMaterial)
-  -- let tempo = Tempo { freq= 0.25, time=tNow, Data.Tempo.count=0} -- posiblemente deba poner evalT en lugar the tNow
   mv <- liftIO $ forkRenderThreads wd
   divClass "titulo" $ do
     text "Seis8s"
@@ -171,19 +164,16 @@ performEvaluate' mv e = performEvent_ $ ffor e $ \textAreaCode -> liftIO $ do
     Right x -> do
       print $ "Just evaled"
       tNow <- getCurrentTime
-      -- modifyMVar_ mv $ \z -> return $ z {pVar = ([emptyLayer], defaultGlobalMaterial)} -- MVar a -> (a -> IO a) -> IO ()
       rs <- takeMVar mv
       putMVar mv $ rs {
         pVar = x
       }
-      -- modifyMVar_ mv $ \z -> return $ z {pVar = x, tEval = tNow} -- MVar a -> (a -> IO a) -> IO ()
     Left x -> print x
 
 
 forkRenderThreads :: WebDirt -> IO (MVar RenderState)
 forkRenderThreads wd = do
   tNow <- liftIO getCurrentTime
-  print $ "t0" ++ (show tNow)
   mv <- newMVar $ RenderState {
        t0 = tNow,
        tSystemInit = tNow,
@@ -206,15 +196,14 @@ renderThread wd mv  =  do
   tNow <- liftIO $ getCurrentTime --currentTime
   let diff = diffUTCTime targetWakeUpTime tNow
   when (diff > 0) $ liftIO $ threadDelay $ floor $ realToFrac $ diff * 1000000
-  print $ "renderEnd: " ++ (show renderEnd)
-  print $ "targetWakeUpTime: " ++ (show targetWakeUpTime)
-  print $ "tNow: " ++ (show tNow)
-  print $ "diff: " ++ (show diff)
-
   renderThread wd mv
 
--- 10.1 - 10 = 0.1 -> dif entre evento y systime
--- 10.1 - 0.1 = 10 = 0s
+  -- print $ "renderEnd: " ++ (show renderEnd)
+  -- print $ "targetWakeUpTime: " ++ (show targetWakeUpTime)
+  -- print $ "tNow: " ++ (show tNow)
+  -- print $ "diff: " ++ (show diff)
+
+
 renderer :: WebDirt -> RenderState -> IO RenderState
 renderer wd mv = do
   let iw = t0 mv
@@ -223,8 +212,10 @@ renderer wd mv = do
   let singleJSValevents = fmap (\(u, m) -> (realToFrac $ diffUTCTime u (tSystemInit mv),  fmap datumToJSVal m)) (fst rend) -- [IO JSVal]
   renderedCodes <- sequence $ fmap mapTextJSValToJSVal singleJSValevents -- IO [JSVal]
   sequence_ $ fmap (\r -> playSample wd r) renderedCodes -- [IO ()] -> IO ()
-  print $ "iw: " ++ (show iw)
-  print $ "ew: " ++ (show ew)
+  return $ mv {t0 = ew, tempo = snd rend}
+
+  -- print $ "iw: " ++ (show iw)
+  -- print $ "ew: " ++ (show ew)
   -- print $ "latency: " ++ (show latency)
   -- print $ show (t0 mv)
 
@@ -236,7 +227,6 @@ renderer wd mv = do
   -- print $ fmap (\(u, m) -> "utcTime of event: " ++   show (realToFrac $ diffUTCTime u (tSystemInit mv))) rend
   -- print $ "rend: " ++ (show rend)
   -- print $ latencyActions systemTime iw
-  return $ mv {t0 = ew, tempo = snd rend}
 
 
 -- how to modify the values in mvar so I the times after I evaluate are updated and no tail of events create issues with lateness.

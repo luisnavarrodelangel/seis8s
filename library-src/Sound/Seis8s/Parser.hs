@@ -40,6 +40,7 @@ type H = Haskellish GlobalMaterial
 -- so I can do :
 -- cumbia teclado
 -- (noDownBeats cumbia) teclado
+
 parseLang :: String -> Either String ([Layer], GlobalMaterial)
 parseLang s | all C.isSpace s = return ([emptyLayer], defaultGlobalMaterial)
             | otherwise = do
@@ -56,27 +57,8 @@ preParse s = do
   let s' = T.replace (T.pack "do,") (T.pack "di") (T.pack s) -- Text
   let s'' = T.replace (T.pack "M") (T.pack "maj") s' -- Text
   let s''' = T.unpack $ T.replace (T.pack "remaj") (T.pack "re maj") s'' --String
-  s'''
-
-
--- working on functions for comments
--- parseLang' :: String -> Either String (String, ())
--- parseLang' s = do
---   let sourceAsList = "[" ++ (List.intercalate "," $ fmap (++ " _0") $ splitOn ";" s) ++ "\n]"
---   (f . Exts.parseExp) $ sourceAsList
---     where
---       f (Exts.ParseOk x) = runHaskellish test () x -- Either String (a, st)
---       f (Exts.ParseFailed _ s) = Left s
---
---
--- listTest :: Haskellish () [String]
--- listTest = list test
---
--- test :: Haskellish () String
--- test = _0Arg'$ reserved "test" >> return "testOk"
---
--- _0Arg' :: Haskellish () a -> Haskellish () a
--- _0Arg' p = fmap fst (functionApplication p $ reserved "_0")
+  let s'''' = LH.removeComments s'''
+  s''''
 
 
 layers :: H [Layer]
