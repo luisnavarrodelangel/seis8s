@@ -42,23 +42,23 @@ type H = Haskellish GlobalMaterial
 -- (noDownBeats cumbia) teclado
 
 parseLang :: String -> Either String ([Layer], GlobalMaterial)
-parseLang s | all C.isSpace s = return ([emptyLayer], defaultGlobalMaterial)
-            | otherwise = do
-              let s' = preParse s
-              (f . Exts.parseExp) $  ( "do {" ++ s' ++ "}" )
+parseLang s | all C.isSpace s' = return ([emptyLayer], defaultGlobalMaterial)
+            | otherwise = (f . Exts.parseExp) $  ( "do {" ++ s' ++ "}" )
             -- | otherwise = (f . Exts.parseExp) $  ( "do {" ++ s ++ "}" )
     where
+      s' = preParse s
       f (Exts.ParseOk x) = runHaskellish layers defaultGlobalMaterial x -- Either String (a, st)
       f (Exts.ParseFailed l s) = Left s
 
 
 preParse :: String -> String
 preParse s = do
-  let s' = T.replace (T.pack "do,") (T.pack "di") (T.pack s) -- Text
+  let s' = T.replace (T.pack "do") (T.pack "di") (T.pack s) -- Text
   let s'' = T.replace (T.pack "M") (T.pack "maj") s' -- Text
-  let s''' = T.unpack $ T.replace (T.pack "remaj") (T.pack "re maj") s'' --String
-  let s'''' = LH.removeComments s'''
-  s''''
+  let s''' = T.replace (T.pack "tecladi") (T.pack "teclado") s'' -- Text
+  let s'''' =  T.replace (T.pack "partidi") (T.pack "partido") s''' -- Text
+  let s''''' = LH.removeComments $ T.unpack s''''
+  s'''''
 
 
 layers :: H [Layer]
@@ -95,7 +95,7 @@ parseCompasPartido :: H (GlobalMaterial -> GlobalMaterial)
 parseCompasPartido = parseCompasPartido' <*> string
 
 parseCompasPartido' :: H (String -> GlobalMaterial -> GlobalMaterial)
-parseCompasPartido' = compasAGlobalMaterial <$ reserved "compas"
+parseCompasPartido' = compasAGlobalMaterial <$ (reserved "compas" <|> reserved "compás")
 
 
 compasAGlobalMaterial :: String -> GlobalMaterial -> GlobalMaterial
@@ -122,7 +122,7 @@ parseSetChordProgWMetre' :: H ([Chord] -> GlobalMaterial -> GlobalMaterial)
 parseSetChordProgWMetre' = parseSetChordProgWMetre'' <*> rationalOrInteger
 
 parseSetChordProgWMetre'' :: H (Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial)
-parseSetChordProgWMetre'' = setChordProg <$ (reserved "armonia" <|> reserved "acordes")
+parseSetChordProgWMetre'' = setChordProg <$ (reserved "armonia" <|> reserved "armonía" <|> reserved "acordes")
 
 setChordProg :: Metre -> [Chord] -> GlobalMaterial -> GlobalMaterial
 setChordProg metre hs gm = gm { harmony = castProgression metre (compas gm) (multiplicarCompasInicioYFinal (compas gm) hs)}
@@ -134,7 +134,7 @@ parseSetChordProgMetreAuto :: H (GlobalMaterial -> GlobalMaterial)
 parseSetChordProgMetreAuto =  parseSetChordProgMetreAuto' <*> listaDePitchOrPitchType -- chordListMetreAuto
 
 parseSetChordProgMetreAuto' :: H ([(Pitch, ChordType)] -> GlobalMaterial -> GlobalMaterial)
-parseSetChordProgMetreAuto' =  setChordProgMetreAuto <$ (reserved "armonia" <|> reserved "acordes")
+parseSetChordProgMetreAuto' =  setChordProgMetreAuto <$ (reserved "armonia" <|> reserved "armonía" <|> reserved "acordes")
 
 setChordProgMetreAuto :: [(Pitch, ChordType)] -> GlobalMaterial -> GlobalMaterial
 setChordProgMetreAuto hs gm = gm { harmony = castProgressionMetreAuto (compas gm) (listaDePitchOPitchWType hs)}
@@ -363,10 +363,10 @@ inst :: H Layer
 inst =
         teclado <$ reserved "teclado"
     <|> bajo <$ reserved "bajo"
-    <|> guira <$ (reserved "guira" <|> reserved "guiro")
+    <|> guira <$ (reserved "guira" <|> reserved "guiro" <|> reserved "güiro" <|> reserved "güira")
     <|> contras <$ reserved "contratiempos"
     <|> cuerda <$ reserved "cuerda"
-    <|> acordeon <$ reserved "acordeon"
+    <|> acordeon <$ (reserved "acordeon" <|> reserved "acordeón")
     <|> zampoña <$ (reserved "zampoña" <|> reserved "flauta")
     <|> tarola <$ reserved "tarola"
     <|> efecto <$ reserved "efecto"

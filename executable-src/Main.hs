@@ -76,7 +76,10 @@ headElement = do
   elAttr "link" attrs2 $ return ()
 
 intro :: Text
-intro = "cumbia teclado;\n\
+intro = "-- Instrucciones: Haz sonar el código presionando el botón ▶ \n\
+         \--Instructions: Make the code sound by pressing the ▶ button \n\
+         \ \n\
+         \cumbia teclado;\n\
          \cumbia bajo;\n\
          \cumbia guira;\n\
          \cumbia congas;"
@@ -138,11 +141,11 @@ bodyElement wd =  do
     elClass "div" "editor" $ do
       evClick <- divClass "playEinstrucciones" $ do
         evClick' <- divClass "playButton" $ button "▶"
-        elClass "span" "comandosCss" $ text "Instructiones: "
-        text $ "Haz sonar el código de abajo presionando el boton ▶."
+        -- elClass "span" "comandosCss" $ text "Instructiones: "
+        -- text $ "Haz sonar el código de abajo presionando el boton ▶."
         el "br" $ blank
-        elClass "span" "comandosCss" $ text "Instructions: "
-        text "Make the code sound by pressing the ▶ button."
+        -- elClass "span" "comandosCss" $ text "Instructions: "
+        -- text "Make the code sound by pressing the ▶ button."
         return evClick'
 
       let textAttrs = constDyn $ fromList [("class",  "class-example")]
@@ -548,13 +551,13 @@ foreign import javascript unsafe
 
 foreign import javascript unsafe -- "$('.array-example').highlightWithinTextarea({highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']});"
   "jQuery(document).ready(function(){$('.class-example').highlightWithinTextarea({\n\
-  \highlight: [{highlight: '$', className: 'green' }, \n\
+  \highlight: [{highlight: ['$', '--', '(', ')', '[', ']'], className: 'green' }, \n\
   \{highlight: [ ' '],   className: 'black'}, \n\
-  \{highlight: [ '(', ')'],   className: 'green'}, \n\
   \{highlight: [ 'cumbia'],   className: 'vino'}, \n\
   \{highlight: [ 'alternar', 'tumbao', 'ritmo', 'acompanamiento', 'acompañamiento', 'marcha', 'punteo', 'sample'],   className: 'red'}, \n\
   \{highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],   className: 'green'}, \n\
-  \{highlight: ['acordes', 'teclado', 'bajo', 'guira', 'jam', 'congas', 'acordeon', 'silencio']}]  \n\
+  \{highlight: ['teclado', 'bajo', 'guira', 'guiro', 'güira', 'güiro', 'jam', 'congas', 'acordeon', 'silencio']},  \n\
+  \{highlight: ['acordes', 'armonia', 'armonía', 'compas', 'compás'], className: 'yellow'}]  \n\
   \})});"
   jq_highlight_brackets :: IO JQuery
   -- \, {highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']}] \n\

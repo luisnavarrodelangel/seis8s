@@ -125,7 +125,11 @@ contenedorDelEditor {
 .playButton button {
 	font-size: 2em;
 	margin-right: 1em;
-
+	background-color: black;
+	width: 100%;
+	color: white;
+	border: 1px solid white;
+	border-radius: 10px;
 }
 
 .css-selector {
