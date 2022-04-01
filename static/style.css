@@ -132,6 +132,15 @@ contenedorDelEditor {
 	border-radius: 10px;
 }
 
+.playButton button:hover {
+	background-color: #71273e;
+}
+
+.playButton button:active {
+	background-color: #71273e;
+  box-shadow: 0 5px black;
+  transform: translateY(4px);
+}
 .css-selector {
     -webkit-animation: AnimationName 30s ease infinite;
     -moz-animation: AnimationName 30s ease infinite;
@@ -189,6 +198,12 @@ ul {
 	border: 1px solid black;
 	}
 
+.botonesDeIdioma li:active {
+background-color: white;
+  box-shadow: 0 5px black;
+  transform: translateY(4px);
+}
+
 .menuButtons {
 margin-right: 80vw;
 display: inline;
@@ -213,6 +228,13 @@ flex-wrap: nowrap;
 	color: #71273e;
 		border-radius: 10px;
 		border : 1px solid #71273e;
+}
+
+
+.menuButtons li:active {
+  background-color: #71273e;
+  box-shadow: 0 5px white;
+  transform: translateX(4px);
 }
 
 .ejemCodeLargo {

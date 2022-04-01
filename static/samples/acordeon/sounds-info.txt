@@ -1,0 +1,4 @@
+This folder includes the following sounds released by their creators under the CC0 licence (Public Domain Dedication).
+
+1. acordeon0.wav is a real accordion recorded by hammondman (available here https://freesound.org/people/hammondman/sounds/333711/)
+

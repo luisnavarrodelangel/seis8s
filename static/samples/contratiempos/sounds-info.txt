@@ -1,0 +1,9 @@
+This folder includes the following sounds released by their creators under the CC0 licence (Public Domain Dedication).
+
+1. 0ContratiempoCerrado.wav is a closed hi-hat sound, synthesized in Supercollider and recorded by Luis Navarro in 2020. 
+
+2. 0ContratiempoAbierto.wav is an open hi-hat sound, synthesized in Supercollider and recorded by Luis Navarro in 2020
+
+3. 2ContratiempoCerrado.wav is a closed hi-hat sound, synthesized in Supercollider and recorded by Luis Navarro in 2020. 
+
+

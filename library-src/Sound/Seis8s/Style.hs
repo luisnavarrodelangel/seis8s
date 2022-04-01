@@ -14,6 +14,7 @@ import qualified Data.List
 -- 1) A style is a library of musical information, a style has a tecladoRhyhtmPattern
 type N = (String, Int)
 data NPattern = NPattern1 [Int] | NPattern2 [N] -- (FolderDelSample, Int)
+type CutGroup = Int
 
 instance Show NPattern where
   show (NPattern1 x) = show x
@@ -41,6 +42,9 @@ data Style  = Style  {
  tecladoRhythmPattern3 :: RhythmicPattern,
  tecladoPanPattern0 :: Double,
  tecladoGainPattern0 :: Double,
+ tecladoCutGroupPattern0 :: CutGroup,
+ tecladoCutGroupPattern1 :: CutGroup,
+
 
 
  acordeonRhythmPattern0 :: RhythmicPattern,
@@ -48,18 +52,23 @@ data Style  = Style  {
  acordeonPitchPattern0 :: PitchPattern,
  acordeonPanPattern0 :: Double,
  acordeonGainPattern0 :: Double,
+ acordeonCutGroupPattern0 :: CutGroup,
+
 
  zampoñaRhythmPattern0 :: RhythmicPattern,
  zampoñaSampleNPattern0 :: NPattern,
  zampoñaPitchPattern0 :: PitchPattern,
  zampoñaPanPattern0 :: Double,
  zampoñaGainPattern0 :: Double,
+ zampoñaCutGroupPattern0 :: CutGroup,
+
 
  cuerdaRhythmPattern0 :: RhythmicPattern,
  cuerdaSampleNPattern0 :: NPattern,
  cuerdaPitchPattern0 :: PitchPattern,
  cuerdaPanPattern0 :: Double,
  cuerdaGainPattern0 :: Double,
+ cuerdaCutGroupPattern0 :: CutGroup,
 
 
  efectoRhythmPattern0 :: RhythmicPattern,
@@ -79,6 +88,8 @@ data Style  = Style  {
  bassPitchPattern2 :: PitchPattern,  --index
  bassPanPattern0 :: Double,
  bassGainPattern0 :: Double,
+ bassCutGroupPattern0 :: CutGroup,
+
 
  guiraRhythmPattern0 :: RhythmicPattern,
  guiraSampleNPattern0 ::NPattern,
@@ -168,11 +179,16 @@ defaultStyle = Style {
    tecladoPanPattern0 = 0.5,
    tecladoGainPattern0 = 1,
 
+   tecladoCutGroupPattern0 = 400,
+   tecladoCutGroupPattern1 = 500,
+
    acordeonRhythmPattern0 = [(1,0)],
    acordeonSampleNPattern0 = NPattern1 [0],
    acordeonPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
    acordeonPanPattern0 = 0.5,
    acordeonGainPattern0 = 1,
+
+   acordeonCutGroupPattern0 = 300,
 
    zampoñaRhythmPattern0 = [(1,0)],
    zampoñaSampleNPattern0 = NPattern1 [0],
@@ -180,11 +196,16 @@ defaultStyle = Style {
    zampoñaPanPattern0 = 0.5,
    zampoñaGainPattern0 = 1,
 
+   zampoñaCutGroupPattern0 = 200,
+
    cuerdaRhythmPattern0 = [(1,0)],
    cuerdaSampleNPattern0 = NPattern1 [0],
    cuerdaPitchPattern0 = ("intervalo", [("unisono", 0, 0)]),
    cuerdaPanPattern0 = 0.5,
    cuerdaGainPattern0 = 0.75,
+
+   cuerdaCutGroupPattern0 = 100,
+
 
    bassSampleNPattern0 = NPattern1 [0],
    bassSampleNPattern1 = NPattern1 [0],
@@ -197,6 +218,9 @@ defaultStyle = Style {
    bassPitchPattern2 = ("intervalo", [("unisono", 0, 0)]),  --index
    bassPanPattern0 = 0.5,
    bassGainPattern0 = 1,
+
+   bassCutGroupPattern0 = 2,
+
 
    guiraRhythmPattern0 = [(1,0)],
    guiraSampleNPattern0 = NPattern1 [0],
@@ -301,11 +325,18 @@ cumbia = Style {
     tecladoPanPattern0 = 0.5,
     tecladoGainPattern0 = 0.75,
 
+    tecladoCutGroupPattern0 = 400,
+
+    tecladoCutGroupPattern1 = 500,
+
+
     acordeonRhythmPattern0 = [(1,0)],
     acordeonSampleNPattern0 = NPattern1 [0],
     acordeonPitchPattern0 = ("intervalo", [intervalo "unisono" 0]), -- or double? (nota [0, 2, 3] cumbia) cuerda
     acordeonPanPattern0 = 0.5,
     acordeonGainPattern0 = 1,
+
+    acordeonCutGroupPattern0 = 300,
 
     zampoñaRhythmPattern0 = [(1,0)],
     zampoñaSampleNPattern0 = NPattern1 [0],
@@ -313,11 +344,17 @@ cumbia = Style {
     zampoñaPanPattern0 = 0.5,
     zampoñaGainPattern0 = 1,
 
+    zampoñaCutGroupPattern0 = 200,
+
+
     cuerdaRhythmPattern0 = [(1,0)],
     cuerdaSampleNPattern0 = NPattern1 [0],
     cuerdaPitchPattern0 = ("intervalo", [intervalo "unisono" 0]), -- or double? (nota  [0, 2, 3] cumbia) cuerda
     cuerdaPanPattern0 = 0.5,
     cuerdaGainPattern0 = 1,
+
+    cuerdaCutGroupPattern0 = 100,
+
 
     bassRhythmPattern0 = [(1, 0), (1, 0.5), (1, 0.75)],  --i.e. [♩ 𝄽  ♩ ♩],
     bassSampleNPattern0 = NPattern1 [0, 0, 0],
@@ -327,6 +364,9 @@ cumbia = Style {
     bassPitchPattern1 = ("intervalo", [intervalo "unisono" 0, intervalo "5a" 0]),
     bassPanPattern0 = 0.5,
     bassGainPattern0 = 1,
+
+    bassCutGroupPattern0 = 2,
+
 
     -- bassRhythmPattern2 = [(8, 0), (8, 0.5), (8, 0.75), (8, 1), (8, 1.5), (8, 1.75), (8, 2), (1, 2.5), (8, 2.75), (8, 3), (8, 3.5), (8, 3.75), (8, 4), (8, 4.5), (8, 4.75), (8, 5), (8, 5.5), (8, 5.75), (8, 6), (8, 6.5), (8, 6.75), (8, 7), (8, 7.25), (8, 7.5), (8, 7.75)],  --i.e. [♩ 𝄽  ♩ 𝄽
     -- bassSampleNPattern2 = take 25 $ cycle [0],
@@ -441,6 +481,8 @@ pitchPattern' :: (RhythmicPosition, Note) -> Tempo -> UTCTime -> UTCTime -> [(Ra
 pitchPattern' (xs, (relacion, midiOintervalo, octava)) t iw ew  = fmap (\attack -> (attack, (relacion, midiOintervalo, octava))) attacks
   where
     attacks = findBeats t iw ew (fst xs) (snd xs)
+
+
 
 --webdirt uses end uses the % dependant on the length of the sample, cut is used for drums (might be useful)
 --we might need to add the duration parameters

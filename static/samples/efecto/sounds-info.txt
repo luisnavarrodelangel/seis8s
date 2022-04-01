@@ -1,0 +1,5 @@
+This folder includes the following sounds released by their creator(s) under the CC0 licence (Public Domain Dedication).
+
+1. 0efecto.wav is a glissando "blip" sound, synthesized in Supercollider and recorded by Luis Navarro in 2020. It is tuned in C.
+
+

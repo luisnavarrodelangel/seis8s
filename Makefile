@@ -7,6 +7,7 @@ build:
 	cp -Rf result/bin/seis8s.jsexe .
 	cp -f static/style.css seis8s.jsexe/style.css
 	cp -f static/index.html seis8s.jsexe/index.html
+	cp -Rf static/ seis8s.jsexe/
 
 
 makeSampleMap:

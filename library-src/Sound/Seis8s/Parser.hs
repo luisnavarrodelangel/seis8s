@@ -55,10 +55,12 @@ preParse :: String -> String
 preParse s = do
   let s' = T.replace (T.pack "do") (T.pack "di") (T.pack s) -- Text
   let s'' = T.replace (T.pack "M") (T.pack "maj") s' -- Text
-  let s''' = T.replace (T.pack "tecladi") (T.pack "teclado") s'' -- Text
-  let s'''' =  T.replace (T.pack "partidi") (T.pack "partido") s''' -- Text
-  let s''''' = LH.removeComments $ T.unpack s''''
-  s'''''
+  let s''' = T.replace (T.pack "#") (T.pack "aug") s'' -- Text
+  let s'''' = T.replace (T.pack "J") (T.pack "justa") s''' -- Text
+  let s''''' = T.replace (T.pack "tecladi") (T.pack "teclado") s'''' -- Text
+  let s'''''' =  T.replace (T.pack "partidi") (T.pack "partido") s''''' -- Text
+  let s''''''' = LH.removeComments $ T.unpack s''''''
+  s'''''''
 
 
 layers :: H [Layer]
@@ -490,7 +492,7 @@ parsePunteo' :: H (Layer -> Layer)
 parsePunteo' =  parsePunteo'' <*> rationalOrInteger
 
 parsePunteo'' :: H (Rational -> Layer -> Layer)
-parsePunteo'' =parsePunteo''' <*> parseUnStringAListadeNotas --
+parsePunteo'' = parsePunteo''' <*> parseUnStringAListadeNotas --
 
 parsePunteo''' :: H ([Note] -> Rational -> Layer -> Layer)
 parsePunteo''' = punteo <$ (reserved "punteo")
@@ -564,7 +566,7 @@ parseaTumbaoBajoVoicingSel :: H Layer
 parseaTumbaoBajoVoicingSel = parseaTumbaoBajoVoicingSel' <*> parseLayer
 
 parseaTumbaoBajoVoicingSel' :: H (Layer -> Layer)
-parseaTumbaoBajoVoicingSel' = parseaTumbaoBajoVoicingSel'' <*> parseStringsAListaDeNotes --
+parseaTumbaoBajoVoicingSel' = parseaTumbaoBajoVoicingSel'' <*> parseNoteList --
 
 parseaTumbaoBajoVoicingSel'' :: H ([Note] -> Layer -> Layer)
 parseaTumbaoBajoVoicingSel'' = tumbaoBajoVoicingSel <$ (reserved "tumbao")
@@ -586,7 +588,7 @@ parseaTumbaoBajoVoicingYRitmoSel' :: H (Layer -> Layer)
 parseaTumbaoBajoVoicingYRitmoSel' = parseaTumbaoBajoVoicingYRitmoSel'' <*> parseAtaquesAListaDeAtaques -- [] -- rationalList --
 
 parseaTumbaoBajoVoicingYRitmoSel'' :: H ( [Rational] -> Layer -> Layer)
-parseaTumbaoBajoVoicingYRitmoSel'' = parseaTumbaoBajoVoicingYRitmoSel''' <*> parseStringsAListaDeNotes
+parseaTumbaoBajoVoicingYRitmoSel'' = parseaTumbaoBajoVoicingYRitmoSel''' <*> parseNoteList
 
 parseaTumbaoBajoVoicingYRitmoSel''' :: H ([Note] -> [Rational] -> Layer -> Layer)
 parseaTumbaoBajoVoicingYRitmoSel''' = tumbaoBajoVoicingYRitmoSel <$ (reserved "tumbao")
@@ -2144,6 +2146,7 @@ acompanamiento attack c = c {style = nuevoE}
                             tecladoRhythmPattern0 = rPat, -- [(1, (realToFrac n') / 4)],
                             tecladoSampleNPattern0 = tecladoSampleNPattern0 (style c),
                             tecladoPitchPattern0 = tecladoPitchPattern0 (style c) -- ("acorde", [note])
+
                           }
 
 -- acompanamientoTest :: Double -> Layer -> Layer
@@ -2201,7 +2204,7 @@ parseAcompanamientoConVoicingSel :: H Layer
 parseAcompanamientoConVoicingSel = parseAcompanamientoConVoicingSel' <*> parseLayer
 
 parseAcompanamientoConVoicingSel' :: H (Layer -> Layer)
-parseAcompanamientoConVoicingSel' = parseAcompanamientoConVoicingSel'' <*> parseStringsAListaDeNotes --
+parseAcompanamientoConVoicingSel' = parseAcompanamientoConVoicingSel'' <*> parseNoteList --
 
 parseAcompanamientoConVoicingSel'' :: H ([Note] -> Layer -> Layer)
 parseAcompanamientoConVoicingSel'' = parseAcompanamientoConVoicingSel''' <*> rationalOrInteger
@@ -2241,7 +2244,7 @@ parseAcompanamientosConVoicingSel :: H Layer
 parseAcompanamientosConVoicingSel = parseAcompanamientosConVoicingSel' <*> parseLayer
 
 parseAcompanamientosConVoicingSel' :: H (Layer -> Layer)
-parseAcompanamientosConVoicingSel' = parseAcompanamientosConVoicingSel'' <*> parseStringsAListaDeNotes -- parseStringsAListaDeNotes -- praseListaDeListaStringAListaDeAcordes
+parseAcompanamientosConVoicingSel' = parseAcompanamientosConVoicingSel'' <*> parseNoteList -- parseNoteList -- praseListaDeListaStringAListaDeAcordes
 
 parseAcompanamientosConVoicingSel'' :: H ([Note] -> Layer -> Layer)
 parseAcompanamientosConVoicingSel'' = parseAcompanamientosConVoicingSel''' <*> parseAtaquesAListaDeAtaques -- rationalList
@@ -2267,8 +2270,9 @@ acompanamientosConVoicingSel rs notes c = c {style = nuevoE}
                           }
 
 parseNote :: H Note --(Relacion, Double, Octava)
-parseNote = parseNoteConOctava
+parseNote =  parseNoteConOctava
          <|> parseNoteConOctavaAuto
+         --
 
 
 parseNoteConOctava :: H Note
@@ -2285,6 +2289,120 @@ parseNoteConOctavaAuto = do
   i <- string
   return $ intervalo i 0
 
+parseNotes :: H [Note]
+parseNotes = parseUnNoteConOctavaAuto
+          <|> parseDosNoteConOctavaAuto
+          <|> parseThreeNoteConOctavaAuto
+          <|> parseFourNoteConOctavaAuto
+          <|> parseFiveNoteConOctavaAuto
+
+parseFiveNoteConOctavaAuto :: H [Note]
+parseFiveNoteConOctavaAuto = parseFiveNoteConOctavaAuto' <*> identifier
+
+parseFiveNoteConOctavaAuto' :: H (String -> [Note])
+parseFiveNoteConOctavaAuto' = parseFiveNoteConOctavaAuto'' <*> int
+
+parseFiveNoteConOctavaAuto'' :: H (Int -> String -> [Note])
+parseFiveNoteConOctavaAuto'' = parseFiveNoteConOctavaAuto''' <*> identifier
+
+parseFiveNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
+parseFiveNoteConOctavaAuto''' = parseFiveNoteConOctavaAuto'''' <*> int
+
+parseFiveNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
+parseFiveNoteConOctavaAuto'''' = parseFiveNoteConOctavaAuto''''' <*> identifier
+
+parseFiveNoteConOctavaAuto''''' :: H (String ->  Int -> String -> Int -> String -> [Note])
+parseFiveNoteConOctavaAuto''''' = parseFiveNoteConOctavaAuto'''''' <*> int
+
+parseFiveNoteConOctavaAuto'''''' :: H (Int -> String ->  Int -> String -> Int -> String -> [Note])
+parseFiveNoteConOctavaAuto'''''' = parseFiveNoteConOctavaAuto''''''' <*> identifier
+
+parseFiveNoteConOctavaAuto''''''' :: H (String -> Int -> String ->  Int -> String -> Int -> String -> [Note])
+parseFiveNoteConOctavaAuto''''''' = parseFiveNoteConOctavaAuto'''''''' <*> int
+
+parseFiveNoteConOctavaAuto'''''''' ::  H (Int -> String -> Int -> String ->  Int -> String -> Int -> String -> [Note])
+parseFiveNoteConOctavaAuto'''''''' = parseFiveNoteConOctavaAuto''''''''' <*> identifier
+
+parseFiveNoteConOctavaAuto''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> [Note])
+parseFiveNoteConOctavaAuto''''''''' = do
+  i1 <- int
+  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5]
+
+
+--
+parseFourNoteConOctavaAuto :: H [Note]
+parseFourNoteConOctavaAuto = parseFourNoteConOctavaAuto' <*> identifier
+
+parseFourNoteConOctavaAuto' :: H (String -> [Note])
+parseFourNoteConOctavaAuto' = parseFourNoteConOctavaAuto'' <*> int
+
+parseFourNoteConOctavaAuto'' :: H (Int -> String -> [Note])
+parseFourNoteConOctavaAuto'' = parseFourNoteConOctavaAuto''' <*> identifier
+
+parseFourNoteConOctavaAuto''' :: H (String ->  Int -> String -> [Note])
+parseFourNoteConOctavaAuto''' = parseFourNoteConOctavaAuto'''' <*> int
+
+parseFourNoteConOctavaAuto'''' :: H (Int -> String ->  Int -> String -> [Note])
+parseFourNoteConOctavaAuto'''' = parseFourNoteConOctavaAuto''''' <*> identifier
+
+parseFourNoteConOctavaAuto''''' :: H (String -> Int -> String ->  Int -> String -> [Note])
+parseFourNoteConOctavaAuto''''' = parseFourNoteConOctavaAuto'''''' <*> int
+
+parseFourNoteConOctavaAuto'''''' :: H (Int -> String -> Int -> String ->  Int -> String -> [Note])
+parseFourNoteConOctavaAuto'''''' = parseFourNoteConOctavaAuto''''''' <*> identifier
+
+parseFourNoteConOctavaAuto''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> [Note])
+parseFourNoteConOctavaAuto''''''' = do
+  i1 <- int
+  return $ \c1 i2 c2 i3 c3 i4 c4 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4]
+
+--
+parseThreeNoteConOctavaAuto :: H [Note]
+parseThreeNoteConOctavaAuto = parseThreeNoteConOctavaAuto' <*> identifier
+
+parseThreeNoteConOctavaAuto' :: H (String -> [Note])
+parseThreeNoteConOctavaAuto' = parseThreeNoteConOctavaAuto'' <*> int
+
+parseThreeNoteConOctavaAuto'' :: H (Int -> String -> [Note])
+parseThreeNoteConOctavaAuto'' = parseThreeNoteConOctavaAuto''' <*> identifier
+
+parseThreeNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
+parseThreeNoteConOctavaAuto''' = parseThreeNoteConOctavaAuto'''' <*> int
+
+parseThreeNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
+parseThreeNoteConOctavaAuto'''' = parseThreeNoteConOctavaAuto''''' <*> identifier
+
+parseThreeNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int -> String -> [Note])
+parseThreeNoteConOctavaAuto''''' = do
+  i1 <- int
+  return $ \c1 i2 c2 i3 c3 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3]
+
+--
+parseDosNoteConOctavaAuto :: H [Note]
+parseDosNoteConOctavaAuto = parseDosNoteConOctavaAuto' <*> identifier
+
+parseDosNoteConOctavaAuto' :: H (String -> [Note])
+parseDosNoteConOctavaAuto' = parseDosNoteConOctavaAuto'' <*> int
+
+parseDosNoteConOctavaAuto'' :: H (Int -> String -> [Note])
+parseDosNoteConOctavaAuto'' = parseDosNoteConOctavaAuto''' <*> identifier
+
+parseDosNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
+parseDosNoteConOctavaAuto''' = do
+  i1 <- int
+  return $ \c1 i2 c2-> [catIntervalo i1 c1, catIntervalo i2 c2]
+
+--
+parseUnNoteConOctavaAuto :: H [Note]
+parseUnNoteConOctavaAuto = parseUnNoteConOctavaAuto' <*> identifier
+
+parseUnNoteConOctavaAuto' :: H (String -> [Note])
+parseUnNoteConOctavaAuto' = do
+  i <- int
+  return $ \c -> [catIntervalo i c]
+
+catIntervalo :: Int -> String -> Note
+catIntervalo i c = intervalo ((T.unpack $ T.strip  $ T.pack (show i)) ++ (T.unpack $ T.stripStart $ T.pack c)) 0
 
 -- listaDeStringsANote ::  [[String]] -> [Note]
 -- listaDeStringsANote xs = listaDeListaStringAListaDeNota xs -- [Note]
@@ -2334,10 +2452,14 @@ stringANote s = intervalo s 0
 
 --
 praseListaDeListaStringAListaDeAcordes :: H [[Note]]
-praseListaDeListaStringAListaDeAcordes = list parseStringsAListaDeNotes
+praseListaDeListaStringAListaDeAcordes = list parseNoteList
 
 -- acompanamiento 2 ["f" "3a" "5a", ]
 -- parseStringsAListaDeNotes :: H [String]
+parseNoteList :: H [Note]
+parseNoteList = parseStringsAListaDeNotes
+              <|> parseNotes
+
 parseStringsAListaDeNotes :: H [Note]
 parseStringsAListaDeNotes = parseUnStringAListadeNotas
                           <|> parseDosStringsAListadeNotas
@@ -2627,7 +2749,7 @@ parseUnStringAListadeNotas = do
   -- s1 <- string
   s1 <- parseNote -- Note
   return $ stringAListadeUnaNota s1
-
+--
 -- helper funcs para acompanamiento
 -- stringAListadeUnaNota :: String -> [String]
 stringAListadeUnaNota :: Note -> [Note]

@@ -85,61 +85,61 @@ getNoteInChord (Chord root chordType (start, end)) (tipo, interval, octava)
  -- [Double]
 intervaloDisponible :: ChordType -> (String, Double, Octava) -> Maybe Double
 intervaloDisponible cht (tipo, _, _)
-      |cht == major && tipo == "segunda" = Just $ sel2 (intervalo "2M" 0)
-      |cht == major7 && tipo == "segunda" = Just $ sel2 (intervalo "2M" 0)
+      |cht == major && tipo == "segunda" = Just $ sel2 (intervalo "2maj" 0)
+      |cht == major7 && tipo == "segunda" = Just $ sel2 (intervalo "2maj" 0)
       |cht == minor && tipo == "segunda" = Nothing
       |cht == minor7 && tipo == "segunda" = Nothing
-      |cht == dom && tipo == "segunda" = Just $sel2 (intervalo "2M" 0)
-      |cht == sus2 && tipo == "segunda" = Just $sel2 (intervalo "2M" 0)
+      |cht == dom && tipo == "segunda" = Just $sel2 (intervalo "2maj" 0)
+      |cht == sus2 && tipo == "segunda" = Just $sel2 (intervalo "2maj" 0)
       |cht == sus4 && tipo == "segunda" = Nothing
-      |cht == fifths && tipo == "segunda" = Just $ sel2 (intervalo "2M" 0)
+      |cht == fifths && tipo == "segunda" = Just $ sel2 (intervalo "2maj" 0)
       |cht == dim && tipo == "segunda" = Nothing
       |cht == aug && tipo == "segunda" = Nothing
 
-      |cht == major && tipo == "tercera" = Just $ sel2 (intervalo "3M" 0)
-      |cht == major7 && tipo == "tercera" = Just $ sel2 (intervalo "3M" 0)
+      |cht == major && tipo == "tercera" = Just $ sel2 (intervalo "3maj" 0)
+      |cht == major7 && tipo == "tercera" = Just $ sel2 (intervalo "3maj" 0)
       |cht == minor && tipo == "tercera" = Just $ sel2 (intervalo "3m" 0)
       |cht == minor7 && tipo == "tercera" = Just $ sel2 (intervalo "3m" 0)
-      |cht == dom && tipo == "tercera" = Just $ sel2 (intervalo "3M" 0)
+      |cht == dom && tipo == "tercera" = Just $ sel2 (intervalo "3maj" 0)
       |cht == sus2 && tipo == "tercera" = Nothing
       |cht == sus4 && tipo == "tercera" = Nothing
       |cht == fifths && tipo == "tercera" = Nothing
       |cht == dim && tipo == "tercera" = Just $ sel2 (intervalo "3m" 0)
       |cht == dim7 && tipo == "tercera"  = Just $ sel2 (intervalo "3m" 0)
       |cht == semidim && tipo == "tercera" = Just $ sel2 (intervalo "3m" 0)
-      |cht == aug && tipo == "tercera" = Just $ sel2 (intervalo "3M" 0)
+      |cht == aug && tipo == "tercera" = Just $ sel2 (intervalo "3maj" 0)
 
-      |cht == major && tipo == "cuarta" = Just $ sel2 (intervalo "4J" 0)
-      |cht == major7 && tipo == "cuarta" = Just $ sel2 (intervalo "4J" 0)
-      |cht == minor && tipo == "cuarta" = Just $ sel2 (intervalo "4J" 0)
-      |cht == minor7 && tipo == "cuarta" = Just $ sel2 (intervalo "4J" 0)
+      |cht == major && tipo == "cuarta" = Just $ sel2 (intervalo "4justa" 0)
+      |cht == major7 && tipo == "cuarta" = Just $ sel2 (intervalo "4justa" 0)
+      |cht == minor && tipo == "cuarta" = Just $ sel2 (intervalo "4justa" 0)
+      |cht == minor7 && tipo == "cuarta" = Just $ sel2 (intervalo "4justa" 0)
       |cht == dom && tipo == "cuarta" = Nothing
       |cht == sus2 && tipo == "cuarta" = Nothing -- ?
       |cht == sus4 && tipo == "cuarta" = Nothing -- ?
       |cht == fifths && tipo == "cuarta" = Nothing
-      |cht == dim && tipo == "cuarta" = Just $ sel2 (intervalo "4J" 0)
-      |cht == dim7 && tipo == "cuarta" = Just $ sel2 (intervalo "4J" 0)
-      |cht == semidim && tipo == "cuarta" = Just $ sel2 (intervalo "4J" 0)
-      |cht == aug && tipo == "cuarta" = Just $ sel2 (intervalo "4J" 0)
+      |cht == dim && tipo == "cuarta" = Just $ sel2 (intervalo "4justa" 0)
+      |cht == dim7 && tipo == "cuarta" = Just $ sel2 (intervalo "4justa" 0)
+      |cht == semidim && tipo == "cuarta" = Just $ sel2 (intervalo "4justa" 0)
+      |cht == aug && tipo == "cuarta" = Just $ sel2 (intervalo "4justa" 0)
 
-      |cht == major && tipo == "quinta" = Just $ sel2 (intervalo "5J" 0)
-      |cht == major7 && tipo == "quinta" = Just $ sel2 (intervalo "5J" 0)
-      |cht == minor && tipo == "quinta" = Just $ sel2 (intervalo "5J" 0)
-      |cht == minor7 && tipo == "quinta" = Just $ sel2 (intervalo "5J" 0)
-      |cht == dom && tipo == "quinta" = Just $ sel2 (intervalo "5J" 0)
-      |cht == sus2 && tipo == "quinta" = Just $ sel2 (intervalo "5J" 0)
-      |cht == sus4 && tipo == "quinta" = Just $ sel2 (intervalo "5J" 0)
-      |cht == fifths && tipo == "quinta" = Just $ sel2 (intervalo "5J" 0)
+      |cht == major && tipo == "quinta" = Just $ sel2 (intervalo "5justa" 0)
+      |cht == major7 && tipo == "quinta" = Just $ sel2 (intervalo "5justa" 0)
+      |cht == minor && tipo == "quinta" = Just $ sel2 (intervalo "5justa" 0)
+      |cht == minor7 && tipo == "quinta" = Just $ sel2 (intervalo "5justa" 0)
+      |cht == dom && tipo == "quinta" = Just $ sel2 (intervalo "5justa" 0)
+      |cht == sus2 && tipo == "quinta" = Just $ sel2 (intervalo "5justa" 0)
+      |cht == sus4 && tipo == "quinta" = Just $ sel2 (intervalo "5justa" 0)
+      |cht == fifths && tipo == "quinta" = Just $ sel2 (intervalo "5justa" 0)
       |cht == dim && tipo == "quinta" = Just $ sel2 (intervalo "5b" 0)
       |cht == dim7 && tipo == "quinta" =  Just $ sel2 (intervalo "5b" 0)
       |cht == semidim && tipo == "quinta" =  Just $ sel2 (intervalo "5b" 0)
-      |cht == aug && tipo == "quinta" =  Just $ sel2 (intervalo "5#" 0)
+      |cht == aug && tipo == "quinta" =  Just $ sel2 (intervalo "5aug" 0)
 
-      |cht == major && tipo == "sexta" = Just $ sel2 (intervalo "6M" 0)
-      |cht == major7 && tipo == "sexta" = Just $ sel2 (intervalo "6M" 0)
+      |cht == major && tipo == "sexta" = Just $ sel2 (intervalo "6maj" 0)
+      |cht == major7 && tipo == "sexta" = Just $ sel2 (intervalo "6maj" 0)
       |cht == minor && tipo == "sexta" = Nothing
       |cht == minor7 && tipo == "sexta" = Nothing
-      |cht == dom && tipo == "sexta" = Just $ sel2 (intervalo "6M" 0)
+      |cht == dom && tipo == "sexta" = Just $ sel2 (intervalo "6maj" 0)
       |cht == sus2 && tipo == "sexta" = Nothing -- ?
       |cht == sus4 && tipo == "sexta" = Nothing -- ?
       |cht == fifths && tipo == "sexta" = Nothing
@@ -148,8 +148,8 @@ intervaloDisponible cht (tipo, _, _)
       |cht == semidim && tipo == "sexta" = Just $ sel2 (intervalo "6b" 0)
       |cht == aug && tipo == "sexta" = Nothing
 
-      |cht == major && tipo == "septima" = Just $ sel2 (intervalo "7M" 0)
-      |cht == major7 && tipo == "septima" = Just $ sel2 (intervalo "7M" 0)
+      |cht == major && tipo == "septima" = Just $ sel2 (intervalo "7maj" 0)
+      |cht == major7 && tipo == "septima" = Just $ sel2 (intervalo "7maj" 0)
       |cht == minor && tipo == "septima" = Just $ sel2 (intervalo "7m" 0)
       |cht == minor7 && tipo == "septima" = Just $ sel2 (intervalo "7m" 0)
       |cht == dom && tipo == "septima" = Just $ sel2 (intervalo "7m" 0)
@@ -161,34 +161,34 @@ intervaloDisponible cht (tipo, _, _)
       |cht == semidim && tipo == "septima" = Just $ sel2 (intervalo "7m" 0)
       |cht == aug && tipo == "septima" = Just $ sel2 (intervalo "7m" 0)
 
-      |cht == major && tipo == "novena" = Just $ sel2 (intervalo "9M" 0)
-      |cht == major7 && tipo == "novena" = Just $ sel2 (intervalo "9M" 0)
-      |cht == minor && tipo == "novena" = Just $ sel2 (intervalo "9M" 0)
-      |cht == minor7 && tipo == "novena" = Just $ sel2 (intervalo "9M" 0)
-      |cht == dom && tipo == "novena" = Just $ sel2 (intervalo "9M" 0)
-      |cht == sus2 && tipo == "novena" = Just $ sel2 (intervalo "9M" 0) -- ?
-      |cht == sus4 && tipo == "novena" = Just $ sel2 (intervalo "9M" 0) -- ?
-      |cht == fifths && tipo == "novena" = Just $ sel2 (intervalo "9M" 0)
-      |cht == dim && tipo == "novena" = Just $ sel2 (intervalo "9M" 0) -- m7b5
-      |cht == dim7 && tipo == "novena"  = Just $ sel2 (intervalo "9M" 0)
-      |cht == semidim && tipo == "novena" = Just $ sel2 (intervalo "9M" 0)
-      |cht == aug && tipo == "novena" = Just $ sel2 (intervalo "9M" 0)
+      |cht == major && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0)
+      |cht == major7 && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0)
+      |cht == minor && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0)
+      |cht == minor7 && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0)
+      |cht == dom && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0)
+      |cht == sus2 && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0) -- ?
+      |cht == sus4 && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0) -- ?
+      |cht == fifths && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0)
+      |cht == dim && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0) -- m7b5
+      |cht == dim7 && tipo == "novena"  = Just $ sel2 (intervalo "9maj" 0)
+      |cht == semidim && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0)
+      |cht == aug && tipo == "novena" = Just $ sel2 (intervalo "9maj" 0)
 
-      |cht == major && tipo == "oncena" = Just $ sel2 (intervalo "11#" 0)
-      |cht == major7 && tipo == "oncena" = Just $ sel2 (intervalo "11#" 0)
-      |cht == minor && tipo == "oncena" = Just $ sel2 (intervalo "11J" 0)
-      |cht == minor7 && tipo == "oncena" = Just $ sel2 (intervalo "11J" 0)
-      |cht == dom && tipo == "oncena" = Just $ sel2 (intervalo "11#" 0)
+      |cht == major && tipo == "oncena" = Just $ sel2 (intervalo "11aug" 0)
+      |cht == major7 && tipo == "oncena" = Just $ sel2 (intervalo "11aug" 0)
+      |cht == minor && tipo == "oncena" = Just $ sel2 (intervalo "11justa" 0)
+      |cht == minor7 && tipo == "oncena" = Just $ sel2 (intervalo "11justa" 0)
+      |cht == dom && tipo == "oncena" = Just $ sel2 (intervalo "11aug" 0)
       |cht == sus2 && tipo == "oncena" = Just $ sel2 (intervalo "11b" 0)
       |cht == sus4 && tipo == "oncena" = Just $ sel2 (intervalo "11b" 0)
-      |cht == fifths && tipo == "oncena" = Just $ sel2 (intervalo "11J" 0)-- ?
-      |cht == dim && tipo == "oncena" = Just $ sel2 (intervalo "11J" 0)-- m7b5
-      |cht == dim7 && tipo == "oncena"  = Just $ sel2 (intervalo "11J" 0)
-      |cht == semidim && tipo == "oncena" = Just $ sel2 (intervalo "11J" 0)
-      |cht == aug && tipo == "oncena" = Just $ sel2 (intervalo "11#" 0)
+      |cht == fifths && tipo == "oncena" = Just $ sel2 (intervalo "11justa" 0)-- ?
+      |cht == dim && tipo == "oncena" = Just $ sel2 (intervalo "11justa" 0)-- m7b5
+      |cht == dim7 && tipo == "oncena"  = Just $ sel2 (intervalo "11justa" 0)
+      |cht == semidim && tipo == "oncena" = Just $ sel2 (intervalo "11justa" 0)
+      |cht == aug && tipo == "oncena" = Just $ sel2 (intervalo "11aug" 0)
 
-      |cht == major && tipo == "trecena" = Just $ sel2 (intervalo "13M" 0)
-      |cht == major7 && tipo == "trecena" = Just $ sel2 (intervalo "13M" 0)
+      |cht == major && tipo == "trecena" = Just $ sel2 (intervalo "13maj" 0)
+      |cht == major7 && tipo == "trecena" = Just $ sel2 (intervalo "13maj" 0)
       |cht == minor && tipo == "trecena" = Nothing
       |cht == minor7 && tipo == "trecena" = Nothing
       |cht == dom && tipo == "trecena" = Just $ sel2 (intervalo "13b" 0)
@@ -546,39 +546,41 @@ intervalo "2a" octava = ("segunda", 0, octava)
 
 intervalo "2m" octava = ("segundaMenor", 1, octava)
 
-intervalo "2M" octava = ("segundaMayor", 2,  octava)
+intervalo "2maj" octava = ("segundaMayor", 2,  octava)
 
 intervalo "3a" octava = ("tercera", 0, octava)
 
 intervalo "3m" octava = ("terceraMenor", 3, octava)
 
-intervalo "3M" octava = ("terceraMayor", 4, octava)
+intervalo "3maj" octava = ("terceraMayor", 4, octava)
 
 intervalo "4a" octava = ("cuarta", 0, octava)
 
-intervalo "4J" octava = ("cuartaJusta", 5, octava)
+intervalo "4justa" octava = ("cuartaJusta", 5, octava)
 
-intervalo "4#" octava = ("cuartaAug", 6, octava)
+intervalo "4aug" octava = ("cuartaAug", 6, octava)
 
 intervalo "5a" octava = ("quinta", 0, octava)
 
 intervalo "5b" octava = ("quintaBemol", 6, octava)
 
-intervalo "5J" octava = ("quintaJusta", 7, octava)
+intervalo "5justa" octava = ("quintaJusta", 7, octava)
 
-intervalo "5#" octava = ("quintaAug", 8, octava)
+intervalo "5aug" octava = ("quintaAug", 8, octava)
 
 intervalo "6a" octava = ("sexta", 0, octava)
 
 intervalo "6m" octava = ("sextaMenor", 8, octava)
 
-intervalo "6M" octava = ("sextaMayor", 9, octava)
+intervalo "6maj" octava = ("sextaMayor", 9, octava)
 
 intervalo "7a" octava = ("septima", 0, octava)
 
+intervalo "7bb" octava = ("septimaMenor", 8, octava)
+
 intervalo "7m" octava = ("septimaMenor", 10, octava)
 
-intervalo "7M" octava = ("septimaMayor", 11, octava)
+intervalo "7maj" octava = ("septimaMayor", 11, octava)
 
 intervalo "8a" octava = ("octava", 12, octava)
 
@@ -586,20 +588,20 @@ intervalo "9a" octava = ("novena", 0, octava)
 
 intervalo "9m" octava = ("novenaMenor", 13, octava)
 
-intervalo "9M" octava = ("novenaMayor", 14, octava)
+intervalo "9maj" octava = ("novenaMayor", 14, octava)
 
 intervalo "11a" octava = ("oncena",  0, octava)
 
 intervalo "11b" octava = ("oncenaBemol", 16, octava)
 
-intervalo "11J" octava = ("oncenaJusta", 17, octava)
+intervalo "11justa" octava = ("oncenaJusta", 17, octava)
 
-intervalo "11#" octava = ("oncenaAug", 18, octava)
+intervalo "11aug" octava = ("oncenaAug", 18, octava)
 
 intervalo "13a" octava = ("trecena", 0, octava)
 
 intervalo "13b" octava = ("trecenaBemol", 20, octava)
 
-intervalo "13M" octava = ("trecenaMayor", 21, octava)
+intervalo "13maj" octava = ("trecenaMayor", 21, octava)
 
 intervalo _ octava = ("nada", 0, octava)

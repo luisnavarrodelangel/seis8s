@@ -70,7 +70,6 @@ executable seis8s
       containers,
       ghcjs-base,
       ghcjs-dom-jsffi,
-      reflex-dom-contrib,
       text,
       text-show,
       haskellish >= 0.2.0,

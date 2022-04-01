@@ -1,0 +1,9 @@
+This folder includes the following sounds released by their creator(s) under the CC0 licence (Public Domain Dedication).
+
+1. 0heel.wav is a short conga sound recorded by menegass (available here https://freesound.org/people/menegass/sounds/99738/).
+
+2. 1-slap.wav is a small-conga (most likeley a quinto) sound, hit with a drum stick. It was recorded by Sajmund (https://freesound.org/people/menegass/sounds/99736/). 
+
+3. 2-open.wav is a small-conga sound (most likeley a quinto) recorded by menegass (available here https://freesound.org/people/menegass/sounds/99737/
+).  
+

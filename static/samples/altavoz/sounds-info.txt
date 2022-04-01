@@ -1,0 +1,6 @@
+This folder includes the following sounds released by their creators under the CC0 licence (Public Domain Dedication).
+
+1. grupo.wav is a "greeting" made by a computer generated voice and recorded by Luis Navarro in 2020. 
+
+2. sensacional.wav is a computer-generated voice saying "sensacional" and was recorded by Luis Navarro in 2020. 
+

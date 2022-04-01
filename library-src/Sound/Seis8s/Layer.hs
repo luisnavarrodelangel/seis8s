@@ -26,8 +26,12 @@ import Sound.Seis8s.GlobalMaterial
 -- what can be transformed from the instrument based on the Global and Instrument material
 data Layer = Layer {
   getEvents :: GlobalMaterial -> Style -> Tempo -> BeginWindowTime -> EndWindowTime -> State LayerState [Event],
-  style :: Style
+  style :: Style,
+  tempo' :: Tempo
 }
+
+instance Show Layer where
+  show (Layer getEvents futureStyle t) =  show futureStyle
 
 --I can make function s from layer to layer that tranform the output (i.e. like fmapping over the list of events)
 -- or also override the informayioni of the style. e.g every event louder
@@ -70,6 +74,9 @@ mapEvents f x = x {getEvents = g}
 -- now
 -- parse style as layer
 
+defTempo = mytempo
+
+
 
 type BeginWindowTime = UTCTime
 type EndWindowTime = UTCTime
@@ -98,7 +105,7 @@ teclado :: Layer
 teclado = Layer { getEvents = tecladoEvents, style = defaultStyle}
 
 bajo :: Layer
-bajo = Layer {getEvents = bajoEvents, style = defaultStyle}
+bajo = Layer {getEvents = bajoEvents, style = defaultStyle, tempo' = defTempo}
 --
 guira :: Layer
 guira = Layer {getEvents = guiraEvents, style = defaultStyle}
@@ -130,6 +137,7 @@ extras = Layer {getEvents = extrasEvents, style = defaultStyle}
 zampoñaEvents gmm style tempo iw ew = do
   let paneo = zampoñaPanPattern0 style
   let gain = zampoñaGainPattern0 style
+  let cutGroup = zampoñaCutGroupPattern0 style
   let pitchType = (fst $ zampoñaPitchPattern0 style)
   let equateLists' = equateLists (zampoñaRhythmPattern0 style) (zampoñaSampleNPattern0 style) (snd $ zampoñaPitchPattern0 style)
   let zampoñaRhythmPattern = sel1 equateLists' -- [(Rational, Rational)]
@@ -143,7 +151,7 @@ zampoñaEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, (String, Int, Double))]
   let zampoñaline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) zampoñaline  -- [UTCTime]
-  let instCmap = cmap'' "zampoña" samplePat zampoñaline paneo gain--[Map Text Datum]
+  let instCmap = cmap'' "zampoña" samplePat zampoñaline paneo gain cutGroup --[Map Text Datum]
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -151,6 +159,7 @@ zampoñaEvents gmm style tempo iw ew = do
 acordeonEvents gmm style tempo iw ew = do
   let paneo = acordeonPanPattern0 style
   let gain = acordeonGainPattern0 style
+  let cutGroup = acordeonCutGroupPattern0 style
   let pitchType = (fst $ acordeonPitchPattern0 style)
   let equateLists' = equateLists (acordeonRhythmPattern0 style) (acordeonSampleNPattern0 style) (snd $ acordeonPitchPattern0 style)
   let acordeonRhythmPattern = sel1 equateLists' -- [(Rational, Rational)]
@@ -164,7 +173,7 @@ acordeonEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, (String, Int, Double))]
   let acordeonline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) acordeonline  -- [UTCTime]
-  let instCmap = cmap'' "acordeon" samplePat acordeonline paneo gain--[Map Text Datum]
+  let instCmap = cmap'' "acordeon" samplePat acordeonline paneo gain cutGroup --[Map Text Datum]
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -172,6 +181,7 @@ acordeonEvents gmm style tempo iw ew = do
 cuerdaEvents gmm style tempo iw ew = do
   let paneo = cuerdaPanPattern0 style
   let gain = cuerdaGainPattern0 style
+  let cutGroup = cuerdaCutGroupPattern0 style
   let pitchType = (fst $ cuerdaPitchPattern0 style)
   let equateLists' = equateLists (cuerdaRhythmPattern0 style) (cuerdaSampleNPattern0 style) (snd $ cuerdaPitchPattern0 style)
   let cuerdaRhythmPattern = sel1 equateLists' -- [(Rational, Rational)]
@@ -185,46 +195,17 @@ cuerdaEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, (String, Int, Double))]
   let cuerdaline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) cuerdaline  -- [UTCTime]
-  let instCmap = cmap'' "cuerdas" samplePat cuerdaline paneo gain--Map Text Datum
+  let instCmap = cmap'' "cuerdas" samplePat cuerdaline paneo gain cutGroup --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
-  return events
-
-tecladoEvents' gmm style tempo iw ew = do
-  let paneo = tecladoPanPattern0 style
-  let gain = tecladoGainPattern0 style
-
-  let pitchType = fst $ tecladoPitchPattern0 style
-  let equateLists' = equateLists (tecladoRhythmPattern0 style) (tecladoSampleNPattern0 style) (snd $ tecladoPitchPattern0 style)
-  let tecladoRhythmPattern = sel1 equateLists'
-  let tecladoRhythmPattern' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm))) tecladoRhythmPattern
-
-  let tecladoRhythmPattern'' = fmap (\(metre,attack) -> (metre * toRational (compas gmm), attack * toRational (compas gmm)))  (tecladoRhythmPattern0 style)
-
-  let tecladoSampleNPattern = sel2 equateLists'
-  let tecladoPitchPattern = sel3 equateLists'
-  let nPat = List.zip tecladoRhythmPattern' tecladoSampleNPattern --[(RhythmicPattern, Int)]
-  let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)]
-
-  let nPat' = List.zip (rhythmicPattern tecladoRhythmPattern'' tempo iw ew) tecladoSampleNPattern --[(RhythmicPattern, Int)]
-
-  let samplePat' =  concat $ replicate (length tecladoRhythmPattern'') nPat'--[(Rational, Int)]
-
-  let pat = List.zip tecladoRhythmPattern' tecladoPitchPattern -- [(RhythmicPosition, (String, Double))]
-  let pitchPat = pitchPattern pat tempo iw ew
-  let tecladoline | pitchType == "intervalo" = (generateLine pitchPat (harmony gmm)) -- [(Rational, Pitch )]
-                  | pitchType == "midinote" = (generateLineFromMidi pitchPat) -- [(Rational, Pitch)]
-                -- | pitchType == "acorde" = concatChords $ pickChords (rhythmicPattern tecladoRhythmPattern' tempo iw ew) (harmony gmm) --[(Rational, Pitch )]
-                  | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern tecladoRhythmPattern'' tempo iw ew) (harmony gmm) (snd $ tecladoPitchPattern0 style) -- tecladoPitchPattern
-  let time = fmap (\c -> countToTime tempo (fst c)) tecladoline  -- [UTCTime]
-  -- let instCmap = cmap'' "teclado" samplePat tecladoline paneo gain--Map Text Datum
-  let instCmap = cmap'' "teclado" samplePat' tecladoline paneo gain--Map Text Datum
-  let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
 
 tecladoEvents gmm style tempo iw ew = do
   let paneo = tecladoPanPattern0 style
   let gain = tecladoGainPattern0 style
+  let cutGroupForChords = tecladoCutGroupPattern1 style
+  let cutGroupForIntervaloAndMidinote = tecladoCutGroupPattern0 style
+
 
   let pitchType = fst $ tecladoPitchPattern0 style
   let equateLists' = equateLists (tecladoRhythmPattern0 style) (tecladoSampleNPattern0 style) (snd $ tecladoPitchPattern0 style)
@@ -235,6 +216,7 @@ tecladoEvents gmm style tempo iw ew = do
 
   let tecladoSampleNPattern = sel2 equateLists'
   let tecladoPitchPattern = sel3 equateLists'
+
   -- let nPat = List.zip tecladoRhythmPattern' tecladoSampleNPattern --[(RhythmicPattern, Int)]
   -- let samplePat = samplePattern nPat tempo iw ew --[(Rational, Int)] -- maybe not needed of any of the instruments?
 
@@ -243,15 +225,17 @@ tecladoEvents gmm style tempo iw ew = do
   let tecladoline | pitchType == "intervalo" = (generateLine pitchPat (harmony gmm)) -- [(Rational, Pitch )]
                   | pitchType == "midinote" = (generateLineFromMidi pitchPat) -- [(Rational, Pitch)]
                 -- | pitchType == "acorde" = concatChords $ pickChords (rhythmicPattern tecladoRhythmPattern' tempo iw ew) (harmony gmm) --[(Rational, Pitch )]
-                  | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern tecladoRhythmPattern'' tempo iw ew) (harmony gmm) (snd $ tecladoPitchPattern0 style) -- tecladoPitchPattern
+                  | pitchType == "acorde" = concatChords $ pickChords' (rhythmicPattern tecladoRhythmPattern'' tempo iw ew) (harmony gmm) (snd $ tecladoPitchPattern0 style) -- tecladoPitchPattern p
   let time = fmap (\c -> countToTime tempo (fst c)) tecladoline  -- [UTCTime]
   -- let instCmap = cmap'' "teclado" samplePat tecladoline paneo gain--Map Text Datum
 
   -- let nPat' = concat $ replicate (length (rhythmicPattern tecladoRhythmPattern'' tempo iw ew)) (tecladoSampleNPattern0 style)--[(Rational, Int)]
   -- let samplePat' = zip (fmap (\t -> timeToCount tempo t) time) (concat $ replicate (length time) (tecladoSampleNPattern0 style))
   let samplePat' = samplePatternRat time (tecladoSampleNPattern0 style) tempo
+  let tecladoCutGroup | (pitchType == "intervalo") || (pitchType == "midinote") = [cutGroupForIntervaloAndMidinote .. (cutGroupForIntervaloAndMidinote + (length samplePat'))]
+                      |  pitchType == "acorde" = [cutGroupForChords .. (cutGroupForChords + (length samplePat'))]
 
-  let instCmap = cmap'' "teclado" samplePat' tecladoline paneo gain--Map Text Datum
+  let instCmap = cmap'''' "teclado" samplePat' tecladoline paneo gain tecladoCutGroup --Map Text Datum
   let events =  List.zip time instCmap -- [(UTCTime, Map Text Datum)]
   return events
 
@@ -282,6 +266,7 @@ noteTest3 = [("unisono",0.0,0.0),("tercera",0.0,0.0),("quinta",0.0,0.0)]
 bajoEvents gmm style tempo iw ew = do
   let paneo = bassPanPattern0 style
   let gain = bassGainPattern0 style
+  let cutGroup = bassCutGroupPattern0 style
 
   let pitchType = (fst $ bassPitchPattern0 style)
   let equateLists' = equateLists (bassRhythmPattern0 style) (bassSampleNPattern0 style) (snd $ bassPitchPattern0 style)
@@ -296,7 +281,7 @@ bajoEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let bassline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) bassline  -- [UTCTime]
-  let instCmap = cmap'' "bajo" samplePat bassline paneo gain--Map Text Datum
+  let instCmap = cmap'' "bajo" samplePat bassline paneo gain cutGroup --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -317,7 +302,7 @@ guiraEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let guiraline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) --
   let time = fmap (\c -> countToTime tempo (fst c)) guiraline  -- [UTCTime]
-  let instCmap = cmap'' "guira" samplePat guiraline paneo gain--Map Text Datum
+  let instCmap = cmap'' "guira" samplePat guiraline paneo gain 0 --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -338,7 +323,7 @@ contrasEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let contrasline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) --
   let time = fmap (\c -> countToTime tempo (fst c)) contrasline  -- [UTCTime]
-  let instCmap = cmap'' "contratiempos" samplePat contrasline paneo gain--Map Text Datum
+  let instCmap = cmap'' "contratiempos" samplePat contrasline paneo gain 0 --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -359,7 +344,7 @@ tarolaEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let tarolaline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) --
   let time = fmap (\c -> countToTime tempo (fst c)) tarolaline  -- [UTCTime]
-  let instCmap = cmap'' "tarola" samplePat tarolaline paneo gain--Map Text Datum
+  let instCmap = cmap'' "tarola" samplePat tarolaline paneo gain 0 --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -379,7 +364,7 @@ efectoEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let efectoline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) efectoline  -- [UTCTime]
-  let instCmap = cmap'' "efecto" samplePat efectoline paneo gain--Map Text Datum
+  let instCmap = cmap'' "efecto" samplePat efectoline paneo gain 0 --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -400,7 +385,7 @@ altavozEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let altavozline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) altavozline  -- [UTCTime]
-  let instCmap = cmap'' "altavoz" samplePat altavozline paneo gain--Map Text Datum
+  let instCmap = cmap'' "altavoz" samplePat altavozline paneo gain 0 --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -421,7 +406,7 @@ extrasEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let extrasline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) extrasline  -- [UTCTime]
-  let instCmap = cmap'' "extras" samplePat extrasline paneo gain--Map Text Datum
+  let instCmap = cmap'' "extras" samplePat extrasline paneo gain 0 --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -442,7 +427,7 @@ congasEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let congasline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) congasline  -- [UTCTime]
-  let instCmap = cmap''' samplePat congasline paneo gain--Map Text Datum
+  let instCmap = cmap''' samplePat congasline paneo gain 0 --Map Text Datum
   -- let instCmap = cmap''' samplePat congasline paneo gain--Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
@@ -464,7 +449,7 @@ claveEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let claveline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) claveline  -- [UTCTime]
-  let instCmap = cmap'' "tarola" samplePat claveline paneo gain--Map Text Datum
+  let instCmap = cmap'' "tarola" samplePat claveline paneo gain 0 --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
@@ -486,27 +471,33 @@ jamblockEvents gmm style tempo iw ew = do
   let pitchPat = pitchPattern pat tempo iw ew --[(Rational, Int)]
   let jamblockline = if pitchType == "intervalo" then (generateLine pitchPat (harmony gmm)) else (generateLineFromMidi pitchPat) -- [(Rational, [Pitch])]
   let time = fmap (\c -> countToTime tempo (fst c)) jamblockline  -- [UTCTime]
-  let instCmap = cmap'' "jamblock" samplePat jamblockline paneo gain--Map Text Datum
+  let instCmap = cmap'' "jamblock" samplePat jamblockline paneo gain 0 --Map Text Datum
   let events = List.zip time instCmap -- [(UTCTime, Map Text Datum)]
 
   return events
 
 -- [("quinto", 0), ("quinto", 1) ...]
-cmap''' :: [(Rational, (String, Int))] -> [(Rational, Pitch)] -> Double -> Double -> [M.Map T.Text Datum]
-cmap''' ns ps pan gain = do
+cmap'''' :: String -> [(Rational, Int)] -> [(Rational, Pitch)] -> Double -> Double -> [Int] -> [M.Map T.Text Datum]
+cmap'''' sampleName is ps pan gain cutGroup = do
+  let is' = fmap (\i -> snd i) is
+  let ps' = fmap (\p -> snd p) ps
+  fmap (\(i, p, cg) -> cmap' sampleName i p pan gain cg) $ zip3 is' ps' cutGroup
+
+cmap''' :: [(Rational, (String, Int))] -> [(Rational, Pitch)] -> Double -> Double -> Int -> [M.Map T.Text Datum]
+cmap''' ns ps pan gain cutGroup = do
   let fs' = fmap (\f -> fst $ snd f) ns -- string - folder name
   let ns' = fmap (\n -> snd $ snd n) ns -- int
   let ps' = fmap (\p -> snd p) ps
-  fmap (\(f, n, p) -> cmap' f n p pan gain) $ zip3 fs' ns' ps'
+  fmap (\(f, n, p) -> cmap' f n p pan gain cutGroup) $ zip3 fs' ns' ps'
 
-cmap'' :: String -> [(Rational, Int)] -> [(Rational, Pitch)] -> Double -> Double -> [M.Map T.Text Datum]
-cmap'' sampleName is ps pan gain = do
+cmap'' :: String -> [(Rational, Int)] -> [(Rational, Pitch)] -> Double -> Double -> Int -> [M.Map T.Text Datum]
+cmap'' sampleName is ps pan gain cutGroup = do
   let is' = fmap (\i -> snd i) is
   let ps' = fmap (\p -> snd p) ps
-  fmap (\(i, p) -> cmap' sampleName i p pan gain) $ zip is' ps'
+  fmap (\(i, p) -> cmap' sampleName i p pan gain cutGroup) $ zip is' ps'
 
-cmap' :: String -> Int -> Pitch -> Double -> Double -> M.Map T.Text Datum
-cmap' sampleName sampleIndex pitch pan gain = M.fromList [("s", string sampleName), ("n", int32 sampleIndex), ("note", double pitchAdjustedOctave), ("pan", double pan), ("gain", double gain)]
+cmap' :: String -> Int -> Pitch -> Double -> Double -> Int -> M.Map T.Text Datum
+cmap' sampleName sampleIndex pitch pan gain cutGroup = M.fromList [("s", string sampleName), ("n", int32 sampleIndex), ("note", double pitchAdjustedOctave), ("pan", double pan), ("gain", double gain), ("cut", int32 cutGroup)]
   where pitchAdjustedOctave = pitch - 60
 
 cmap :: String -> Pitch -> M.Map T.Text Datum
