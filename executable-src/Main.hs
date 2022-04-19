@@ -137,40 +137,40 @@ bodyElement wd =  do
     elClass "div" "contenedorTextoIntro" $ do
       tabDisplay "botonesDeIdioma" "" tabMapEscogerIdioma
 
-    elClass "div" "editor" $ do
+    elClass "div" "editor" $ mdo
       evClick <- divClass "playEinstrucciones" $ do
         evClick' <- divClass "playButton" $ button "▶"
-        -- elClass "span" "comandosCss" $ text "Instructiones: "
-        -- text $ "Haz sonar el código de abajo presionando el boton ▶."
-        el "br" $ blank
-        -- elClass "span" "comandosCss" $ text "Instructions: "
-        -- text "Make the code sound by pressing the ▶ button."
+        consoleInfo' <- holdDyn "" consoleInfo
+        divClass "consoleInfo" $ dynText $ fmap T.pack consoleInfo'
         return evClick'
 
-      let textAttrs = constDyn $ fromList [("class",  "class-example")]
-      code <- do
-        liftIO $ jq_highlight_brackets
-        textArea $ def & textAreaConfig_attributes .~ textAttrs &  textAreaConfig_initialValue .~ intro -- text
-      e <- _element_raw . fst <$> el' "div" blank -- script or text
-      let evaled = tagPromptlyDyn (_textArea_value code) evClick -- Event t Text
-      performEvaluate' mv evaled -- performEvaluate' pVar evaled
+      consoleInfo <- divClass "textAreaEditor" $ do
+        let textAttrs = constDyn $ fromList [("class",  "class-example")]
+        code <- do
+          liftIO $ jq_highlight_brackets
+          textArea $ def & textAreaConfig_attributes .~ textAttrs &  textAreaConfig_initialValue .~ intro -- text
+        e <- _element_raw . fst <$> el' "div" blank -- script or text
+        let evaled = tagPromptlyDyn (_textArea_value code) evClick -- Event t Text -- check https://codemirror.net/
+        consoleInfo' <- performEvaluate' mv evaled -- performEvaluate' pVar evaled
+        return consoleInfo'
+
       return ()
 
 
 -- performEvaluate' :: (PerformEvent t m, MonadIO (Performable m)) => MVar ([Layer], GlobalMaterial) -> Event t Text -> m ()
-performEvaluate' :: (PerformEvent t m, MonadIO (Performable m)) => MVar RenderState -> Event t Text -> m ()
-performEvaluate' mv e = performEvent_ $ ffor e $ \textAreaCode -> liftIO $ do
+performEvaluate' :: (PerformEvent t m, MonadIO (Performable m)) => MVar RenderState -> Event t Text -> m (Event t String)
+performEvaluate' mv e = performEvent $ ffor e $ \textAreaCode -> liftIO $ do
   let p = parseLang $ T.unpack textAreaCode
   let
   case p of
     Right x -> do
-      print $ "Just evaled"
       tNow <- getCurrentTime
       rs <- takeMVar mv
       putMVar mv $ rs {
         pVar = x
       }
-    Left x -> print x
+      return ""
+    Left x -> return $ "error: " ++ x
 
 
 forkRenderThreads :: WebDirt -> IO (MVar RenderState)
@@ -180,7 +180,7 @@ forkRenderThreads wd = do
        tSystemInit = tNow,
        t0 = tNow,
        tempo = Tempo {freq = 0.50, time=tNow, Data.Tempo.count=0},
-       pVar = ([emptyLayer], defaultGlobalMaterial) -- Nothing -- Just ([emptyLayer], defaultGlobalMaterial)
+       pVar = ([emptyLayer], defaultGlobalMaterial)
        }
   forkIO $ renderThread wd mv -- tNow evalT tempo wd pVar
   return mv

@@ -122,6 +122,12 @@ contenedorDelEditor {
 	color: white;
 }
 
+.playEinstrucciones {
+  color: white;
+  display: flex;
+  width:60vw;
+}
+
 .playButton button {
 	font-size: 2em;
 	margin-right: 1em;
@@ -141,6 +147,17 @@ contenedorDelEditor {
   box-shadow: 0 5px black;
   transform: translateY(4px);
 }
+
+.consoleInfo {
+	font-size: 1em;
+	margin-top: 1%;
+	margin-left: 1%;
+}
+
+.textAreaEditor {
+	height: 100%;
+}
+
 .css-selector {
     -webkit-animation: AnimationName 30s ease infinite;
     -moz-animation: AnimationName 30s ease infinite;
@@ -358,11 +375,7 @@ h3 {
   text-decoration: underline;
 }
 
-.playEinstrucciones {
-  color: white;
-  display: flex;
-  width:60vw;
-}
+
 
 .commentbox a {
 color: #2d4926
