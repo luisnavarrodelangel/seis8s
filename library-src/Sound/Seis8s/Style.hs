@@ -16,6 +16,10 @@ type N = (String, Int)
 data NPattern = NPattern1 [Int] | NPattern2 [N] -- (FolderDelSample, Int)
 type CutGroup = Int
 
+instance Eq NPattern where
+  (==) (NPattern1 xs) (NPattern1 ys) = xs == ys
+  (==) (NPattern2 xs) (NPattern2 ys) = (fmap snd xs) == (fmap snd ys)
+
 instance Show NPattern where
   show (NPattern1 x) = show x
   show (NPattern2 y) = show y
@@ -145,7 +149,7 @@ data Style  = Style  {
  extrasPanPattern0 :: Double,
  extrasGainPattern0 :: Double
 
-} deriving (Show)
+} deriving (Eq, Show)
 
 
  -- type PitchPostion = (Rational, Pitch)
@@ -163,21 +167,23 @@ defaultStyle = Style {
    altavozGainPattern0 = 1,
 
 
-   tecladoSampleNPattern0 = NPattern1 [0],
    tecladoSampleNPattern1 = NPattern1 [0],
-   tecladoSampleNPattern2 = NPattern1 [0],
-   tecladoSampleNPattern3 = NPattern1 [0],
+   tecladoSampleNPattern0 = NPattern1 [0],
    tecladoRhythmPattern0 = [(1, 0)], -- ie.  [𝄽  𝄽  𝄽  ♩],
    tecladoRhythmPattern1 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
-   tecladoRhythmPattern2 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
-   tecladoRhythmPattern3 = [(1, 0)], -- ie. [𝄽 ♩ 𝄽 ♩],
    tecladoPitchPattern0 = ("intervalo", [("unisono" , 0, 0)]),
-   tecladoPitchPattern1 = ("intervalo", [("unisono" , 0, 0)]),
-   tecladoPitchPattern2 = ("intervalo", [("unisono" , 0, 0)]),
-   tecladoPitchPattern3 = ("intervalo", [("unisono" , 0, 0)]),
+   tecladoPitchPattern1 = ("intervalo", [("unisono" , 0, 0)]), -- not used yet
+
+   tecladoSampleNPattern2 = NPattern1 $ take 10 $ cycle  [0],
+   tecladoRhythmPattern2 = [(2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.625), (2, 1.625)],
+   tecladoPitchPattern2 = ("intervalo", [intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "3a" 0, intervalo "5a" 0]),
+
+   tecladoSampleNPattern3 = NPattern1 $ take 14 $ cycle  [0],
+   tecladoRhythmPattern3 = [(2, 0), (2, 0), (2, 0.25), (2, 0.25), (2, 0.5), (2, 0.5), (2, 0.875), (2, 0.875), (2, 1.25), (2, 1.25), (2, 1.375), (2, 1.375), (2, 1.625), (2, 1.625)],
+   tecladoPitchPattern3 = ("intervalo", [intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0, intervalo "unisono" 0, intervalo "unisono" 1, intervalo "3a" 0, intervalo "5a" 0]),
 
    tecladoPanPattern0 = 0.5,
-   tecladoGainPattern0 = 1,
+   tecladoGainPattern0 = 0.75,
 
    tecladoCutGroupPattern0 = 400,
    tecladoCutGroupPattern1 = 500,
@@ -263,6 +269,8 @@ defaultStyle = Style {
   congasPitchPattern0 = ("intervalo", [intervalo "unisono" 0]),
   congasPanPattern0 = 0.5,
   congasGainPattern0 = 1,
+
+
 
   jamblockRhythmPattern0 = [(1, 0)],
   jamblockSampleNPattern0 = NPattern1 [0],

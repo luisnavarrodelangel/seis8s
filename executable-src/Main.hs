@@ -74,14 +74,12 @@ headElement = do
   elAttr "link" attrs $ return ()
   elAttr "link" attrs2 $ return ()
 
+
 intro :: Text
-intro = "-- Instrucciones: Haz sonar el código presionando el botón ▶ \n\
-         \--Instructions: Make the code sound by pressing the ▶ button \n\
-         \ \n\
-         \cumbia teclado;\n\
-         \cumbia bajo;\n\
-         \cumbia guira;\n\
-         \cumbia congas;"
+intro = "cumbia teclado;\n\
+        \cumbia bajo;\n\
+        \cumbia guira;\n\
+        \cumbia congas;"
 
 ejemplo2 :: Text
 ejemplo2 = "tempo 0.25;\n\
@@ -126,6 +124,12 @@ ejemplo7 = "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia te
   \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
   \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
 
+attrsForGeneralInfo :: Bool -> Map.Map T.Text T.Text
+attrsForGeneralInfo b = visibility b
+  where visibility True = "class" =: "contenedorTextoIntro"
+        visibility False = "class" =: "contenedorTextoIntro" <> "style" =: "display: none"
+
+
 bodyElement :: MonadWidget t m => WebDirt -> m ()
 bodyElement wd =  do
   mv <- liftIO $ forkRenderThreads wd
@@ -133,28 +137,35 @@ bodyElement wd =  do
     text "Seis8s"
     elAttr "a" ("href" =: "https://l.facebook.com/l.php?u=https%3A%2F%2Finstagram.com%2Fmariapaula.jg%3Figshid%3Dpnjbzfn31ugn%26fbclid%3DIwAR1nvWI1UKeRIvdkzYVsFICxaQee2cVjQLS4IbQc2DdnvbhOkwvT4tZbTH4&h=AT3JFjrz0ZtST7h4CFALdMsX7L2ZB9VEN0UegRPOFAYMACdy79unNDgDAHkIeHgjP4E1Z3hOgOGoguTiyOwK81ZsVdf_DwY9V-rqgmkbbmtrnEh6_NqKnCHIp7z20g") (text "Imágen por / background art by: @mariapaula.jg")
 
-  elClass "div" "contenedorPrincipal" $ do
-    elClass "div" "contenedorTextoIntro" $ do
+
+  elClass "div" "contenedorPrincipal" $ mdo
+    dynBoolForInfo <- toggle False evClickInfo
+    let dynAttrsForGeneralInfo = attrsForGeneralInfo <$> dynBoolForInfo
+    elDynAttr "div" dynAttrsForGeneralInfo $ do
       tabDisplay "botonesDeIdioma" "" tabMapEscogerIdioma
+      -- evClickCloseInfo <- False <$ button "⊗"
 
-    elClass "div" "editor" $ mdo
-      evClick <- divClass "playEinstrucciones" $ do
-        evClick' <- divClass "playButton" $ button "▶"
-        consoleInfo' <- holdDyn "" consoleInfo
+    (evClickPlay, evClickStop, evClickInfo) <- elClass "div" "editor" $ mdo
+      (evClickPlay', evClickStop', evClickInfo') <- divClass "playEinstrucciones" $ do
+        evClickPlay'' <- divClass "playButton" $ button "▶"
+        evClickStop'' <- divClass "playButton" $ button "■" -- ([emptyLayer], defaultGlobalMaterial)
+        evClickInfo'' <- divClass "playButton" $ button "?"
+        consoleInfo' <- holdDyn "Haz sonar el código presionando el botón ▶ | Make the code sound by pressing the ▶ button" consoleInfo
         divClass "consoleInfo" $ dynText $ fmap T.pack consoleInfo'
-        return evClick'
-
+        return (evClickPlay'', evClickStop'', evClickInfo'')
+    --
       consoleInfo <- divClass "textAreaEditor" $ do
-        let textAttrs = constDyn $ fromList [("class",  "class-example")]
+        let textAttrs = constDyn $ fromList [("class", "maineditor"){--("class", "class-example"),--}]
         code <- do
-          liftIO $ jq_highlight_brackets
-          textArea $ def & textAreaConfig_attributes .~ textAttrs &  textAreaConfig_initialValue .~ intro -- text
+          -- liftIO $ jq_highlight_brackets
+          textArea $ def & textAreaConfig_attributes .~ textAttrs &  textAreaConfig_initialValue .~  intro -- & textAreaConfig_setValue .~ (updated  x')-- text
         e <- _element_raw . fst <$> el' "div" blank -- script or text
-        let evaled = tagPromptlyDyn (_textArea_value code) evClick -- Event t Text -- check https://codemirror.net/
-        consoleInfo' <- performEvaluate' mv evaled -- performEvaluate' pVar evaled
+        let evaled = tagPromptlyDyn (_textArea_value code) evClickPlay -- Event t Text
+        let stopSound = tagPromptlyDyn (constDyn "silencio") evClickStop -- Event t Text
+        consoleInfo' <- performEvaluate' mv $ leftmost [evaled, stopSound] -- performEvaluate' pVar evaled
         return consoleInfo'
-
-      return ()
+      return (evClickPlay', evClickStop', evClickInfo')
+    return ()
 
 
 -- performEvaluate' :: (PerformEvent t m, MonadIO (Performable m)) => MVar ([Layer], GlobalMaterial) -> Event t Text -> m ()
@@ -598,6 +609,7 @@ foreign import javascript unsafe
 foreign import javascript unsafe
  "commentBox('5731344961241088-proj')"
  commentbox :: IO ()
+
 
 initializeWebDirtNode :: IO Node
 initializeWebDirtNode = liftAudioIO $ do
