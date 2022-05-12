@@ -70,9 +70,9 @@ headElement :: DomBuilder t m => m ()
 headElement = do
   el "title" $ text "Seis8s"
   let attrs = fromList [("rel", "stylesheet"), ("type", "text/css"), ("href", "style.css")]
-  let attrs2 = fromList [("rel", "stylesheet"), ("type", "text/css"), ("href", "jquery.highlight-within-textarea.css")]
+  -- let attrs2 = fromList [("rel", "stylesheet"), ("type", "text/css"), ("href", "jquery.highlight-within-textarea.css")]
   elAttr "link" attrs $ return ()
-  elAttr "link" attrs2 $ return ()
+  -- elAttr "link" attrs2 $ return ()
 
 
 intro :: Text
@@ -147,9 +147,9 @@ bodyElement wd =  do
 
     (evClickPlay, evClickStop, evClickInfo) <- elClass "div" "editor" $ mdo
       (evClickPlay', evClickStop', evClickInfo') <- divClass "playEinstrucciones" $ do
-        evClickPlay'' <- divClass "playButton" $ button "▶"
-        evClickStop'' <- divClass "playButton" $ button "■" -- ([emptyLayer], defaultGlobalMaterial)
         evClickInfo'' <- divClass "playButton" $ button "?"
+        evClickStop'' <- divClass "playButton" $ button "■" -- ([emptyLayer], defaultGlobalMaterial)
+        evClickPlay'' <- divClass "playButton" $ button "▶"
         consoleInfo' <- holdDyn "Haz sonar el código presionando el botón ▶ | Make the code sound by pressing the ▶ button" consoleInfo
         divClass "consoleInfo" $ dynText $ fmap T.pack consoleInfo'
         return (evClickPlay'', evClickStop'', evClickInfo'')
@@ -511,34 +511,34 @@ reference = divClass "referenciaCss" $ do
   text "More functions are coming on their way!"
   return ()
 
-foreign import javascript safe
-  -- "document.querySelector('#estuary-root')"
-  -- "$('.array-example').highlightWithinTextarea({highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']});"
-  "function myFunction() { \n\
-    \document.getElementById(\"myTextarea\").select(); \n\
-  \}"
-  js_arrayexample :: IO JSVal
+-- foreign import javascript safe
+--   -- "document.querySelector('#estuary-root')"
+--   -- "$('.array-example').highlightWithinTextarea({highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']});"
+--   "function myFunction() { \n\
+--     \document.getElementById(\"myTextarea\").select(); \n\
+--   \}"
+--   js_arrayexample :: IO JSVal
+--
+-- newtype JQuery = JQuery JSVal
+-- -- newtype Event = Event JSVal
+--
+-- foreign import javascript unsafe
+--   "jQuery(document).ready(function(){$('textarea').select()});"
+--   jq_select  ::  IO JQuery
 
-newtype JQuery = JQuery JSVal
--- newtype Event = Event JSVal
-
-foreign import javascript unsafe
-  "jQuery(document).ready(function(){$('textarea').select()});"
-  jq_select  ::  IO JQuery
-
-
-foreign import javascript unsafe -- "$('.array-example').highlightWithinTextarea({highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']});"
-  "jQuery(document).ready(function(){$('.class-example').highlightWithinTextarea({\n\
-  \highlight: [{highlight: ['$', '--', '(', ')', '[', ']'], className: 'green' }, \n\
-  \{highlight: [ ' '],   className: 'black'}, \n\
-  \{highlight: [ 'cumbia'],   className: 'vino'}, \n\
-  \{highlight: [ 'alternar', 'tumbao', 'ritmo', 'acompanamiento', 'acompañamiento', 'marcha', 'punteo', 'sample'],   className: 'red'}, \n\
-  \{highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],   className: 'green'}, \n\
-  \{highlight: ['teclado', 'bajo', 'guira', 'guiro', 'güira', 'güiro', 'jam', 'congas', 'acordeon', 'silencio']},  \n\
-  \{highlight: ['acordes', 'armonia', 'armonía', 'compas', 'compás'], className: 'yellow'}]  \n\
-  \})});"
-  jq_highlight_brackets :: IO JQuery
-  -- \, {highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']}] \n\
+--
+-- foreign import javascript unsafe -- "$('.array-example').highlightWithinTextarea({highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']});"
+--   "jQuery(document).ready(function(){$('.class-example').highlightWithinTextarea({\n\
+--   \highlight: [{highlight: ['$', '--', '(', ')', '[', ']'], className: 'green' }, \n\
+--   \{highlight: [ ' '],   className: 'black'}, \n\
+--   \{highlight: [ 'cumbia'],   className: 'vino'}, \n\
+--   \{highlight: [ 'alternar', 'tumbao', 'ritmo', 'acompanamiento', 'acompañamiento', 'marcha', 'punteo', 'sample'],   className: 'red'}, \n\
+--   \{highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],   className: 'green'}, \n\
+--   \{highlight: ['teclado', 'bajo', 'guira', 'guiro', 'güira', 'güiro', 'jam', 'congas', 'acordeon', 'silencio']},  \n\
+--   \{highlight: ['acordes', 'armonia', 'armonía', 'compas', 'compás'], className: 'yellow'}]  \n\
+--   \})});"
+--   jq_highlight_brackets :: IO JQuery
+--   -- \, {highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']}] \n\
 
   -- "jQuery(document).ready(function(){$('.class-example').highlightWithinTextarea({\n\
   -- \highlight: [{highlight: '$' , className: 'red' }, \n\
@@ -547,10 +547,10 @@ foreign import javascript unsafe -- "$('.array-example').highlightWithinTextarea
   -- \{highlight: ['teclado', 'bajo', 'guira', 'jam', 'congas', 'acordeon']}]  \n\
   -- \})});"
 
-foreign import javascript unsafe -- $('.array-example').highlightWithinTextarea({highlight: ['orange', /ba(na)*/gi, [0, 5] ]});
-  "jQuery(document).ready(function(){$('.array-example').highlightWithinTextarea({\n\
-  \highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']})});"
-  jq_highlight_numbers :: IO JQuery
+-- foreign import javascript unsafe -- $('.array-example').highlightWithinTextarea({highlight: ['orange', /ba(na)*/gi, [0, 5] ]});
+--   "jQuery(document).ready(function(){$('.array-example').highlightWithinTextarea({\n\
+--   \highlight: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']})});"
+--   jq_highlight_numbers :: IO JQuery
 
 
 type NoteEvent = (UTCTime, Map Text Datum)
