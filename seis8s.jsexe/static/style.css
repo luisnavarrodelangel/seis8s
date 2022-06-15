@@ -12,6 +12,7 @@ html {
     background-position: center; /* Center the image */
   background-repeat: repeat-y; /* Do not repeat the image */
   background-size: cover;
+	height: 100%;
 
 
 /*     background-size: 400% 400%; */
@@ -35,10 +36,15 @@ body {
   flex-direction: column;
   background-color: transparent;
   font-family: 'Dosis', sans-serif;
-
+   width: 100%;
+	height: 100%;
 
 }
 
+body, html {
+    margin: 0;
+    padding: 0;
+}
 
 .titulo {
     background-color: transparent;
@@ -55,10 +61,10 @@ body {
   background-color: transparent;
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
-  width: 100%;
+  flex-wrap: nowrap;
+/*   width: 100%; */
 /*   height: 500px; */
-
+ height: 100%;
 }
 
 contenedorDelEditor {
@@ -68,17 +74,16 @@ contenedorDelEditor {
 }
 
 .editor {
-  position: relative;
-  top: 10px;
+/*   position: relative; */
+/*   top: 10px; */
   box-shadow: 0 0 8px 1px rgb(0 0 0 / 100%);
-	background: #070a07;
-
-/*   background-color: black; */
+  background: #070a07;
   opacity: 0.7;
   flex-grow: 1;
   flex-direction: column;
-  margin:2%;
-  height: 40vw;
+/*   margin:2%; */
+/*   height: 40vw; */
+	height: 100%;
 }
 
 
@@ -93,43 +98,75 @@ contenedorDelEditor {
 } */
 
 .maineditor {
-/*   	color: #68202a; */
-/*   font-family: 'Dosis', sans-serif; */
   background-color: transparent;
   border: none;
-  width: 90%;
-  height: 40vw;
+  width: 100%;
+  height: 100%;
   color: white;
   resize: none;
   overflow: hidden;
   box-shadow: none;
   outline: none;
   font-size: 2em;
-  margin: 5%;
-text-shadow: 1px 1px 20px white, 0 0 1em black, 0 0 2em black;
-
+  text-shadow: 1px 1px 20px white, 0 0 1em black, 0 0 2em black;
+  box-sizing: border-box;
+	padding: 1em;
+/*   background: yellow; */
+	overflow-y:auto;
 }
+
+.maineditor::-webkit-scrollbar  {
+    width: 1;
+    height: 0px;
+}
+
+.maineditor::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px white;
+  border-radius: 10px;
+}
+
+.maineditor::-webkit-scrollbar-thumb {
+  background: white;
+}
+
 
 .contenedorTextoIntro {
- box-shadow: 0 0 8px 1px white;
-
+/* 	flex-grow:1; */
+	height: 100%;
+    box-shadow: 0 0 8px 1px white;
 	position: relative;
-    top: 10px;
-	margin: 2%;
-	width: 25%;
+	width: 30%;
 	background-color: white;
     opacity: 0.8;
-	float:right;
-
 }
+
+
 
 .textoIntro {
+ height: 450px;
  color: black;
-
  padding: 1em;
-
+ display: flex;
+ flex-direction: column;
+  overflow-y:auto;
 
 }
+
+.textoIntro::-webkit-scrollbar  {
+    width: 1;
+    height: 0px;
+}
+
+.textoIntro::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px black;
+  border-radius: 10px;
+}
+
+.textoIntro::-webkit-scrollbar-thumb {
+  background: white;
+}
+
+
 
 .botonDeDescripcion button {
 	background-color: black;
@@ -169,7 +206,8 @@ text-shadow: 1px 1px 20px white, 0 0 1em black, 0 0 2em black;
 }
 
 .textAreaEditor {
-	height: 100%;
+	height: 92%;
+/* 	background: red; */
 }
 
 .css-selector {
@@ -192,19 +230,21 @@ text-shadow: 1px 1px 20px white, 0 0 1em black, 0 0 2em black;
 
 
 .botonesDeIdioma  {
-text-align: left;
-
 }
 
 .botonesDeIdioma {
 	background-color: black;
-	 display: inline;
+	display: inline;
+	border-radius: 3px;
+	border: 1px solid white;
 
 }
 
 ul {
     list-style-type: none;
    cursor: pointer;
+	padding-inline-start: 0px;
+
 }
 
 .botonesDeIdioma li {
@@ -236,22 +276,23 @@ background-color: white;
 }
 
 .menuButtons {
-margin-right: 80vw;
-display: inline;
+display: flex;
 flex-wrap: nowrap;
-/* max-width: 800px; */
-
+font-size: 1vw;
 
 }
 
 .menuButtons li {
-	width: 35%;
-	background-color: #71273e;
-	color: white;
-	padding-left: 5%;
-	padding-right: 5%;
-	margin-left: 1%;
-	border-radius: 10px;
+/* 	width: 35%; */
+/* 	background-color: #71273e; */
+	color: black;
+	padding-left: 1%;
+	padding-right: 1%;
+/* 	margin-left: 0.5%; */
+/* 	border-radius: 10px; */
+	border-radius: 3px;
+	border: 1px solid;
+
 	}
 
 .menuButtons li:hover {
@@ -263,7 +304,6 @@ flex-wrap: nowrap;
 
 
 .menuButtons li:active {
-  background-color: #71273e;
   box-shadow: 0 5px white;
   transform: translateX(4px);
 }
@@ -307,19 +347,14 @@ margin: 5%;
 border-radius: 5px;
 }
 
-.contenedorTextoIntro {
 
-}
 .ejemplosCss, .referenciaCss {
 	height: 400px;
 	overflow: scroll;
 
 }
 
-.textoIntro {
-	height: 400px;
-	overflow: scroll;
-}
+
 
 .refCode {
 	width: inherit;
@@ -407,4 +442,7 @@ color: #2d4926
   display: flex;
   flex-direction:column;
 
+}
+
+.descripcion {
 }

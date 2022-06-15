@@ -133,23 +133,24 @@ attrsForGeneralInfo b = visibility b
 bodyElement :: MonadWidget t m => WebDirt -> m ()
 bodyElement wd =  do
   mv <- liftIO $ forkRenderThreads wd
-  divClass "titulo" $ do
-    text "Seis8s"
-    elAttr "a" ("href" =: "https://l.facebook.com/l.php?u=https%3A%2F%2Finstagram.com%2Fmariapaula.jg%3Figshid%3Dpnjbzfn31ugn%26fbclid%3DIwAR1nvWI1UKeRIvdkzYVsFICxaQee2cVjQLS4IbQc2DdnvbhOkwvT4tZbTH4&h=AT3JFjrz0ZtST7h4CFALdMsX7L2ZB9VEN0UegRPOFAYMACdy79unNDgDAHkIeHgjP4E1Z3hOgOGoguTiyOwK81ZsVdf_DwY9V-rqgmkbbmtrnEh6_NqKnCHIp7z20g") (text "Imágen por / background art by: @mariapaula.jg")
+  -- divClass "titulo" $ do
+    -- text "Seis8s"
+    -- elAttr "a" ("href" =: "https://l.facebook.com/l.php?u=https%3A%2F%2Finstagram.com%2Fmariapaula.jg%3Figshid%3Dpnjbzfn31ugn%26fbclid%3DIwAR1nvWI1UKeRIvdkzYVsFICxaQee2cVjQLS4IbQc2DdnvbhOkwvT4tZbTH4&h=AT3JFjrz0ZtST7h4CFALdMsX7L2ZB9VEN0UegRPOFAYMACdy79unNDgDAHkIeHgjP4E1Z3hOgOGoguTiyOwK81ZsVdf_DwY9V-rqgmkbbmtrnEh6_NqKnCHIp7z20g") (text "Imágen por / background art by: @mariapaula.jg")
 
 
   elClass "div" "contenedorPrincipal" $ mdo
-    dynBoolForInfo <- toggle False evClickInfo
+    dynBoolForInfo <- toggle True evClickInfo
     let dynAttrsForGeneralInfo = attrsForGeneralInfo <$> dynBoolForInfo
     elDynAttr "div" dynAttrsForGeneralInfo $ do
+      divClass "titulo" $ text "Seis8s"
       tabDisplay "botonesDeIdioma" "" tabMapEscogerIdioma
-      -- evClickCloseInfo <- False <$ button "⊗"
 
     (evClickPlay, evClickStop, evClickInfo) <- elClass "div" "editor" $ mdo
       (evClickPlay', evClickStop', evClickInfo') <- divClass "playEinstrucciones" $ do
         evClickInfo'' <- divClass "playButton" $ button "?"
+        examplesButton <- divClass "playButton" $ button "☛"
         evClickStop'' <- divClass "playButton" $ button "■" -- ([emptyLayer], defaultGlobalMaterial)
-        evClickPlay'' <- divClass "playButton" $ button "▶"
+        evClickPlay'' <- divClass "playButton" $ button "▸"
         consoleInfo' <- holdDyn "Haz sonar el código presionando el botón ▶ | Make the code sound by pressing the ▶ button" consoleInfo
         divClass "consoleInfo" $ dynText $ fmap T.pack consoleInfo'
         return (evClickPlay'', evClickStop'', evClickInfo'')
@@ -238,12 +239,12 @@ tabMapEnIngles' = do
   return ()
 
 tabMapEspanol :: MonadWidget t m => Map.Map Int (Text, m ())
-tabMapEspanol  = Map.fromList[ (1, ("Descripción", descripcion)), (2, ("Canal de Discord", discordEspanol)),
-            (3, ("Ejemplos", ejemplos)), (4, ("Referencia", referencia)), (5, ("Agradecimientos", agradecimientos))]
+tabMapEspanol  = Map.fromList[ (1, ("Sobre Seis8s", descripcion)), (2, ("Referencia", referencia)), (3, ("Canal de Discord", discordEspanol)), (4, ("Agradecimientos", agradecimientos))]
+            -- (3, ("Ejemplos", ejemplos)), (4, ("Referencia", referencia)), (5, ("Agradecimientos", agradecimientos))]
 
 tabMapEnIngles :: MonadWidget t m => Map.Map Int (Text, m ())
-tabMapEnIngles  = Map.fromList[ (1, ("Description", description)), (2, ("Discord Channel", discordEnglish)),
-            (3, ("Examples", examples)), (4, ("Reference", reference)), (5, ("Acknowledgements", acknowledgements))]
+tabMapEnIngles  = Map.fromList[ (1, ("About Seis8s", description)), (2, ("Reference", reference)),  (3, ("Discord Channel", discordEnglish)), (4, ("Acknowledgements", acknowledgements))]
+            -- (3, ("Examples", examples)), (4, ("Reference", reference)), (5, ("Acknowledgements", acknowledgements))]
 
 discordEspanol :: MonadWidget t m => m ()
 discordEspanol = divClass "discord" $ do
@@ -281,8 +282,19 @@ acknowledgements = divClass "textoIntro" $ text "This project is part of my doct
 
 descripcion :: MonadWidget t m => m ()
 descripcion = divClass "textoIntro" $ do
- text "seis8s (pronunciado 'seis octavos') es un lenguaje de programación que permite la interacción en tiempo real con audio digital y conocimiento musical localizado, particularmente de músicas de Latinoamérica. Seis8s es un proyecto reciente que pretende ser colaborativo, a través de conocimiento musical consensuado desde las diferentes fronteras personales y colectivas que existen en conexión con América Latina. Seis8s también espera ser una crítica ideológica del sistema mundial de música por computadora dominante en lugar de una abstracción acrítica de las distintas visiones del mundo. El primer 'módulo' de seis8s produce música influenciada por la cumbia sonidera, un estilo particular de la clase trabajadora mexicana en México y Estados Unidos. Para obtener más información sobre Cumbia sonidera, consulte el libro "
- elAttr "a" ("href" =: "http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf") (text "Sonideros en las aceras, véngase a gozadera.")
+ divClass "descripcion" $ text "Seis8s es un lenguaje informático basado en la web que permite la interacción en tiempo real con audio digital y conocimientos musicales localizados. Seis8s gira en torno a comandos que se relacionan con la música latina bailable, también conocida como música latina urbana o música popular latina. \n\
+ \Seis8s explora las siguientes posibilidades: 1) crear un lenguaje de música por computadora derivado del español; 2) apelar a una comunidad imaginada en/desde América Latina; y 3) explorar los puntos en común culturales, políticos, económicos e históricos de esa comunidad imaginada."
+
+ elClass "ol" "empiezaAqui" $ do
+   el "li" $ text "Presiona el botón ▸ para tocar el código de ejemplo que aparece en el editor a tu derecha. Presiona ■ para detener el sonido."
+   el "li" $ text "Explora otros ejemplos presionando el botón ☛. No olvides presionar el botón ▸ para tocar el código."
+   el "li" $ text "Modifica los ejemplos haciendo cambios pequeños a los parámetros, por ejemplo puedes modificar los números."
+   el "li" $ text "Aprende más explorando la sección de Referencia en el menú de arriba."
+   el "li" $ text "!Diviértete¡ Si deseas, agregate al canal de Discord desde el menú de arriba. Ahí podrás hacer preguntas y saber más del proyecto."
+
+
+ -- text "seis8s (pronunciado 'seis octavos') es un lenguaje de programación que permite la interacción en tiempo real con audio digital y conocimiento musical localizado, particularmente de músicas de Latinoamérica. Seis8s es un proyecto reciente que pretende ser colaborativo, a través de conocimiento musical consensuado desde las diferentes fronteras personales y colectivas que existen en conexión con América Latina. Seis8s también espera ser una crítica ideológica del sistema mundial de música por computadora dominante en lugar de una abstracción acrítica de las distintas visiones del mundo. El primer 'módulo' de seis8s produce música influenciada por la cumbia sonidera, un estilo particular de la clase trabajadora mexicana en México y Estados Unidos. Para obtener más información sobre Cumbia sonidera, consulte el libro "
+ -- elAttr "a" ("href" =: "http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf") (text "Sonideros en las aceras, véngase a gozadera.")
  return ()
    -- text "También puedes unirte al grupo de Discord para continuar la conversación y preguntar cosas:"
    -- link "https://discord.gg/ygEPS8tzzz"
@@ -291,8 +303,10 @@ descripcion = divClass "textoIntro" $ do
 
 description :: MonadWidget t m => m ()
 description = divClass "textoIntro" $ do
-  text "seis8s (pronounced 'seis octavos') is a programming language that allows real-time interaction with digital audio and localized musical knowledge, particularly of Latin American music. Seis8s is a recent project that aims to be collaborative, through consensual musical knowledge from the different personal and collective borders that exist in connection with Latin America. Six8s also hopes to be an ideological critique of the dominant world computer music system rather than an uncritical abstraction of various worldviews. The first 'module' of six8s produces music influenced by the cumbia sonidera, a particular style of the Mexican working class in Mexico and the United States. For more information on Cumbia sonidera, see the book "
-  elAttr "a" ("href" =: "http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf") (text "Sonideros en las aceras, véngase a gozadera.")
+  text "Seis8s is a web-based computer language that allows real-time interaction with digital audio and localized musical knowledge. Seis8s revolves around commands that relate to Latin dance music –also known as urban Latin music or Latin popular music. \n\
+  \Seis8s explores the following possibilities: 1) to create a computer-music language to be derived from Spanish; 2) to appeal to an imagined community in/from Latin America; and 3) to explore cultural, political, economic, and historical commonalities of that imagined community."
+  -- text "seis8s (pronounced 'seis octavos') is a programming language that allows real-time interaction with digital audio and localized musical knowledge, particularly of Latin American music. Seis8s is a recent project that aims to be collaborative, through consensual musical knowledge from the different personal and collective borders that exist in connection with Latin America. Six8s also hopes to be an ideological critique of the dominant world computer music system rather than an uncritical abstraction of various worldviews. The first 'module' of six8s produces music influenced by the cumbia sonidera, a particular style of the Mexican working class in Mexico and the United States. For more information on Cumbia sonidera, see the book "
+  -- elAttr "a" ("href" =: "http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf") (text "Sonideros en las aceras, véngase a gozadera.")
   return ()
 
   -- text "You can also join the Discord group to continue the conversation and ask questions:"
