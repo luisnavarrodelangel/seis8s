@@ -124,6 +124,22 @@ ejemplo7 = "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia te
   \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
   \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
 
+navigateExamples :: Int -> Text
+navigateExamples 0 = intro
+navigateExamples 1 = ejemplo2
+navigateExamples 2 = ejemplo3
+navigateExamples 3 = ejemplo4
+navigateExamples 4 = ejemplo5
+navigateExamples 5 = ejemplo6
+navigateExamples 6 = ejemplo7
+otherwise = intro
+
+navigateExamplesWidget :: MonadWidget t m => Event t () -> m (Event t Text)
+navigateExamplesWidget evButton = do
+  numbs <- foldDyn (+) (0 :: Int)  (1 <$ evButton) -- Dynamic Int
+  let codeExamples = fmap navigateExamples numbs -- Dynamic Text
+  return $ updated codeExamples -- Event Text
+
 attrsForGeneralInfo :: Bool -> Map.Map T.Text T.Text
 attrsForGeneralInfo b = visibility b
   where visibility True = "class" =: "contenedorTextoIntro"
@@ -145,27 +161,30 @@ bodyElement wd =  do
       divClass "titulo" $ text "Seis8s"
       tabDisplay "botonesDeIdioma" "" tabMapEscogerIdioma
 
-    (evClickPlay, evClickStop, evClickInfo) <- elClass "div" "editor" $ mdo
-      (evClickPlay', evClickStop', evClickInfo') <- divClass "playEinstrucciones" $ do
+    (evClickPlay, evClickStop, evClickInfo, examplesButton) <- elClass "div" "editor" $ mdo
+      (evClickPlay', evClickStop', evClickInfo', examplesButton') <- divClass "playEinstrucciones" $ do
         evClickInfo'' <- divClass "playButton" $ button "?"
-        examplesButton <- divClass "playButton" $ button "☛"
+        examplesButton'' <- divClass "playButton" $ button "𝌆"
         evClickStop'' <- divClass "playButton" $ button "■" -- ([emptyLayer], defaultGlobalMaterial)
-        evClickPlay'' <- divClass "playButton" $ button "▸"
+        evClickPlay'' <- divClass "playButton" $ button "▶"
         consoleInfo' <- holdDyn "Haz sonar el código presionando el botón ▶ | Make the code sound by pressing the ▶ button" consoleInfo
         divClass "consoleInfo" $ dynText $ fmap T.pack consoleInfo'
-        return (evClickPlay'', evClickStop'', evClickInfo'')
+        return (evClickPlay'', evClickStop'', evClickInfo'', examplesButton'')
     --
       consoleInfo <- divClass "textAreaEditor" $ do
         let textAttrs = constDyn $ fromList [("class", "maineditor"){--("class", "class-example"),--}]
         code <- do
           -- liftIO $ jq_highlight_brackets
-          textArea $ def & textAreaConfig_attributes .~ textAttrs &  textAreaConfig_initialValue .~  intro -- & textAreaConfig_setValue .~ (updated  x')-- text
+          -- numbs <- foldDyn (+) (0 :: Int)  (1 <$ examplesButton) -- Dynamic Int
+          -- let codeExamples = fmap navigateExamples numbs -- Dynamic Text
+          navigateExamplesWidget' <- navigateExamplesWidget examplesButton
+          textArea $ def & textAreaConfig_attributes .~ textAttrs &  textAreaConfig_initialValue .~  intro & textAreaConfig_setValue .~ navigateExamplesWidget'
         e <- _element_raw . fst <$> el' "div" blank -- script or text
         let evaled = tagPromptlyDyn (_textArea_value code) evClickPlay -- Event t Text
         let stopSound = tagPromptlyDyn (constDyn "silencio") evClickStop -- Event t Text
         consoleInfo' <- performEvaluate' mv $ leftmost [evaled, stopSound] -- performEvaluate' pVar evaled
         return consoleInfo'
-      return (evClickPlay', evClickStop', evClickInfo')
+      return (evClickPlay', evClickStop', evClickInfo', examplesButton')
     return ()
 
 
@@ -239,12 +258,12 @@ tabMapEnIngles' = do
   return ()
 
 tabMapEspanol :: MonadWidget t m => Map.Map Int (Text, m ())
-tabMapEspanol  = Map.fromList[ (1, ("Sobre Seis8s", descripcion)), (2, ("Referencia", referencia)), (3, ("Canal de Discord", discordEspanol)), (4, ("Agradecimientos", agradecimientos))]
-            -- (3, ("Ejemplos", ejemplos)), (4, ("Referencia", referencia)), (5, ("Agradecimientos", agradecimientos))]
+tabMapEspanol  = Map.fromList[ (1, ("Sobre Seis8s", descripcion)), (2, ("Referencia", referencia)), (3, ("Agradecimientos", agradecimientos))]
+            --(2, ("Canal de Discord", discordEspanol), (3, ("Ejemplos", ejemplos)), (4, ("Referencia", referencia)), (5, ("Agradecimientos", agradecimientos))]
 
 tabMapEnIngles :: MonadWidget t m => Map.Map Int (Text, m ())
-tabMapEnIngles  = Map.fromList[ (1, ("About Seis8s", description)), (2, ("Reference", reference)),  (3, ("Discord Channel", discordEnglish)), (4, ("Acknowledgements", acknowledgements))]
-            -- (3, ("Examples", examples)), (4, ("Reference", reference)), (5, ("Acknowledgements", acknowledgements))]
+tabMapEnIngles  = Map.fromList[ (1, ("About Seis8s", description)), (2, ("Reference", reference)),  (3, ("Acknowledgements", acknowledgements))]
+            -- (2, ("Discord Channel", discordEnglish), (3, ("Examples", examples)), (4, ("Reference", reference)), (5, ("Acknowledgements", acknowledgements))]
 
 discordEspanol :: MonadWidget t m => m ()
 discordEspanol = divClass "discord" $ do
@@ -275,23 +294,26 @@ discordEnglish = divClass "discord" $ do
   return ()
 
 agradecimientos :: MonadWidget t m => m ()
-agradecimientos = divClass "textoIntro" $ text "Este proyecto es parte de mi doctorado llamado 'Plataformas culturalmente situadas de música por computadora y es apoyada por el Fondo Mexicano para la Cultura y las Artes (FONCA), el Consejo Mexicano de Ciencia y Tecnología (CONACYT) y el Consejo de Investigación de Ciencias Sociales y Humanidades de Canadá."
+agradecimientos = divClass "textoIntro" $ do
+  text "Este proyecto es parte de mi doctorado llamado 'Plataformas culturalmente situadas de música por computadora y es apoyada por el Fondo Mexicano para la Cultura y las Artes (FONCA), el Consejo Mexicano de Ciencia y Tecnología (CONACYT) y el Consejo de Investigación de Ciencias Sociales y Humanidades de Canadá."
+  text "Contáctame a traves de navarrol@mcmaster.ca"
 
 acknowledgements :: MonadWidget t m => m ()
-acknowledgements = divClass "textoIntro" $ text "This project is part of my doctoral project called 'Culturally situated platforms for computer music' and is supported by the Mexican Fund for Culture and Arts (FONCA), the Mexican Council of Science and Technology (CONACYT), and Canada’s Social Sciences and Humanities Research Council."
+acknowledgements = divClass "textoIntro" $ do
+  text "This project is part of my doctoral project called 'Culturally situated platforms for computer music' and is supported by the Mexican Fund for Culture and Arts (FONCA), the Mexican Council of Science and Technology (CONACYT), and Canada’s Social Sciences and Humanities Research Council."
+  text "To contact me, send me an email to navarrol@mcmaster.ca"
+
 
 descripcion :: MonadWidget t m => m ()
 descripcion = divClass "textoIntro" $ do
- divClass "descripcion" $ text "Seis8s es un lenguaje informático basado en la web que permite la interacción en tiempo real con audio digital y conocimientos musicales localizados. Seis8s gira en torno a comandos que se relacionan con la música latina bailable, también conocida como música latina urbana o música popular latina. \n\
- \Seis8s explora las siguientes posibilidades: 1) crear un lenguaje de música por computadora derivado del español; 2) apelar a una comunidad imaginada en/desde América Latina; y 3) explorar los puntos en común culturales, políticos, económicos e históricos de esa comunidad imaginada."
-
+ divClass "descripcion" $ text "Seis8s es un lenguaje informático basado en la web que permite la interacción en tiempo real con audio digital y conocimientos musicales localizados. Seis8s gira en torno a comandos que se relacionan con la música latina bailable, también conocida como música latina urbana o música popular latina. Si deseas saber más, agregate al canal de Discord de Seis8s:"
+ elAttr "a" ("href" =: "https://discord.gg/ygEPS8tzzz") (text "https://discord.gg/ygEPS8tzzz")
+ elClass "h3" "empiezaAquiTitulo" $ text "¿Cómo usar Seis8s?"
  elClass "ol" "empiezaAqui" $ do
-   el "li" $ text "Presiona el botón ▸ para tocar el código de ejemplo que aparece en el editor a tu derecha. Presiona ■ para detener el sonido."
-   el "li" $ text "Explora otros ejemplos presionando el botón ☛. No olvides presionar el botón ▸ para tocar el código."
-   el "li" $ text "Modifica los ejemplos haciendo cambios pequeños a los parámetros, por ejemplo puedes modificar los números."
+   el "li" $ text "Presiona ▸ para tocar el código de ejemplo que aparece en el editor a la derecha. Presiona ■ para detener el sonido."
+   el "li" $ text "Explora más ejemplos presionando 𝌆 y después presionando ▸ para tocar cada ejemplo."
+   el "li" $ text "Modifica los ejemplos haciendo cambios a los números. No olvides presionar ▸ después de hacer un cambio."
    el "li" $ text "Aprende más explorando la sección de Referencia en el menú de arriba."
-   el "li" $ text "!Diviértete¡ Si deseas, agregate al canal de Discord desde el menú de arriba. Ahí podrás hacer preguntas y saber más del proyecto."
-
 
  -- text "seis8s (pronunciado 'seis octavos') es un lenguaje de programación que permite la interacción en tiempo real con audio digital y conocimiento musical localizado, particularmente de músicas de Latinoamérica. Seis8s es un proyecto reciente que pretende ser colaborativo, a través de conocimiento musical consensuado desde las diferentes fronteras personales y colectivas que existen en conexión con América Latina. Seis8s también espera ser una crítica ideológica del sistema mundial de música por computadora dominante en lugar de una abstracción acrítica de las distintas visiones del mundo. El primer 'módulo' de seis8s produce música influenciada por la cumbia sonidera, un estilo particular de la clase trabajadora mexicana en México y Estados Unidos. Para obtener más información sobre Cumbia sonidera, consulte el libro "
  -- elAttr "a" ("href" =: "http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf") (text "Sonideros en las aceras, véngase a gozadera.")
@@ -303,8 +325,15 @@ descripcion = divClass "textoIntro" $ do
 
 description :: MonadWidget t m => m ()
 description = divClass "textoIntro" $ do
-  text "Seis8s is a web-based computer language that allows real-time interaction with digital audio and localized musical knowledge. Seis8s revolves around commands that relate to Latin dance music –also known as urban Latin music or Latin popular music. \n\
-  \Seis8s explores the following possibilities: 1) to create a computer-music language to be derived from Spanish; 2) to appeal to an imagined community in/from Latin America; and 3) to explore cultural, political, economic, and historical commonalities of that imagined community."
+  text "Seis8s is a web-based computer language that allows real-time interaction with digital audio and localized musical knowledge. Seis8s revolves around commands that relate to Latin dance music –also known as urban Latin music or Latin popular music. Join Seis8s' Discord channel to know more:"
+  elAttr "a" ("href" =: "https://discord.gg/ygEPS8tzzz") (text "https://discord.gg/ygEPS8tzzz")
+  elClass "h3" "empiezaAquiTitulo" $ text "How to start using Seis8s?"
+  elClass "ol" "empiezaAqui" $ do
+    el "li" $ text "Click ▸ to play the example code from the editor on the right. Click ■ to stop the sound."
+    el "li" $ text "Explore more examples by clicking 𝌆 and ▸ to play the example."
+    el "li" $ text "Modify the examples by making changes to the numbers. Click ▸ after each change."
+    el "li" $ text "Continue learning through the Reference section on the menu above."
+
   -- text "seis8s (pronounced 'seis octavos') is a programming language that allows real-time interaction with digital audio and localized musical knowledge, particularly of Latin American music. Seis8s is a recent project that aims to be collaborative, through consensual musical knowledge from the different personal and collective borders that exist in connection with Latin America. Six8s also hopes to be an ideological critique of the dominant world computer music system rather than an uncritical abstraction of various worldviews. The first 'module' of six8s produces music influenced by the cumbia sonidera, a particular style of the Mexican working class in Mexico and the United States. For more information on Cumbia sonidera, see the book "
   -- elAttr "a" ("href" =: "http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf") (text "Sonideros en las aceras, véngase a gozadera.")
   return ()

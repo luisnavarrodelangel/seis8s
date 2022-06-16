@@ -74,16 +74,14 @@ contenedorDelEditor {
 }
 
 .editor {
-/*   position: relative; */
-/*   top: 10px; */
   box-shadow: 0 0 8px 1px rgb(0 0 0 / 100%);
   background: #070a07;
   opacity: 0.7;
   flex-grow: 1;
   flex-direction: column;
-/*   margin:2%; */
-/*   height: 40vw; */
-	height: 100%;
+  height: 100%;
+  border-style: inset;
+  box-sizing:border-box;
 }
 
 
@@ -136,15 +134,17 @@ contenedorDelEditor {
     box-shadow: 0 0 8px 1px white;
 	position: relative;
 	width: 30%;
-	background-color: white;
-    opacity: 0.8;
+	background-color: black;
+/*     opacity: 0.8; */
+	border-style: outset;
+	box-sizing:border-box;
 }
 
 
 
 .textoIntro {
  height: 450px;
- color: black;
+ color: white;
  padding: 1em;
  display: flex;
  flex-direction: column;
@@ -153,12 +153,12 @@ contenedorDelEditor {
 }
 
 .textoIntro::-webkit-scrollbar  {
-    width: 1;
+    width: 0.5em;
     height: 0px;
 }
 
 .textoIntro::-webkit-scrollbar-track {
-  box-shadow: inset 0 0 5px black;
+  box-shadow: inset 0 0 5px white;
   border-radius: 10px;
 }
 
@@ -229,15 +229,12 @@ contenedorDelEditor {
 }
 
 
-.botonesDeIdioma  {
-}
 
 .botonesDeIdioma {
 	background-color: black;
 	display: inline;
 	border-radius: 3px;
 	border: 1px solid white;
-
 }
 
 ul {
@@ -285,7 +282,7 @@ font-size: 1vw;
 .menuButtons li {
 /* 	width: 35%; */
 /* 	background-color: #71273e; */
-	color: black;
+	color: white;
 	padding-left: 1%;
 	padding-right: 1%;
 /* 	margin-left: 0.5%; */
@@ -296,10 +293,10 @@ font-size: 1vw;
 	}
 
 .menuButtons li:hover {
-	background-color: transparent;
-	color: #71273e;
-		border-radius: 10px;
-		border : 1px solid #71273e;
+	color: white;
+	background-color: #71273e;
+/* 	border-radius: 10px; */
+    border: 1px solid white;
 }
 
 
