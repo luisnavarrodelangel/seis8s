@@ -102,14 +102,23 @@ ejemplo4 = "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia te
  \tumbao 3 $ cumbia congas;"
 
 ejemplo5 :: Text
-ejemplo5 = "punteo [\"3a\", \"5a\"] [3, 4, 1 1.5 2 2.5 ]$ sample 3 $ cumbia teclado;\n\
+ejemplo5 = "acordes [re m, fa, la]; \n\
+\compás \"partido\"; \n\
+\punteo [3a, 5a] [3, 4, 1 1.5 2 2.5] $ sample 3 $ acordeón;\n\
+\acompañamiento (2 4) $ vol 0.75 $ teclado; \n\
+\tumbao 1 $ cumbia bajo; \n\
+\ritmo [1 2 2.5 3 4 4.5] $ guira;\n\
+\marcha [p t p a a] [1 2 3 4 4.5] $ pan 0 $ congas;"
+
+ejemplo6 :: Text
+ejemplo6 = "punteo [\"3a\", \"5a\"] [3, 4, 1 1.5 2 2.5 ]$ sample 3 $ cumbia teclado;\n\
 \alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado; \n\
 \tumbao 2 $ cumbia bajo; \n\
 \cumbia guira; \n\
 \tumbao 3 $ cumbia congas; \n"
 
-ejemplo6 :: Text
-ejemplo6 = "acordes [re m, fa, la];\n\
+ejemplo7 :: Text
+ejemplo7 = "acordes [re m, fa, la];\n\
 \punteo [\"3a\", \"5a\"] [3, 4, 1 1.5 2 2.5 ]$ sample 3 $ cumbia teclado;\n\
  \alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado; \n\
  \alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado;\n\
@@ -117,9 +126,8 @@ ejemplo6 = "acordes [re m, fa, la];\n\
  \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
  \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
 
-
-ejemplo7 :: Text
-ejemplo7 = "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado;\n\
+ejemplo8 :: Text
+ejemplo8 = "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado;\n\
   \alternar 2 (tumbao 3) $ tumbao 1 $ cumbia bajo;\n\
   \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
   \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
@@ -137,7 +145,8 @@ otherwise = intro
 navigateExamplesWidget :: MonadWidget t m => Event t () -> m (Event t Text)
 navigateExamplesWidget evButton = do
   numbs <- foldDyn (+) (0 :: Int)  (1 <$ evButton) -- Dynamic Int
-  let codeExamples = fmap navigateExamples numbs -- Dynamic Text
+  let numbs' = fmap (\n -> mod n 7) numbs -- Dynamic Int
+  let codeExamples = fmap navigateExamples numbs' -- Dynamic Text
   return $ updated codeExamples -- Event Text
 
 attrsForGeneralInfo :: Bool -> Map.Map T.Text T.Text
@@ -159,13 +168,13 @@ bodyElement wd =  do
     let dynAttrsForGeneralInfo = attrsForGeneralInfo <$> dynBoolForInfo
     elDynAttr "div" dynAttrsForGeneralInfo $ do
       divClass "titulo" $ text "Seis8s"
-      tabDisplay "botonesDeIdioma" "" tabMapEscogerIdioma
+      tabDisplay "botonesDeIdioma" "botonesDeIdiomaListItems" tabMapEscogerIdioma
 
     (evClickPlay, evClickStop, evClickInfo, examplesButton) <- elClass "div" "editor" $ mdo
       (evClickPlay', evClickStop', evClickInfo', examplesButton') <- divClass "playEinstrucciones" $ do
-        evClickInfo'' <- divClass "playButton" $ button "?"
-        examplesButton'' <- divClass "playButton" $ button "𝌆"
-        evClickStop'' <- divClass "playButton" $ button "■" -- ([emptyLayer], defaultGlobalMaterial)
+        evClickInfo'' <- divClass "infoButton" $ button "?"
+        examplesButton'' <- divClass "examplesButton" $ button "ⓔ"
+        evClickStop'' <- divClass "stopButton" $ button "■" -- ([emptyLayer], defaultGlobalMaterial)
         evClickPlay'' <- divClass "playButton" $ button "▶"
         consoleInfo' <- holdDyn "Haz sonar el código presionando el botón ▶ | Make the code sound by pressing the ▶ button" consoleInfo
         divClass "consoleInfo" $ dynText $ fmap T.pack consoleInfo'
@@ -296,12 +305,21 @@ discordEnglish = divClass "discord" $ do
 agradecimientos :: MonadWidget t m => m ()
 agradecimientos = divClass "textoIntro" $ do
   text "Este proyecto es parte de mi doctorado llamado 'Plataformas culturalmente situadas de música por computadora y es apoyada por el Fondo Mexicano para la Cultura y las Artes (FONCA), el Consejo Mexicano de Ciencia y Tecnología (CONACYT) y el Consejo de Investigación de Ciencias Sociales y Humanidades de Canadá."
-  text "Contáctame a traves de navarrol@mcmaster.ca"
+  divClass "contacto" $ do
+    text "Agradecimientos especiales a"
+    elAttr "a" ("href" =: "https://l.facebook.com/l.php?u=https%3A%2F%2Finstagram.com%2Fmariapaula.jg%3Figshid%3Dpnjbzfn31ugn%26fbclid%3DIwAR1nvWI1UKeRIvdkzYVsFICxaQee2cVjQLS4IbQc2DdnvbhOkwvT4tZbTH4&h=AT3JFjrz0ZtST7h4CFALdMsX7L2ZB9VEN0UegRPOFAYMACdy79unNDgDAHkIeHgjP4E1Z3hOgOGoguTiyOwK81ZsVdf_DwY9V-rqgmkbbmtrnEh6_NqKnCHIp7z20g") (text "@mariapaula.jg")
+    divClass "contacto" $ text "por la imágen que aparece detrás del editor."
+  divClass "contacto" $ text "Contáctame a traves de navarrol@mcmaster.ca"
+
 
 acknowledgements :: MonadWidget t m => m ()
 acknowledgements = divClass "textoIntro" $ do
   text "This project is part of my doctoral project called 'Culturally situated platforms for computer music' and is supported by the Mexican Fund for Culture and Arts (FONCA), the Mexican Council of Science and Technology (CONACYT), and Canada’s Social Sciences and Humanities Research Council."
-  text "To contact me, send me an email to navarrol@mcmaster.ca"
+  divClass "contacto" $ do
+    text "Special thanks to"
+    elAttr "a" ("href" =: "https://l.facebook.com/l.php?u=https%3A%2F%2Finstagram.com%2Fmariapaula.jg%3Figshid%3Dpnjbzfn31ugn%26fbclid%3DIwAR1nvWI1UKeRIvdkzYVsFICxaQee2cVjQLS4IbQc2DdnvbhOkwvT4tZbTH4&h=AT3JFjrz0ZtST7h4CFALdMsX7L2ZB9VEN0UegRPOFAYMACdy79unNDgDAHkIeHgjP4E1Z3hOgOGoguTiyOwK81ZsVdf_DwY9V-rqgmkbbmtrnEh6_NqKnCHIp7z20g") (text "@mariapaula.jg")
+    divClass "contacto" $ text "for the editor's background image."
+  divClass "contacto" $ text "To contact me, send me an email to navarrol@mcmaster.ca"
 
 
 descripcion :: MonadWidget t m => m ()
@@ -310,10 +328,9 @@ descripcion = divClass "textoIntro" $ do
  elAttr "a" ("href" =: "https://discord.gg/ygEPS8tzzz") (text "https://discord.gg/ygEPS8tzzz")
  elClass "h3" "empiezaAquiTitulo" $ text "¿Cómo usar Seis8s?"
  elClass "ol" "empiezaAqui" $ do
-   el "li" $ text "Presiona ▸ para tocar el código de ejemplo que aparece en el editor a la derecha. Presiona ■ para detener el sonido."
-   el "li" $ text "Explora más ejemplos presionando 𝌆 y después presionando ▸ para tocar cada ejemplo."
-   el "li" $ text "Modifica los ejemplos haciendo cambios a los números. No olvides presionar ▸ después de hacer un cambio."
-   el "li" $ text "Aprende más explorando la sección de Referencia en el menú de arriba."
+   el "li" $ text "Presiona ▸ para tocar el código de ejemplo que aparece en el editor a la derecha. Presiona ■ para detenerlo."
+   el "li" $ text "Explora más ejemplos presionando ⓔ y después presionando ▸ para tocar cada ejemplo."
+   el "li" $ text "Aprende cómo modificar los ejemplos o crear un nuevo código consultando la sección de Referencia en el menú de arriba."
 
  -- text "seis8s (pronunciado 'seis octavos') es un lenguaje de programación que permite la interacción en tiempo real con audio digital y conocimiento musical localizado, particularmente de músicas de Latinoamérica. Seis8s es un proyecto reciente que pretende ser colaborativo, a través de conocimiento musical consensuado desde las diferentes fronteras personales y colectivas que existen en conexión con América Latina. Seis8s también espera ser una crítica ideológica del sistema mundial de música por computadora dominante en lugar de una abstracción acrítica de las distintas visiones del mundo. El primer 'módulo' de seis8s produce música influenciada por la cumbia sonidera, un estilo particular de la clase trabajadora mexicana en México y Estados Unidos. Para obtener más información sobre Cumbia sonidera, consulte el libro "
  -- elAttr "a" ("href" =: "http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf") (text "Sonideros en las aceras, véngase a gozadera.")
@@ -330,9 +347,8 @@ description = divClass "textoIntro" $ do
   elClass "h3" "empiezaAquiTitulo" $ text "How to start using Seis8s?"
   elClass "ol" "empiezaAqui" $ do
     el "li" $ text "Click ▸ to play the example code from the editor on the right. Click ■ to stop the sound."
-    el "li" $ text "Explore more examples by clicking 𝌆 and ▸ to play the example."
-    el "li" $ text "Modify the examples by making changes to the numbers. Click ▸ after each change."
-    el "li" $ text "Continue learning through the Reference section on the menu above."
+    el "li" $ text "Explore more examples by clicking ⓔ and ▸ to play the example."
+    el "li" $ text "Learn how to modify the examples or create your own code by consulting the Reference section on the menu above."
 
   -- text "seis8s (pronounced 'seis octavos') is a programming language that allows real-time interaction with digital audio and localized musical knowledge, particularly of Latin American music. Seis8s is a recent project that aims to be collaborative, through consensual musical knowledge from the different personal and collective borders that exist in connection with Latin America. Six8s also hopes to be an ideological critique of the dominant world computer music system rather than an uncritical abstraction of various worldviews. The first 'module' of six8s produces music influenced by the cumbia sonidera, a particular style of the Mexican working class in Mexico and the United States. For more information on Cumbia sonidera, see the book "
   -- elAttr "a" ("href" =: "http://beyond-digital.org/sonideros/EPS%20Libro-%20Sonideros%20en%20las%20aceras,%20vengase%20la%20gozadera%20-%20PDFvert.pdf") (text "Sonideros en las aceras, véngase a gozadera.")

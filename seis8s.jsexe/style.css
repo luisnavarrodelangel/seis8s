@@ -21,6 +21,8 @@ html {
 /*     animation: AnimationName 100s ease infinite; */
 }
 
+
+
 .commentbox {
 	background-color: #bb7470;
 	opacity: 0.75;
@@ -38,6 +40,7 @@ body {
   font-family: 'Dosis', sans-serif;
    width: 100%;
 	height: 100%;
+	color: white;
 
 }
 
@@ -113,17 +116,17 @@ contenedorDelEditor {
 	overflow-y:auto;
 }
 
-.maineditor::-webkit-scrollbar  {
-    width: 1;
+.maineditor::-webkit-scrollbar, .referenciaCss::-webkit-scrollbar  {
+    width: 0.5em;
     height: 0px;
 }
 
-.maineditor::-webkit-scrollbar-track {
+.maineditor::-webkit-scrollbar-track, .referenciaCss::-webkit-scrollbar-track  {
   box-shadow: inset 0 0 5px white;
   border-radius: 10px;
 }
 
-.maineditor::-webkit-scrollbar-thumb {
+.maineditor::-webkit-scrollbar-thumb, .referenciaCss::-webkit-scrollbar-thumb  {
   background: white;
 }
 
@@ -151,6 +154,11 @@ contenedorDelEditor {
   overflow-y:auto;
 
 }
+
+.textoIntro  a {
+	color: orange;
+}
+
 
 .textoIntro::-webkit-scrollbar  {
     width: 0.5em;
@@ -180,20 +188,58 @@ contenedorDelEditor {
 }
 
 .playButton button {
-	font-size: 2em;
-	margin-right: 1em;
+	font-size: 1.5em;
+/* 	margin-right: 0em; */
 	background-color: black;
 	width: 100%;
 	color: white;
 	border: 1px solid white;
 	border-radius: 10px;
+	width: 2.7em;
+	height:1.7em;
 }
 
-.playButton button:hover {
+.infoButton button {
+	font-size: 1.5em;
+	margin-right: 0.1em;
+	background-color: black;
+	width: 100%;
+	color: white;
+	border: 1px solid white;
+	border-radius: 10px;
+	width: 2.7em;
+	height:1.7em;
+}
+
+.stopButton button {
+	font-size: 2em;
+	margin-right: 0.1em;
+	background-color: black;
+	width: 100%;
+	color: white;
+	border: 1px solid white;
+	border-radius: 10px;
+	width: 2em;
+	height:1.27em;
+}
+
+.examplesButton button {
+	font-size: 1.5em;
+	margin-right: 0.1em;
+	background-color: black;
+	width: 100%;
+	color: white;
+	border: 1px solid white;
+	border-radius: 10px;
+	width: 2.7em;
+	height:1.7em;
+}
+
+.playButton button:hover, .infoButton button:hover, .stopButton button:hover, .examplesButton button:hover {
 	background-color: #71273e;
 }
 
-.playButton button:active {
+.playButton button:active, .infoButton button:active, .stopButton button:active, .examplesButton button:active {
 	background-color: #71273e;
   box-shadow: 0 5px black;
   transform: translateY(4px);
@@ -346,23 +392,22 @@ border-radius: 5px;
 
 
 .ejemplosCss, .referenciaCss {
-	height: 400px;
-	overflow: scroll;
+	height: 500px;
+	overflow-y: auto;
 
 }
 
 
 
 .refCode {
-	width: inherit;
+width: inherit;
 border: 1px solid;
-background: black;
+background: #f4baaf;
 opacity: 0.9;
 font-family: 'Dosis', sans-serif;
 border: none;
 width: 90%;
-height: 20px;
-color: white;
+color: black;
 resize: none;
 overflow: hidden;
 box-shadow: none;
@@ -442,4 +487,21 @@ color: #2d4926
 }
 
 .descripcion {
+}
+
+.contacto {
+	display: flex;
+	flex-wrap:wrap;
+	margin-top: 1em;
+}
+
+.contacto a {
+	margin-left: 0.25em;
+}
+
+.contacto > div {
+	width:100%;
+}
+.empiezaAquiTitulo {
+	text-decoration: none;
 }

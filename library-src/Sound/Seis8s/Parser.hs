@@ -1994,7 +1994,7 @@ parseCambiarGain' :: H (Layer -> Layer)
 parseCambiarGain' = parseCambiarGain'' <*> double
 
 parseCambiarGain'':: H (Double -> Layer -> Layer)
-parseCambiarGain'' = cambiarGain <$ reserved "vol"
+parseCambiarGain'' = cambiarGain <$ (reserved "vol" <|> reserved "volumen")
 
 cambiarGain :: Double -> Layer -> Layer
 cambiarGain gain c = c {style = nuevoE}
@@ -2023,7 +2023,7 @@ parseCambiarPaneo' :: H (Layer -> Layer)
 parseCambiarPaneo' = parseCambiarPaneo'' <*> double
 
 parseCambiarPaneo'':: H (Double -> Layer -> Layer)
-parseCambiarPaneo'' = cambiarPaneo <$ reserved "pan"
+parseCambiarPaneo'' = cambiarPaneo <$ (reserved "pan" <|> reserved "paneo")
 
 cambiarPaneo :: Double -> Layer -> Layer
 cambiarPaneo pan c = c {style = nuevoE}
