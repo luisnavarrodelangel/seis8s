@@ -82,55 +82,132 @@ intro = "cumbia teclado;\n\
         \cumbia congas;"
 
 ejemplo2 :: Text
-ejemplo2 = "tempo 0.25;\n\
-         \cumbia teclado;\n\
-         \cumbia bajo;\n\
-         \cumbia guira;\n\
-         \cumbia congas;"
-
-ejemplo3 :: Text
-ejemplo3 = "acordes [re m, fa, la];\n\
+ejemplo2 = " -- cumbia usando el comando acordes \n\
+\acordes [re m, fa, la];\n\
 \acompanamiento (2 4) $ cumbia teclado;\n\
  \tumbao 2 $ cumbia bajo;\n\
  \cumbia guira;\n\
  \tumbao 3 $ cumbia congas;"
 
+
+ejemplo3 :: Text
+ejemplo3 = "-- cumbia psicodelica  \n\
+\acordes [re m, fa, sol, re m]; \n\
+\punteo [1a 3a 5a 6a] [1 2 2.5 3 4] $ sample 7 $ cumbia teclado; \n\
+\acompañamiento (2 4 4.5) $ sample 2 $ cumbia teclado; \n\
+\tumbao [(t a) (t a) (q a) (t a) (t a) (q a), (q p) (q a) (q p) (q a)] [ 1 1.5 2 3 3.5 4, 1 2 3 4] $ congas; \n\
+\tumbao [1a 2a 3a 5a, 1a 5a 3a] [1 2 3 4, 1 3 4] $ cumbia bajo; \n\
+\ritmo 1 $ jamblock; \n\
+\ritmo [1 2 3 4, 1 1.5 2 2.5 3 3.5 4 4.5] $ cumbia guira;"
+
+
+-- "acordes [re m, fa, la]; \n\
+-- \compás \"partido\"; \n\
+-- \punteo [3a, 5a] [3, 4, 1 1.5 2 2.5] $ sample 3 $ acordeón;\n\
+-- \acompañamiento (2 4) $ vol 0.75 $ teclado; \n\
+-- \tumbao 1 $ cumbia bajo; \n\
+-- \ritmo [1 2 2.5 3 4 4.5] $ guira;\n\
+-- \marcha [p t p a a] [1 2 3 4 4.5] $ pan 0 $ congas;"
+
+-- "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado; \n\
+ -- \tumbao 2 $ cumbia bajo;\n\
+ -- \cumbia guira;\n\
+ -- \tumbao 3 $ cumbia congas;"
+
 ejemplo4 :: Text
-ejemplo4 = "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado; \n\
- \tumbao 2 $ cumbia bajo;\n\
- \cumbia guira;\n\
- \tumbao 3 $ cumbia congas;"
+ejemplo4 = "-- cumbia psicodelica 2 \n\
+\acordes [re m, fa, sol, re m]; \n\
+\punteo [3a 5a 6a] [1 2 2.25 2.5 3 4] $ sample 8 $ teclado; \n\
+\acompañamiento (4) $ sample 0 $ cumbia teclado; \n\
+\alternar 4 (tumbao 0) $ tumbao 1 $ sample 3 $ cumbia bajo; \n\
+\vol 0.65 $ cumbia güira; \n\
+\tumbao 0 $ cumbia congas;"
 
 ejemplo5 :: Text
-ejemplo5 = "acordes [re m, fa, la]; \n\
-\compás \"partido\"; \n\
-\punteo [3a, 5a] [3, 4, 1 1.5 2 2.5] $ sample 3 $ acordeón;\n\
-\acompañamiento (2 4) $ vol 0.75 $ teclado; \n\
-\tumbao 1 $ cumbia bajo; \n\
-\ritmo [1 2 2.5 3 4 4.5] $ guira;\n\
-\marcha [p t p a a] [1 2 3 4 4.5] $ pan 0 $ congas;"
+ejemplo5 = "--cumbia tejana \n\
+\tempo 0.5;\n\
+\acordes [do, sol, fa];\n\
+\punteo [1a 5a 6a] [1 2 2.5] $ acordeon; \n\
+\tumbao [1a 3a 5a] [1 3 4] $ bajo;\n\
+\acompanamiento ( 2  4) $ teclado; \n\
+\ritmo [1 2 3 4, 1 1.5 2 2.5 3 3.5 4, 1] $ guira;\n\
+\ritmo [1 2 3 4, 2 4] $ cumbia jamblock;\n\
+\marcha [(q p) (q p) (q t) (q p) (q p) (q p) (q a) (q a), (q p) (q p) (q t) (q p) (q a) (q p) (t a) (t a)] [1 1.5 2 2.5 3 3.5 4 4.5, 1 1.5 2 2.5 3 3.5 4 4.5] $ congas;"
 
 ejemplo6 :: Text
-ejemplo6 = "punteo [\"3a\", \"5a\"] [3, 4, 1 1.5 2 2.5 ]$ sample 3 $ cumbia teclado;\n\
-\alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado; \n\
-\tumbao 2 $ cumbia bajo; \n\
-\cumbia guira; \n\
-\tumbao 3 $ cumbia congas; \n"
+ejemplo6 = "-- balada cumbia por Kofi Oduro\n\
+\tempo 0.35;\n\
+\acordes [re m, la, la, fa, do, do, fa, re m, la, la];\n\
+\alternar 5 (acompanamiento (1 2 4)) $ acompanamiento (1 4) $ cumbia teclado; \n\
+\acompanamiento (2 3 4 4) $ cumbia teclado;\n\
+\sample 4 $ teclado;\n\
+\tumbao 5 $ cumbia congas;\n\
+\vol 0.825 $ cumbia bajo;\n\
+\cumbia guira;"
+
+  -- "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado;\n\
+  -- \alternar 2 (tumbao 3) $ tumbao 1 $ cumbia bajo;\n\
+  -- \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
+  -- \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
 
 ejemplo7 :: Text
-ejemplo7 = "acordes [re m, fa, la];\n\
-\punteo [\"3a\", \"5a\"] [3, 4, 1 1.5 2 2.5 ]$ sample 3 $ cumbia teclado;\n\
- \alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado; \n\
- \alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado;\n\
- \alternar 2 (tumbao 3) $ tumbao 1 $ cumbia bajo;\n\
- \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
- \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
+ejemplo7 = "-- balada por Kofi Oduro \n\
+\tempo 0.173; \n\
+\acordes [re m, fa,fa, sol, re m, fa, fa, sol, fa,fa]; \n\
+\punteo [3a 4a 5a 2a 6a] [1 1.35 2.7 2.25 2.5 3 4.7 5.4] $ sample 8 $ teclado; \n\
+\acompanamiento (2) $ sample 1 $ teclado; \n\
+\alternar 3 (tumbao 0) $ tumbao 1 $ sample 2 $ bajo; \n\
+\vol 0.45 $ tumbao 1 $ guira; \n\
+\tumbao 0 $ congas;"
 
 ejemplo8 :: Text
-ejemplo8 = "alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado;\n\
-  \alternar 2 (tumbao 3) $ tumbao 1 $ cumbia bajo;\n\
-  \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
-  \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
+ejemplo8 = "-- son cubano \n\
+\acordes [do, do, do, do, fa, fa, fa, fa]; \n\
+\tumbao [\"1a\" \"5a\", \"5a\" (\"1a\" 1),1a 5a, 5a 1a] [1 4, 1 3, 1 4, 1 4] $ sample 4 $ bajo;\n\
+\punteo [1a 3a 5a, 6a 1a, 3a 5a, 6a 1a ] [1 3 4, 2 4, 2 4, 2 4] $ sample 1 $ teclado;\n\
+\marcha [p p t p, p p a a, p p t (t a), p p (t a) (t a)] [1 2 3 4, 1 2 3 4, 1 2 3 4, 1 2 3 4] $ congas; \n\
+\jamblock;"
+
+ejemplo9 :: Text
+ejemplo9 = "-- salsa suave \n\
+\tempo 0.75; \n\
+\compas \"4/4\"; \n\
+\acordes [do m, do m , do m, re dim ]; \n\
+
+\tumbao 0 $ sample 1 $ teclado; \n\
+\tumbao [1a 5a 1a, 5a  1a] [1 2.5 4, 2.5 4] $ sample 4 $ bajo;\n\
+\marcha [p p t p p p a a] [1 1.5 2 2.5 3 3.5 4 4.5] $  congas;\n\
+\preset 1  $ cumbia clave;\n\
+\ritmo [ 2 4 ] $ guira"
+
+-- "punteo [\"3a\", \"5a\"] [3, 4, 1 1.5 2 2.5 ]$ sample 3 $ cumbia teclado;\n\
+-- \alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado; \n\
+-- \tumbao 2 $ cumbia bajo; \n\
+-- \cumbia guira; \n\
+-- \tumbao 3 $ cumbia congas; \n"
+
+ejemplo10 :: Text
+ejemplo10 = "-- salsa rápida \n\
+\tempo 0.45;\n\
+\armonia [re m];\n\
+
+\vol 0.8 $ punteo [3a 4a 5a] [1 2.5 3.5 4, 4] $ sample 1 $ teclado;\n\
+
+\alternar 2 (acompanamiento (2.5 3.5)) $ acompanamiento (1 2 3.5 4.5) $ sample 0 $ teclado;\n\
+\tumbao [\"1a\" \"5a\" (\"1a\" 1), \"5a\"  \"1a\"] [1 2.5 4, 2.5 4] $ sample 5 $ bajo;\n\
+\marcha [p p t p p p a a] [1 1.5 2 2.5 3 3.5 4 4.5] $ congas;\n\
+\preset 1  $ clave;"
+
+-- "acordes [re m, fa, la];\n\
+-- \punteo [\"3a\", \"5a\"] [3, 4, 1 1.5 2 2.5 ]$ sample 3 $ cumbia teclado;\n\
+--  \alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado; \n\
+--  \alternar 2 (acompanamiento (1 2)) $ acompanamiento (2 4) $ cumbia teclado;\n\
+--  \alternar 2 (tumbao 3) $ tumbao 1 $ cumbia bajo;\n\
+--  \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
+--  \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
+
+
+
 
 navigateExamples :: Int -> Text
 navigateExamples 0 = intro
@@ -140,12 +217,15 @@ navigateExamples 3 = ejemplo4
 navigateExamples 4 = ejemplo5
 navigateExamples 5 = ejemplo6
 navigateExamples 6 = ejemplo7
+navigateExamples 7 = ejemplo8
+navigateExamples 8 = ejemplo9
+navigateExamples 9 = ejemplo10
 otherwise = intro
 
 navigateExamplesWidget :: MonadWidget t m => Event t () -> m (Event t Text)
 navigateExamplesWidget evButton = do
   numbs <- foldDyn (+) (0 :: Int)  (1 <$ evButton) -- Dynamic Int
-  let numbs' = fmap (\n -> mod n 7) numbs -- Dynamic Int
+  let numbs' = fmap (\n -> mod n 10) numbs -- Dynamic Int
   let codeExamples = fmap navigateExamples numbs' -- Dynamic Text
   return $ updated codeExamples -- Event Text
 
