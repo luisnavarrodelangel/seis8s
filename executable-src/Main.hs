@@ -125,7 +125,7 @@ ejemplo4 = "-- cumbia psicodelica 2 \n\
 
 ejemplo5 :: Text
 ejemplo5 = "--cumbia tejana \n\
-\tempo 0.5;\n\
+\tempo 120;\n\
 \acordes [do, sol, fa];\n\
 \punteo [1a 5a 6a] [1 2 2.5] $ acordeon; \n\
 \tumbao [1a 3a 5a] [1 3 4] $ bajo;\n\
@@ -136,7 +136,7 @@ ejemplo5 = "--cumbia tejana \n\
 
 ejemplo6 :: Text
 ejemplo6 = "-- balada cumbia por Kofi Oduro\n\
-\tempo 0.35;\n\
+\tempo 84;\n\
 \acordes [re m, la, la, fa, do, do, fa, re m, la, la];\n\
 \alternar 5 (acompanamiento (1 2 4)) $ acompanamiento (1 4) $ cumbia teclado; \n\
 \acompanamiento (2 3 4 4) $ cumbia teclado;\n\
@@ -152,7 +152,7 @@ ejemplo6 = "-- balada cumbia por Kofi Oduro\n\
 
 ejemplo7 :: Text
 ejemplo7 = "-- balada por Kofi Oduro \n\
-\tempo 0.173; \n\
+\tempo 42; \n\
 \acordes [re m, fa,fa, sol, re m, fa, fa, sol, fa,fa]; \n\
 \punteo [3a 4a 5a 2a 6a] [1 1.35 2.7 2.25 2.5 3 4.7 5.4] $ sample 8 $ teclado; \n\
 \acompanamiento (2) $ sample 1 $ teclado; \n\
@@ -170,7 +170,7 @@ ejemplo8 = "-- son cubano \n\
 
 ejemplo9 :: Text
 ejemplo9 = "-- salsa suave \n\
-\tempo 0.75; \n\
+\tempo 180; \n\
 \compas \"4/4\"; \n\
 \acordes [do m, do m , do m, re dim ]; \n\
 
@@ -188,7 +188,7 @@ ejemplo9 = "-- salsa suave \n\
 
 ejemplo10 :: Text
 ejemplo10 = "-- salsa rápida \n\
-\tempo 0.45;\n\
+\tempo 108;\n\
 \armonia [re m];\n\
 
 \vol 0.8 $ punteo [3a 4a 5a] [1 2.5 3.5 4, 4] $ sample 1 $ teclado;\n\
@@ -205,8 +205,6 @@ ejemplo10 = "-- salsa rápida \n\
 --  \alternar 2 (tumbao 3) $ tumbao 1 $ cumbia bajo;\n\
 --  \ritmo ([1 1.5 2 2.5 3 3.5 4 4.5]) $ cumbia guira;\n\
 --  \alternar 4 (tumbao 4) $ tumbao 1 $ cumbia congas"
-
-
 
 
 navigateExamples :: Int -> Text
@@ -234,6 +232,11 @@ attrsForGeneralInfo b = visibility b
   where visibility True = "class" =: "contenedorTextoIntro"
         visibility False = "class" =: "contenedorTextoIntro" <> "style" =: "display: none"
 
+
+logDisplay :: Bool -> T.Text
+logDisplay b = dis b
+  where dis True = "True"
+        dis False = "False"
 
 bodyElement :: MonadWidget t m => WebDirt -> m ()
 bodyElement wd =  do
@@ -263,6 +266,9 @@ bodyElement wd =  do
       consoleInfo <- divClass "textAreaEditor" $ do
         let textAttrs = constDyn $ fromList [("class", "maineditor"){--("class", "class-example"),--}]
         code <- do
+          -- voiceButton <- divClass "infoButton" $ button "speak"
+          -- let evText = tagPromptlyDyn (constDyn "test") voiceButton
+          -- someText <- holdDyn "" evText
           -- liftIO $ jq_highlight_brackets
           -- numbs <- foldDyn (+) (0 :: Int)  (1 <$ examplesButton) -- Dynamic Int
           -- let codeExamples = fmap navigateExamples numbs -- Dynamic Text
@@ -273,9 +279,38 @@ bodyElement wd =  do
         let stopSound = tagPromptlyDyn (constDyn "silencio") evClickStop -- Event t Text
         consoleInfo' <- performEvaluate' mv $ leftmost [evaled, stopSound] -- performEvaluate' pVar evaled
         return consoleInfo'
+
+-- Saludos!
+      -- divClass "contenedorDeSaludos" $ do
+      --   let textAttrsEditorDeSaludos = constDyn $ fromList [("class", "editorDeSaludos")]
+      --   t <- textArea $ def & textAreaConfig_attributes .~ textAttrsEditorDeSaludos
+      -- -- &  textAreaConfig_initialValue .~  intro & textAreaConfig_setValue .~ navigateExamplesWidget'
+      --   evClickVoice <- button "Saludar"
+      --   let evaled = tagPromptlyDyn (_textArea_value t) evClickVoice -- Event t Text
+      --   performEvent_ $ ffor evaled $ \text -> liftJSM $ do
+      --     jsT <- toJSVal text
+      --     js_speechSynthesis jsT
       return (evClickPlay', evClickStop', evClickInfo', examplesButton')
+      -- MIDI !
+    -- liftIO $ enableMidi
     return ()
 
+-- foreign import javascript safe
+--   "console.log $1"
+--   testSet :: JSVal -> IO()
+
+-- testTB :: MonadWidget t m => Dynamic t T.Text -> m ()
+-- testTB dt = do
+--     let bob :: Dynamic t (IO ())
+--         bob = (testSet.(pToJSVal)) <$> dt
+--
+--         bobIOEvent :: Event t (IO ())
+--         bobIOEvent = updated bob
+--
+--         bobWidgetHostEvent :: Event t (WidgetHost m ())
+--         bobWidgetHostEvent = fmap liftIO bobIOEvent
+--
+--     performEvent_ bobWidgetHostEvent
 
 -- performEvaluate' :: (PerformEvent t m, MonadIO (Performable m)) => MVar ([Layer], GlobalMaterial) -> Event t Text -> m ()
 performEvaluate' :: (PerformEvent t m, MonadIO (Performable m)) => MVar RenderState -> Event t Text -> m (Event t String)
@@ -444,8 +479,8 @@ ejemplos :: MonadWidget t m => m ()
 ejemplos = divClass "ejemplosCss" $ do
   text "Copie cualquiera de los siguientes bloques de código y péguelo en el editor de texto de la derecha. Hazlo sonar presionando el boton ▶."
   text "Para silenciar los sonidos borra tu código y vuelve a presionar el botón ▶."
-  let textAttrs = constDyn $ fromList [("class",  "ejemCode")]
-  let textAttrs' = constDyn $ fromList [("class",  "ejemCodeLargo")]
+  let textAttrs = constDyn $ fromList [("class", "ejemCode")]
+  let textAttrs' = constDyn $ fromList [("class", "ejemCodeLargo")]
 
   -- liftIO $ jq_highlight_brackets
   textArea $ def & textAreaConfig_attributes .~ textAttrs &  textAreaConfig_initialValue .~ intro -- text
@@ -711,6 +746,38 @@ utcTimeToAudioSeconds' (t0utc,t0event) tSystemInit = realToFrac $ utcTimeToPOSIX
   -- 11.10 - 11.00 = 0.20
   -- 0.10 + 11.00 = 11.10
   -- 0.20 + 11.10 = 11.30
+
+-- foreign import javascript safe
+--   "document.addEventListener('DOMContentLoaded', function() { \n\
+--     \var utterance = new SpeechSynthesisUtterance('Hello Luis!'); \n\ \speechSynthesis.speak(utterance); \n\
+--     \}, false);"
+--   js_speechSynthesis :: IO ()
+
+-- uncomment this if working with speechSynthesis
+-- foreign import javascript unsafe
+--   "var utterance = new SpeechSynthesisUtterance($1); speechSynthesis.speak(utterance);"
+--   js_speechSynthesis :: JSVal -> IO ()
+
+  -- "console.log('Hello World')"
+
+-- foreign import javascript unsafe
+--   "WebMidi.enable().then(onEnabled); \
+--   \function onEnabled() { \
+--   \ WebMidi.inputs.forEach(function(input) {console.log(input.manufacturer, input.name)}); \
+--   \ var myInput = WebMidi.inputs[0]; \
+--   \ }"
+--   enableMidi :: IO ()
+
+-- uncomment this if working on midi:
+-- foreign import javascript unsafe
+--   "midi.js"
+--   enableMidi :: IO ()
+
+
+-- foreign import javascript unsafe
+--   "onEnabled()"
+--   onEnabled' :: IO ()
+
 
 -- what is the Double on (UTCTime,Double)?
 noteEventToWebDirtJSVal :: UTCTime -> (NominalDiffTime, Map.Map Text JSVal) -> IO JSVal

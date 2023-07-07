@@ -53,14 +53,91 @@ parseLang s | all C.isSpace s' = return ([emptyLayer], defaultGlobalMaterial)
 
 preParse :: String -> String
 preParse s = do
-  let s' = T.replace (T.pack "do") (T.pack "di") (T.pack s) -- Text
-  let s'' = T.replace (T.pack "M") (T.pack "maj") s' -- Text
-  let s''' = T.replace (T.pack "#") (T.pack "aug") s'' -- Text
-  let s'''' = T.replace (T.pack "J") (T.pack "justa") s''' -- Text
-  let s''''' = T.replace (T.pack "tecladi") (T.pack "teclado") s'''' -- Text
-  let s'''''' =  T.replace (T.pack "partidi") (T.pack "partido") s''''' -- Text
-  let s''''''' = LH.removeComments $ T.unpack s''''''
-  s'''''''
+  let a = T.replace (T.pack "do") (T.pack "di") (T.pack s) -- Text
+  let b = T.replace (T.pack "M") (T.pack "maj") a -- Text
+  let c = T.replace (T.pack "#") (T.pack "aug") b -- Text
+  let d = T.replace (T.pack "J") (T.pack "justa") c -- Text
+  let e = T.replace (T.pack "tecladi") (T.pack "teclado") d -- Text
+  let f =  T.replace (T.pack "partidi") (T.pack "partido") e -- Text
+  let g = preParseIntervalosConIdentifier f
+  let h = preParseIntervalosConString g
+  let i = LH.removeComments $ T.unpack h
+  i
+
+
+preParseIntervalosConString :: T.Text -> T.Text
+preParseIntervalosConString s = do
+  let a = T.replace (T.pack "\"(1a)\"") (T.pack "\"1a\"") s
+  let b = T.replace (T.pack "\"(2a)\"") (T.pack "\"2a\"") a
+  let c = T.replace (T.pack "\"(3a)\"") (T.pack "\"3a\"") b
+  let d = T.replace (T.pack "\"(4a)\"") (T.pack "\"4a\"") c
+  let e = T.replace (T.pack "\"(5a)\"") (T.pack "\"5a\"") d
+
+  let f = T.replace (T.pack "\"(6a)\"") (T.pack "\"6a\"") e
+  let g = T.replace (T.pack "\"(7a)\"") (T.pack "\"7a\"") f
+  let h = T.replace (T.pack "\"(8a)\"") (T.pack "\"8a\"") g
+  let i = T.replace (T.pack "\"(9a)\"") (T.pack "\"9a\"") h
+  let j = T.replace (T.pack "\"(11a)\"") (T.pack "\"11a\"") i
+  let k = T.replace (T.pack "\"(13a)\"") (T.pack "\"13a\"") j
+  let l = T.replace (T.pack "\"(2m)\"") (T.pack "\"2m\"") k
+  let m = T.replace (T.pack "\"(3m)\"") (T.pack "\"3m\"") l
+  let n = T.replace (T.pack "\"(5b)\"") (T.pack "\"5b\"") m
+  let o = T.replace (T.pack "\"(6m)\"") (T.pack "\"6m\"") n
+  let p = T.replace (T.pack "\"(7m)\"") (T.pack "\"7m\"") o
+  let q = T.replace (T.pack "\"(7bb)\"") (T.pack "\"7bb\"") p
+  let r = T.replace (T.pack "\"(9m)\"") (T.pack "\"9m\"") q
+  let s = T.replace (T.pack "\"(11b)\"") (T.pack "\"11b\"") r
+  let t = T.replace (T.pack "\"(13b)\"") (T.pack "\"13b\"") s
+  let u = T.replace (T.pack "\"(2maj)\"") (T.pack "\"2maj\"") t
+  let v = T.replace (T.pack "\"(3maj)\"") (T.pack "\"3maj\"") u
+  let w = T.replace (T.pack "\"(4justa)\"") (T.pack "\"4justa\"") v
+  let x = T.replace (T.pack "\"(5justa)\"") (T.pack "\"5justa\"") w
+  let y = T.replace (T.pack "\"(6maj)\"") (T.pack "\"6maj\"") x
+  let z = T.replace (T.pack "\"(7maj)\"") (T.pack "\"7maj)") y
+  let a1 = T.replace (T.pack "\"(9maj)\"") (T.pack "\"9maj\"") z
+  let b1 = T.replace (T.pack "\"(11justa)\"") (T.pack "\"11justa\"") a1
+  let c1 = T.replace (T.pack "\"(13maj)\"") (T.pack "\"13maj\"") b1
+  let d1 = T.replace (T.pack "\"(4aug)\"") (T.pack "\"4aug\"") c1
+  let e1 = T.replace (T.pack "\"(5aug)\"") (T.pack "\"5aug\"") d1
+  let f1 = T.replace (T.pack "\"(11aug)\"") (T.pack "\"11aug\"") e1
+  f1
+
+
+preParseIntervalosConIdentifier :: T.Text -> T.Text
+preParseIntervalosConIdentifier s = do
+  let a = T.replace (T.pack "1a") (T.pack "(1a)") s
+  let b = T.replace (T.pack "2a") (T.pack "(2a)") a
+  let c = T.replace (T.pack "3a") (T.pack "(3a)") b
+  let d = T.replace (T.pack "4a") (T.pack "(4a)") c
+  let e = T.replace (T.pack "5a") (T.pack "(5a)") d
+  let f = T.replace (T.pack "6a") (T.pack "(6a)") e
+  let g = T.replace (T.pack "7a") (T.pack "(7a)") f
+  let h = T.replace (T.pack "8a") (T.pack "(8a)") g
+  let i = T.replace (T.pack "9a") (T.pack "(9a)") h
+  let j = T.replace (T.pack "11a") (T.pack "(11a)") i
+  let k = T.replace (T.pack "13a") (T.pack "(13a)") j
+  let l = T.replace (T.pack "2m") (T.pack "(2m)") k
+  let m = T.replace (T.pack "3m") (T.pack "(3m)") l
+  let n = T.replace (T.pack "5b") (T.pack "(5b)") m
+  let o = T.replace (T.pack "6m") (T.pack "(6m)") n
+  let p = T.replace (T.pack "7m") (T.pack "(7m)") o
+  let q = T.replace (T.pack "7bb") (T.pack "(7bb)") p
+  let r = T.replace (T.pack "9m") (T.pack "(9m)") q
+  let s = T.replace (T.pack "11b") (T.pack "(11b)") r
+  let t = T.replace (T.pack "13b") (T.pack "(13b)") s
+  let u = T.replace (T.pack "2maj") (T.pack "(2maj)") t
+  let v = T.replace (T.pack "3maj") (T.pack "(3maj)") u
+  let w = T.replace (T.pack "4justa") (T.pack "(4justa)") v
+  let x = T.replace (T.pack "5justa") (T.pack "(5justa)") w
+  let y = T.replace (T.pack "6maj") (T.pack "(6maj)") x
+  let z = T.replace (T.pack "7maj") (T.pack "(7maj)") y
+  let a1 = T.replace (T.pack "9maj") (T.pack "(9maj)") z
+  let b1 = T.replace (T.pack "11justa") (T.pack "(11justa)") a1
+  let c1 = T.replace (T.pack "13maj") (T.pack "(13maj)") b1
+  let d1 = T.replace (T.pack "4aug") (T.pack "(4aug)") c1
+  let e1 = T.replace (T.pack "5aug") (T.pack "(5aug)") d1
+  let f1 = T.replace (T.pack "11aug") (T.pack "(11aug)") e1
+  f1
 
 
 layers :: H [Layer]
@@ -99,19 +176,33 @@ parseCompasPartido = parseCompasPartido' <*> string
 parseCompasPartido' :: H (String -> GlobalMaterial -> GlobalMaterial)
 parseCompasPartido' = compasAGlobalMaterial <$ (reserved "compas" <|> reserved "compás")
 
-
 compasAGlobalMaterial :: String -> GlobalMaterial -> GlobalMaterial
 compasAGlobalMaterial s gm = gm {compas = establecerCompas s}
 
-
+-- tempo
 parsetempoAGlobalMaterial :: H (GlobalMaterial -> GlobalMaterial)
-parsetempoAGlobalMaterial = parsetempoAGlobalMaterial' <*> double
+parsetempoAGlobalMaterial = parsetempoCiclosAGlobalMaterial
+                         <|> parsetempoBPMAGlobalMaterial
+-- tempo en ciclos
+parsetempoCiclosAGlobalMaterial :: H (GlobalMaterial -> GlobalMaterial)
+parsetempoCiclosAGlobalMaterial = parsetempoCiclosAGlobalMaterial' <*> double
 
-parsetempoAGlobalMaterial' :: H (Double -> GlobalMaterial -> GlobalMaterial)
-parsetempoAGlobalMaterial' = tempoAGlobalMaterial <$ reserved "tempo"
+parsetempoCiclosAGlobalMaterial' :: H (Double -> GlobalMaterial -> GlobalMaterial)
+parsetempoCiclosAGlobalMaterial' = tempoCiclosAGlobalMaterial <$ reserved "tempo_ciclos"
 
-tempoAGlobalMaterial :: Double -> GlobalMaterial -> GlobalMaterial
-tempoAGlobalMaterial newFreq gm = gm {tempoForStandalone =  Tempo { freq = toRational $ newFreq, time=mytime 0, Data.Tempo.count=0}}
+tempoCiclosAGlobalMaterial :: Double -> GlobalMaterial -> GlobalMaterial
+tempoCiclosAGlobalMaterial newFreq gm = gm {tempoForStandalone =  Tempo { freq = toRational $ newFreq, time=mytime 0, Data.Tempo.count=0}}
+
+-- tempo in BPM
+parsetempoBPMAGlobalMaterial :: H (GlobalMaterial -> GlobalMaterial)
+parsetempoBPMAGlobalMaterial = parsetempoBPMAGlobalMaterial' <*> double
+
+parsetempoBPMAGlobalMaterial' :: H (Double -> GlobalMaterial -> GlobalMaterial)
+parsetempoBPMAGlobalMaterial' = tempoBPMAGlobalMaterial <$ reserved "tempo"
+
+tempoBPMAGlobalMaterial :: Double -> GlobalMaterial -> GlobalMaterial
+tempoBPMAGlobalMaterial newFreqInBPM gm = gm {tempoForStandalone =  Tempo { freq = toRational $ newFreqInCycles, time=mytime 0, Data.Tempo.count=0}}
+  where newFreqInCycles = newFreqInBPM / 60 / 4
 --
 parseSetChordProg :: H (GlobalMaterial -> GlobalMaterial)
 parseSetChordProg = parseSetChordProgWMetre
@@ -483,6 +574,32 @@ seleccionarSample index c =  c {style = nuevoE}
 --                     extrasRhythmPattern0 =  rPat,
 --                     extrasPitchPattern0 = ("midinote", nota)
 --   }
+
+--   tecladoPitchPattern0 = ("intervalo", [("unisono" , 0, 0)]),
+-- type PitchPattern = (PitchType, [Note])
+
+-- octavarPatronDeTono :: PitchPattern -> PitchPattern
+-- octavarPatronDeTono (pitchType, [(relacion, double, octava)]) = do
+
+
+-- octavar punteo
+-- octavarPunteo :: Layer -> Layer
+-- octavarPunteo c = c {style = nuevoE}
+--   where
+--     nuevoE = (style c) {
+--                     fmap snd tecladoPitchPattern0  --new ("intervalo", concat notes)-- ("acorde", [note])
+--                     --
+--                     -- acordeonPitchPattern0 = ("intervalo", nota),
+--                     --
+--                     -- zampoñaPitchPattern0 = ("intervalo", nota),
+--                     --
+--                     -- cuerdaRhythmPattern0 =  rPat,
+--                     -- cuerdaPitchPattern0 = ("intervalo", nota),
+--                     --
+--                     -- extrasRhythmPattern0 =  rPat,
+--                     -- extrasPitchPattern0 = ("intervalo", nota)
+--   }
+--
 
 -- punteo "1a" 3 $ cumbia teclado;
 parsePunteo :: H Layer
@@ -2270,910 +2387,59 @@ acompanamientosConVoicingSel rs notes c = c {style = nuevoE}
                           }
 
 parseNote :: H Note --(Relacion, Double, Octava)
-parseNote =  parseNoteConOctava
-         <|> parseNoteConOctavaAuto
+parseNote =  parseNoteStringConOctava
+         <|> parseNoteStringConOctavaAuto
+         <|> parseNoteNoQuotesConOctavaAuto
+         <|> parseNoteNoQuotesConOctava
+
+
          --
 
+catIntervaloConOctavaSeleccionable :: Int -> String -> Double -> Note
+catIntervaloConOctavaSeleccionable i c o = intervalo ((T.unpack $ T.strip  $ T.pack (show i)) ++ (T.unpack $ T.stripStart $ T.pack c)) o
 
-parseNoteConOctava :: H Note
-parseNoteConOctava = parseNoteConOctava' <*> double
 
-parseNoteConOctava' :: H (Octava -> Note)
-parseNoteConOctava' = do
+
+-- parseNotesNoQuotesConOctava seleccionable
+parseNoteNoQuotesConOctava  :: H Note
+parseNoteNoQuotesConOctava = parseNoteNoQuotesConOctava' <*> double
+
+parseNoteNoQuotesConOctava'  :: H (Double -> Note)
+parseNoteNoQuotesConOctava' = parseNoteNoQuotesConOctava'' <*> identifier
+
+parseNoteNoQuotesConOctava'' :: H (String -> Double -> Note)
+parseNoteNoQuotesConOctava'' = do
+  i <- int
+  return $ \c o -> catIntervaloConOctavaSeleccionable i c o
+
+-- parseNotesNoQuotesConOctavaAuto
+
+parseNoteNoQuotesConOctavaAuto  :: H Note
+parseNoteNoQuotesConOctavaAuto = parseNotesNoQuotesConOctavaAuto' <*> identifier
+
+parseNotesNoQuotesConOctavaAuto' :: H (String -> Note)
+parseNotesNoQuotesConOctavaAuto' = do
+  i <- int
+  return (\c -> catIntervaloConOctavaSeleccionable i c 0.0)
+
+
+
+-- parseNoteStringConOctava seleccionable
+
+parseNoteStringConOctava :: H Note
+parseNoteStringConOctava = parseNoteStringConOctava' <*> double
+
+parseNoteStringConOctava' :: H (Octava -> Note)
+parseNoteStringConOctava' = do
   i <- string
   return $ \o -> intervalo i o
 
-
-parseNoteConOctavaAuto :: H Note
-parseNoteConOctavaAuto = do
+-- parseNoteStringConOctava auto (corregir)
+parseNoteStringConOctavaAuto :: H Note
+parseNoteStringConOctavaAuto = do
   i <- string
   return $ intervalo i 0
 
-parseNotesNoQuotes :: H [Note]
-parseNotesNoQuotes = parseUnNoteConOctavaAuto
-          <|> parseDosNoteConOctavaAuto
-          <|> parseThreeNoteConOctavaAuto
-          <|> parseFourNoteConOctavaAuto
-          <|> parseFiveNoteConOctavaAuto
-          <|> parseSixNoteConOctavaAuto
-          <|> parseSevenNoteConOctavaAuto
-          <|> parseEightNoteConOctavaAuto
-          <|> parseNineNoteConOctavaAuto
-          <|> parseTenNoteConOctavaAuto
-          <|> parseElevenNoteConOctavaAuto
-          <|> parseTwelveNoteConOctavaAuto
-          <|> parseThirteenNoteConOctavaAuto
-          <|> parseFourteenNoteConOctavaAuto
-          <|> parseFifteenNoteConOctavaAuto
-          <|> parseSixteenNoteConOctavaAuto
-
-
-
-parseSixteenNoteConOctavaAuto :: H [Note]
-parseSixteenNoteConOctavaAuto = parseSixteenNoteConOctavaAuto' <*> identifier
-
-parseSixteenNoteConOctavaAuto' :: H (String -> [Note])
-parseSixteenNoteConOctavaAuto' = parseSixteenNoteConOctavaAuto'' <*> int
-
-parseSixteenNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'' = parseSixteenNoteConOctavaAuto''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''' = parseSixteenNoteConOctavaAuto'''' <*> int
-
-parseSixteenNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''' = parseSixteenNoteConOctavaAuto''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''' = parseSixteenNoteConOctavaAuto'''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''' :: H (Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''' = parseSixteenNoteConOctavaAuto''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''' = parseSixteenNoteConOctavaAuto'''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''' = parseSixteenNoteConOctavaAuto''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''' = parseSixteenNoteConOctavaAuto'''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''' = parseSixteenNoteConOctavaAuto''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''''' :: H (Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''''' :: H (String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''''''' :: H ( Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''''''''' :: H (Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''''''''' :: H (String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''' :: H (Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''''' = parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''''''' <*> int
-
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto'''''''''''''''''''''''''''''' = parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''''''' <*> identifier
-
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseSixteenNoteConOctavaAuto''''''''''''''''''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 i9 c9 i10 c10 i11 c11 i12 c12 i13 c13 i14 c14 i15 c15 i16 c16 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8, catIntervalo i9 c9, catIntervalo i10 c10, catIntervalo i11 c11, catIntervalo i12 c12, catIntervalo i13 c13, catIntervalo i14 c14, catIntervalo i15 c15, catIntervalo i16 c16]
-
-
-parseFifteenNoteConOctavaAuto :: H [Note]
-parseFifteenNoteConOctavaAuto = parseFifteenNoteConOctavaAuto' <*> identifier
-
-parseFifteenNoteConOctavaAuto' :: H (String -> [Note])
-parseFifteenNoteConOctavaAuto' = parseFifteenNoteConOctavaAuto'' <*> int
-
-parseFifteenNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'' = parseFifteenNoteConOctavaAuto''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''' = parseFifteenNoteConOctavaAuto'''' <*> int
-
-parseFifteenNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''' = parseFifteenNoteConOctavaAuto''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''' = parseFifteenNoteConOctavaAuto'''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''' :: H (Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''' = parseFifteenNoteConOctavaAuto''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''' = parseFifteenNoteConOctavaAuto'''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''' = parseFifteenNoteConOctavaAuto''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''' = parseFifteenNoteConOctavaAuto'''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''' = parseFifteenNoteConOctavaAuto''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''''' :: H (Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''''' :: H (String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''''''' :: H ( Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''''''''' :: H (Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''''''''' :: H (String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''''''''''' :: H (Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''''''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''''''''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''''''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''''''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''''''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''''''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''''''''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''''''''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''''''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''''''''''''''''' = parseFifteenNoteConOctavaAuto'''''''''''''''''''''''''''' <*> int
-
-parseFifteenNoteConOctavaAuto'''''''''''''''''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto'''''''''''''''''''''''''''' = parseFifteenNoteConOctavaAuto''''''''''''''''''''''''''''' <*> identifier
-
-parseFifteenNoteConOctavaAuto''''''''''''''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFifteenNoteConOctavaAuto''''''''''''''''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 i9 c9 i10 c10 i11 c11 i12 c12 i13 c13 i14 c14 i15 c15 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8, catIntervalo i9 c9, catIntervalo i10 c10, catIntervalo i11 c11, catIntervalo i12 c12, catIntervalo i13 c13, catIntervalo i14 c14, catIntervalo i15 c15]
-
-
-parseFourteenNoteConOctavaAuto :: H [Note]
-parseFourteenNoteConOctavaAuto = parseFourteenNoteConOctavaAuto' <*> identifier
-
-parseFourteenNoteConOctavaAuto' :: H (String -> [Note])
-parseFourteenNoteConOctavaAuto' = parseFourteenNoteConOctavaAuto'' <*> int
-
-parseFourteenNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'' = parseFourteenNoteConOctavaAuto''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''' = parseFourteenNoteConOctavaAuto'''' <*> int
-
-parseFourteenNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''' = parseFourteenNoteConOctavaAuto''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''' = parseFourteenNoteConOctavaAuto'''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''' :: H (Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''' = parseFourteenNoteConOctavaAuto''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''' = parseFourteenNoteConOctavaAuto'''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''' = parseFourteenNoteConOctavaAuto''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''' = parseFourteenNoteConOctavaAuto'''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''' = parseFourteenNoteConOctavaAuto''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''' = parseFourteenNoteConOctavaAuto'''''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''''' :: H (Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''''' = parseFourteenNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''''' :: H (String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''''' = parseFourteenNoteConOctavaAuto'''''''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''''''' :: H ( Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''''''' = parseFourteenNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''''''' :: H (String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''''''' = parseFourteenNoteConOctavaAuto'''''''''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''''''''' :: H (Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''''''''' = parseFourteenNoteConOctavaAuto''''''''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''''''''' :: H (String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''''''''' = parseFourteenNoteConOctavaAuto'''''''''''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''''''''''' :: H (Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''''''''''' = parseFourteenNoteConOctavaAuto''''''''''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''''''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''''''''''' = parseFourteenNoteConOctavaAuto'''''''''''''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''''''''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''''''''''''' = parseFourteenNoteConOctavaAuto''''''''''''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''''''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''''''''''''' = parseFourteenNoteConOctavaAuto'''''''''''''''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''''''''''''''' = parseFourteenNoteConOctavaAuto''''''''''''''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''''''''''''''' = parseFourteenNoteConOctavaAuto'''''''''''''''''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''''''''''''''''' = parseFourteenNoteConOctavaAuto''''''''''''''''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''''''''''''''''' = parseFourteenNoteConOctavaAuto'''''''''''''''''''''''''' <*> int
-
-parseFourteenNoteConOctavaAuto'''''''''''''''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto'''''''''''''''''''''''''' = parseFourteenNoteConOctavaAuto''''''''''''''''''''''''''' <*> identifier
-
-parseFourteenNoteConOctavaAuto''''''''''''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseFourteenNoteConOctavaAuto''''''''''''''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 i9 c9 i10 c10 i11 c11 i12 c12 i13 c13 i14 c14 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8, catIntervalo i9 c9, catIntervalo i10 c10, catIntervalo i11 c11, catIntervalo i12 c12, catIntervalo i13 c13, catIntervalo i14 c14]
-
-
-parseThirteenNoteConOctavaAuto :: H [Note]
-parseThirteenNoteConOctavaAuto = parseThirteenNoteConOctavaAuto' <*> identifier
-
-parseThirteenNoteConOctavaAuto' :: H (String -> [Note])
-parseThirteenNoteConOctavaAuto' = parseThirteenNoteConOctavaAuto'' <*> int
-
-parseThirteenNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'' = parseThirteenNoteConOctavaAuto''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''' = parseThirteenNoteConOctavaAuto'''' <*> int
-
-parseThirteenNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''' = parseThirteenNoteConOctavaAuto''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''' = parseThirteenNoteConOctavaAuto'''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''' :: H (Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''' = parseThirteenNoteConOctavaAuto''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''' :: H (String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''' = parseThirteenNoteConOctavaAuto'''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''' :: H (Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''' = parseThirteenNoteConOctavaAuto''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''' :: H (String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''' = parseThirteenNoteConOctavaAuto'''''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''''' :: H (Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''''' = parseThirteenNoteConOctavaAuto''''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''''' :: H (String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''''' = parseThirteenNoteConOctavaAuto'''''''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''''''' :: H ( Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''''''' = parseThirteenNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''''''' :: H (String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''''''' = parseThirteenNoteConOctavaAuto'''''''''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''''''''' :: H (Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''''''''' = parseThirteenNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''''''''' :: H (String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''''''''' = parseThirteenNoteConOctavaAuto'''''''''''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''''''''''' :: H (Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''''''''''' = parseThirteenNoteConOctavaAuto''''''''''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''''''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''''''''''' = parseThirteenNoteConOctavaAuto'''''''''''''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''''''''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''''''''''''' = parseThirteenNoteConOctavaAuto''''''''''''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''''''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''''''''''''' = parseThirteenNoteConOctavaAuto'''''''''''''''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''''''''''''''' = parseThirteenNoteConOctavaAuto''''''''''''''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''''''''''''''' = parseThirteenNoteConOctavaAuto'''''''''''''''''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''''''''''''''''' = parseThirteenNoteConOctavaAuto''''''''''''''''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''''''''''''''''' = parseThirteenNoteConOctavaAuto'''''''''''''''''''''''' <*> int
-
-parseThirteenNoteConOctavaAuto'''''''''''''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto'''''''''''''''''''''''' = parseThirteenNoteConOctavaAuto''''''''''''''''''''''''' <*> identifier
-
-parseThirteenNoteConOctavaAuto''''''''''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseThirteenNoteConOctavaAuto''''''''''''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 i9 c9 i10 c10 i11 c11 i12 c12 i13 c13 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8, catIntervalo i9 c9, catIntervalo i10 c10, catIntervalo i11 c11, catIntervalo i12 c12,  catIntervalo i13 c13]
-
-
-parseTwelveNoteConOctavaAuto :: H [Note]
-parseTwelveNoteConOctavaAuto = parseTwelveNoteConOctavaAuto' <*> identifier
-
-parseTwelveNoteConOctavaAuto' :: H (String -> [Note])
-parseTwelveNoteConOctavaAuto' = parseTwelveNoteConOctavaAuto'' <*> int
-
-parseTwelveNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'' = parseTwelveNoteConOctavaAuto''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''' = parseTwelveNoteConOctavaAuto'''' <*> int
-
-parseTwelveNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''' = parseTwelveNoteConOctavaAuto''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''' = parseTwelveNoteConOctavaAuto'''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''' :: H (Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''' = parseTwelveNoteConOctavaAuto''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''' :: H (String ->  Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''' = parseTwelveNoteConOctavaAuto'''''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''''' :: H (Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''''' = parseTwelveNoteConOctavaAuto''''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''''' :: H (String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''''' = parseTwelveNoteConOctavaAuto'''''''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''''''' :: H ( Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''''''' = parseTwelveNoteConOctavaAuto''''''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''''''' :: H (String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''''''' = parseTwelveNoteConOctavaAuto'''''''''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''''''''' :: H (Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''''''''' = parseTwelveNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''''''''' :: H (String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''''''''' = parseTwelveNoteConOctavaAuto'''''''''''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''''''''''' :: H (Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''''''''''' = parseTwelveNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''''''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''''''''''' = parseTwelveNoteConOctavaAuto'''''''''''''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''''''''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''''''''''''' = parseTwelveNoteConOctavaAuto''''''''''''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''''''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''''''''''''' = parseTwelveNoteConOctavaAuto'''''''''''''''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''''''''''''''' = parseTwelveNoteConOctavaAuto''''''''''''''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''''''''''''''' = parseTwelveNoteConOctavaAuto'''''''''''''''''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''''''''''''''''' = parseTwelveNoteConOctavaAuto''''''''''''''''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''''''''''''''''' = parseTwelveNoteConOctavaAuto'''''''''''''''''''''' <*> int
-
-parseTwelveNoteConOctavaAuto'''''''''''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto'''''''''''''''''''''' = parseTwelveNoteConOctavaAuto''''''''''''''''''''''' <*> identifier
-
-parseTwelveNoteConOctavaAuto''''''''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int -> String -> Int -> String -> [Note])
-parseTwelveNoteConOctavaAuto''''''''''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 i9 c9 i10 c10 i11 c11 i12 c12 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8, catIntervalo i9 c9, catIntervalo i10 c10, catIntervalo i11 c11, catIntervalo i12 c12]
-
-parseElevenNoteConOctavaAuto :: H [Note]
-parseElevenNoteConOctavaAuto = parseElevenNoteConOctavaAuto' <*> identifier
-
-parseElevenNoteConOctavaAuto' :: H (String -> [Note])
-parseElevenNoteConOctavaAuto' = parseElevenNoteConOctavaAuto'' <*> int
-
-parseElevenNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'' = parseElevenNoteConOctavaAuto''' <*> identifier
-
-parseElevenNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''' = parseElevenNoteConOctavaAuto'''' <*> int
-
-parseElevenNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''' = parseElevenNoteConOctavaAuto''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''' :: H (String ->  Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''' = parseElevenNoteConOctavaAuto'''''' <*> int
-
-parseElevenNoteConOctavaAuto'''''' :: H (Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''''' = parseElevenNoteConOctavaAuto''''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''''' :: H (String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''''' = parseElevenNoteConOctavaAuto'''''''' <*> int
-
-parseElevenNoteConOctavaAuto'''''''' :: H ( Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''''''' = parseElevenNoteConOctavaAuto''''''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''''''' :: H (String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''''''' = parseElevenNoteConOctavaAuto'''''''''' <*> int
-
-parseElevenNoteConOctavaAuto'''''''''' :: H (Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''''''''' = parseElevenNoteConOctavaAuto''''''''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''''''''' :: H (String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''''''''' = parseElevenNoteConOctavaAuto'''''''''''' <*> int
-
-parseElevenNoteConOctavaAuto'''''''''''' :: H (Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''''''''''' = parseElevenNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''''''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''''''''''' = parseElevenNoteConOctavaAuto'''''''''''''' <*> int
-
-parseElevenNoteConOctavaAuto'''''''''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''''''''''''' = parseElevenNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''''''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''''''''''''' = parseElevenNoteConOctavaAuto'''''''''''''''' <*> int
-
-parseElevenNoteConOctavaAuto'''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''''''''''''''' = parseElevenNoteConOctavaAuto''''''''''''''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''''''''''''''' = parseElevenNoteConOctavaAuto'''''''''''''''''' <*> int
-
-parseElevenNoteConOctavaAuto'''''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''''''''''''''''' = parseElevenNoteConOctavaAuto''''''''''''''''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''''''''''''''''' = parseElevenNoteConOctavaAuto'''''''''''''''''''' <*> int
-
-parseElevenNoteConOctavaAuto'''''''''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto'''''''''''''''''''' = parseElevenNoteConOctavaAuto''''''''''''''''''''' <*> identifier
-
-parseElevenNoteConOctavaAuto''''''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int -> String -> [Note])
-parseElevenNoteConOctavaAuto''''''''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 i9 c9 i10 c10 i11 c11 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8, catIntervalo i9 c9, catIntervalo i10 c10, catIntervalo i11 c11]
-
-
-parseTenNoteConOctavaAuto :: H [Note]
-parseTenNoteConOctavaAuto = parseTenNoteConOctavaAuto' <*> identifier
-
-parseTenNoteConOctavaAuto' :: H (String -> [Note])
-parseTenNoteConOctavaAuto' = parseTenNoteConOctavaAuto'' <*> int
-
-parseTenNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseTenNoteConOctavaAuto'' = parseTenNoteConOctavaAuto''' <*> identifier
-
-parseTenNoteConOctavaAuto''' :: H (String ->  Int -> String -> [Note])
-parseTenNoteConOctavaAuto''' = parseTenNoteConOctavaAuto'''' <*> int
-
-parseTenNoteConOctavaAuto'''' :: H (Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto'''' = parseTenNoteConOctavaAuto''''' <*> identifier
-
-parseTenNoteConOctavaAuto''''' :: H (String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto''''' = parseTenNoteConOctavaAuto'''''' <*> int
-
-parseTenNoteConOctavaAuto'''''' :: H ( Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto'''''' = parseTenNoteConOctavaAuto''''''' <*> identifier
-
-parseTenNoteConOctavaAuto''''''' :: H (String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto''''''' = parseTenNoteConOctavaAuto'''''''' <*> int
-
-parseTenNoteConOctavaAuto'''''''' :: H (Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto'''''''' = parseTenNoteConOctavaAuto''''''''' <*> identifier
-
-parseTenNoteConOctavaAuto''''''''' :: H (String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto''''''''' = parseTenNoteConOctavaAuto'''''''''' <*> int
-
-parseTenNoteConOctavaAuto'''''''''' :: H (Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto'''''''''' = parseTenNoteConOctavaAuto''''''''''' <*> identifier
-
-parseTenNoteConOctavaAuto''''''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto''''''''''' = parseTenNoteConOctavaAuto'''''''''''' <*> int
-
-parseTenNoteConOctavaAuto'''''''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto'''''''''''' = parseTenNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseTenNoteConOctavaAuto''''''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto''''''''''''' = parseTenNoteConOctavaAuto'''''''''''''' <*> int
-
-parseTenNoteConOctavaAuto'''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String ->  [Note])
-parseTenNoteConOctavaAuto'''''''''''''' = parseTenNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseTenNoteConOctavaAuto''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto''''''''''''''' = parseTenNoteConOctavaAuto'''''''''''''''' <*> int
-
-parseTenNoteConOctavaAuto'''''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto'''''''''''''''' = parseTenNoteConOctavaAuto''''''''''''''''' <*> identifier
-
-parseTenNoteConOctavaAuto''''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto''''''''''''''''' = parseTenNoteConOctavaAuto'''''''''''''''''' <*> int
-
-parseTenNoteConOctavaAuto'''''''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto'''''''''''''''''' = parseTenNoteConOctavaAuto''''''''''''''''''' <*> identifier
-
-parseTenNoteConOctavaAuto''''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String ->  Int -> String ->   Int -> String -> [Note])
-parseTenNoteConOctavaAuto''''''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 i9 c9 i10 c10 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8, catIntervalo i9 c9, catIntervalo i10 c10]
-
-
-parseNineNoteConOctavaAuto :: H [Note]
-parseNineNoteConOctavaAuto = parseNineNoteConOctavaAuto' <*> identifier
-
-parseNineNoteConOctavaAuto' :: H (String -> [Note])
-parseNineNoteConOctavaAuto' = parseNineNoteConOctavaAuto'' <*> int
-
-parseNineNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseNineNoteConOctavaAuto'' = parseNineNoteConOctavaAuto''' <*> identifier
-
-parseNineNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto''' = parseNineNoteConOctavaAuto'''' <*> int
-
-parseNineNoteConOctavaAuto'''' :: H ( Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto'''' = parseNineNoteConOctavaAuto''''' <*> identifier
-
-parseNineNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto''''' = parseNineNoteConOctavaAuto'''''' <*> int
-
-parseNineNoteConOctavaAuto'''''' :: H (Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto'''''' = parseNineNoteConOctavaAuto''''''' <*> identifier
-
-parseNineNoteConOctavaAuto''''''' :: H (String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto''''''' = parseNineNoteConOctavaAuto'''''''' <*> int
-
-parseNineNoteConOctavaAuto'''''''' :: H (Int ->  String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto'''''''' = parseNineNoteConOctavaAuto''''''''' <*> identifier
-
-parseNineNoteConOctavaAuto''''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto''''''''' = parseNineNoteConOctavaAuto'''''''''' <*> int
-
-parseNineNoteConOctavaAuto'''''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto'''''''''' = parseNineNoteConOctavaAuto''''''''''' <*> identifier
-
-parseNineNoteConOctavaAuto''''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto''''''''''' = parseNineNoteConOctavaAuto'''''''''''' <*> int
-
-parseNineNoteConOctavaAuto'''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String ->  [Note])
-parseNineNoteConOctavaAuto'''''''''''' = parseNineNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseNineNoteConOctavaAuto''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto''''''''''''' = parseNineNoteConOctavaAuto'''''''''''''' <*> int
-
-parseNineNoteConOctavaAuto'''''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto'''''''''''''' = parseNineNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseNineNoteConOctavaAuto''''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto''''''''''''''' = parseNineNoteConOctavaAuto'''''''''''''''' <*> int
-
-parseNineNoteConOctavaAuto'''''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseNineNoteConOctavaAuto'''''''''''''''' = parseNineNoteConOctavaAuto''''''''''''''''' <*> identifier
-
-parseNineNoteConOctavaAuto''''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String ->  Int -> String -> [Note])
-parseNineNoteConOctavaAuto''''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 i9 c9 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8, catIntervalo i9 c9]
-
-
-parseEightNoteConOctavaAuto :: H [Note]
-parseEightNoteConOctavaAuto = parseEightNoteConOctavaAuto' <*> identifier
-
-parseEightNoteConOctavaAuto' :: H (String -> [Note])
-parseEightNoteConOctavaAuto' = parseEightNoteConOctavaAuto'' <*> int
-
-parseEightNoteConOctavaAuto'' :: H ( Int -> String -> [Note])
-parseEightNoteConOctavaAuto'' = parseEightNoteConOctavaAuto''' <*> identifier
-
-parseEightNoteConOctavaAuto''' :: H (String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto''' = parseEightNoteConOctavaAuto'''' <*> int
-
-parseEightNoteConOctavaAuto'''' :: H (Int ->  String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto'''' = parseEightNoteConOctavaAuto''''' <*> identifier
-
-parseEightNoteConOctavaAuto''''' :: H (String -> Int ->  String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto''''' = parseEightNoteConOctavaAuto'''''' <*> int
-
-parseEightNoteConOctavaAuto'''''' :: H (Int ->  String -> Int ->  String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto'''''' = parseEightNoteConOctavaAuto''''''' <*> identifier
-
-parseEightNoteConOctavaAuto''''''' :: H ( String -> Int ->  String -> Int ->  String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto''''''' = parseEightNoteConOctavaAuto'''''''' <*> int
-
-parseEightNoteConOctavaAuto'''''''' :: H (Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> [Note])
-parseEightNoteConOctavaAuto'''''''' = parseEightNoteConOctavaAuto''''''''' <*> identifier
-
-parseEightNoteConOctavaAuto''''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> [Note])
-parseEightNoteConOctavaAuto''''''''' = parseEightNoteConOctavaAuto'''''''''' <*> int
-
-parseEightNoteConOctavaAuto'''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String -> [Note])
-parseEightNoteConOctavaAuto'''''''''' = parseEightNoteConOctavaAuto''''''''''' <*> identifier
-
-parseEightNoteConOctavaAuto''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto''''''''''' = parseEightNoteConOctavaAuto'''''''''''' <*> int
-
-parseEightNoteConOctavaAuto'''''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto'''''''''''' = parseEightNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseEightNoteConOctavaAuto''''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto''''''''''''' = parseEightNoteConOctavaAuto'''''''''''''' <*> int
-
-parseEightNoteConOctavaAuto'''''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> Int -> String ->  [Note])
-parseEightNoteConOctavaAuto'''''''''''''' = parseEightNoteConOctavaAuto''''''''''''''' <*> identifier
-
-parseEightNoteConOctavaAuto''''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> Int -> String -> [Note])
-parseEightNoteConOctavaAuto''''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 i8 c8 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7, catIntervalo i8 c8]
-
-
-parseSevenNoteConOctavaAuto :: H [Note]
-parseSevenNoteConOctavaAuto = parseSevenNoteConOctavaAuto' <*> identifier
-
-parseSevenNoteConOctavaAuto' :: H (String -> [Note])
-parseSevenNoteConOctavaAuto' = parseSevenNoteConOctavaAuto'' <*> int
-
-parseSevenNoteConOctavaAuto'' :: H (Int ->  String -> [Note])
-parseSevenNoteConOctavaAuto'' = parseSevenNoteConOctavaAuto''' <*> identifier
-
-parseSevenNoteConOctavaAuto''' :: H (String -> Int ->  String -> [Note])
-parseSevenNoteConOctavaAuto''' = parseSevenNoteConOctavaAuto'''' <*> int
-
-parseSevenNoteConOctavaAuto'''' :: H (Int ->  String -> Int ->  String -> [Note])
-parseSevenNoteConOctavaAuto'''' = parseSevenNoteConOctavaAuto''''' <*> identifier
-
-parseSevenNoteConOctavaAuto''''' :: H ( String -> Int ->  String -> Int ->  String -> [Note])
-parseSevenNoteConOctavaAuto''''' = parseSevenNoteConOctavaAuto'''''' <*> int
-
-parseSevenNoteConOctavaAuto'''''' :: H (Int -> String -> Int ->  String -> Int ->  String ->[Note])
-parseSevenNoteConOctavaAuto'''''' = parseSevenNoteConOctavaAuto''''''' <*> identifier
-
-parseSevenNoteConOctavaAuto''''''' :: H (String -> Int -> String -> Int ->  String -> Int ->  String ->[Note])
-parseSevenNoteConOctavaAuto''''''' = parseSevenNoteConOctavaAuto'''''''' <*> int
-
-parseSevenNoteConOctavaAuto'''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String ->[Note])
-parseSevenNoteConOctavaAuto'''''''' = parseSevenNoteConOctavaAuto''''''''' <*> identifier
-
-parseSevenNoteConOctavaAuto''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> [Note])
-parseSevenNoteConOctavaAuto''''''''' = parseSevenNoteConOctavaAuto'''''''''' <*> int
-
-parseSevenNoteConOctavaAuto'''''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> Int ->  String -> [Note])
-parseSevenNoteConOctavaAuto'''''''''' = parseSevenNoteConOctavaAuto''''''''''' <*> identifier
-
-parseSevenNoteConOctavaAuto''''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  Int ->  String -> [Note])
-parseSevenNoteConOctavaAuto''''''''''' = parseSevenNoteConOctavaAuto'''''''''''' <*> int
-
-parseSevenNoteConOctavaAuto'''''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> Int ->  String -> [Note])
-parseSevenNoteConOctavaAuto'''''''''''' = parseSevenNoteConOctavaAuto''''''''''''' <*> identifier
-
-parseSevenNoteConOctavaAuto''''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String -> [Note])
-parseSevenNoteConOctavaAuto''''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 i7 c7 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6, catIntervalo i7 c7]
-
-
-parseSixNoteConOctavaAuto :: H [Note]
-parseSixNoteConOctavaAuto = parseSixNoteConOctavaAuto' <*> identifier
-
-parseSixNoteConOctavaAuto' :: H (String -> [Note])
-parseSixNoteConOctavaAuto' = parseSixNoteConOctavaAuto'' <*> int
-
-parseSixNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseSixNoteConOctavaAuto'' = parseSixNoteConOctavaAuto''' <*> identifier
-
-parseSixNoteConOctavaAuto''' :: H (String -> Int ->  String -> [Note])
-parseSixNoteConOctavaAuto''' = parseSixNoteConOctavaAuto'''' <*> int
-
-parseSixNoteConOctavaAuto'''' :: H (Int -> String -> Int ->  String -> [Note])
-parseSixNoteConOctavaAuto'''' = parseSixNoteConOctavaAuto''''' <*> identifier
-
-parseSixNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int ->  String -> [Note])
-parseSixNoteConOctavaAuto''''' = parseSixNoteConOctavaAuto'''''' <*> int
-
-parseSixNoteConOctavaAuto'''''' :: H (Int -> String -> Int -> String -> Int ->  String -> [Note])
-parseSixNoteConOctavaAuto'''''' = parseSixNoteConOctavaAuto''''''' <*> identifier
-
-parseSixNoteConOctavaAuto''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> [Note])
-parseSixNoteConOctavaAuto''''''' = parseSixNoteConOctavaAuto'''''''' <*> int
-
-parseSixNoteConOctavaAuto'''''''' :: H (Int -> String -> Int -> String -> Int ->  String -> Int ->  String -> [Note])
-parseSixNoteConOctavaAuto'''''''' = parseSixNoteConOctavaAuto''''''''' <*> identifier
-
-parseSixNoteConOctavaAuto''''''''' :: H (String ->  Int -> String -> Int -> String -> Int ->  String -> Int -> String ->  [Note])
-parseSixNoteConOctavaAuto''''''''' = parseSixNoteConOctavaAuto'''''''''' <*> int
-
-parseSixNoteConOctavaAuto'''''''''' ::  H (Int -> String ->  Int -> String -> Int -> String -> Int ->  String ->  Int ->  String -> [Note])
-parseSixNoteConOctavaAuto'''''''''' = parseSixNoteConOctavaAuto''''''''''' <*> identifier
-
-parseSixNoteConOctavaAuto''''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> Int ->  String -> [Note])
-parseSixNoteConOctavaAuto''''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 i6 c6 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5, catIntervalo i6 c6]
-
-
-parseFiveNoteConOctavaAuto :: H [Note]
-parseFiveNoteConOctavaAuto = parseFiveNoteConOctavaAuto' <*> identifier
-
-parseFiveNoteConOctavaAuto' :: H (String -> [Note])
-parseFiveNoteConOctavaAuto' = parseFiveNoteConOctavaAuto'' <*> int
-
-parseFiveNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseFiveNoteConOctavaAuto'' = parseFiveNoteConOctavaAuto''' <*> identifier
-
-parseFiveNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseFiveNoteConOctavaAuto''' = parseFiveNoteConOctavaAuto'''' <*> int
-
-parseFiveNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
-parseFiveNoteConOctavaAuto'''' = parseFiveNoteConOctavaAuto''''' <*> identifier
-
-parseFiveNoteConOctavaAuto''''' :: H (String ->  Int -> String -> Int -> String -> [Note])
-parseFiveNoteConOctavaAuto''''' = parseFiveNoteConOctavaAuto'''''' <*> int
-
-parseFiveNoteConOctavaAuto'''''' :: H (Int -> String ->  Int -> String -> Int -> String -> [Note])
-parseFiveNoteConOctavaAuto'''''' = parseFiveNoteConOctavaAuto''''''' <*> identifier
-
-parseFiveNoteConOctavaAuto''''''' :: H (String -> Int -> String ->  Int -> String -> Int -> String -> [Note])
-parseFiveNoteConOctavaAuto''''''' = parseFiveNoteConOctavaAuto'''''''' <*> int
-
-parseFiveNoteConOctavaAuto'''''''' ::  H (Int -> String -> Int -> String ->  Int -> String -> Int -> String -> [Note])
-parseFiveNoteConOctavaAuto'''''''' = parseFiveNoteConOctavaAuto''''''''' <*> identifier
-
-parseFiveNoteConOctavaAuto''''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> Int -> String -> [Note])
-parseFiveNoteConOctavaAuto''''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 i5 c5 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4, catIntervalo i5 c5]
-
-
---
-parseFourNoteConOctavaAuto :: H [Note]
-parseFourNoteConOctavaAuto = parseFourNoteConOctavaAuto' <*> identifier
-
-parseFourNoteConOctavaAuto' :: H (String -> [Note])
-parseFourNoteConOctavaAuto' = parseFourNoteConOctavaAuto'' <*> int
-
-parseFourNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseFourNoteConOctavaAuto'' = parseFourNoteConOctavaAuto''' <*> identifier
-
-parseFourNoteConOctavaAuto''' :: H (String ->  Int -> String -> [Note])
-parseFourNoteConOctavaAuto''' = parseFourNoteConOctavaAuto'''' <*> int
-
-parseFourNoteConOctavaAuto'''' :: H (Int -> String ->  Int -> String -> [Note])
-parseFourNoteConOctavaAuto'''' = parseFourNoteConOctavaAuto''''' <*> identifier
-
-parseFourNoteConOctavaAuto''''' :: H (String -> Int -> String ->  Int -> String -> [Note])
-parseFourNoteConOctavaAuto''''' = parseFourNoteConOctavaAuto'''''' <*> int
-
-parseFourNoteConOctavaAuto'''''' :: H (Int -> String -> Int -> String ->  Int -> String -> [Note])
-parseFourNoteConOctavaAuto'''''' = parseFourNoteConOctavaAuto''''''' <*> identifier
-
-parseFourNoteConOctavaAuto''''''' :: H (String -> Int -> String -> Int -> String ->  Int -> String -> [Note])
-parseFourNoteConOctavaAuto''''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 i4 c4 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3, catIntervalo i4 c4]
-
---
-parseThreeNoteConOctavaAuto :: H [Note]
-parseThreeNoteConOctavaAuto = parseThreeNoteConOctavaAuto' <*> identifier
-
-parseThreeNoteConOctavaAuto' :: H (String -> [Note])
-parseThreeNoteConOctavaAuto' = parseThreeNoteConOctavaAuto'' <*> int
-
-parseThreeNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseThreeNoteConOctavaAuto'' = parseThreeNoteConOctavaAuto''' <*> identifier
-
-parseThreeNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseThreeNoteConOctavaAuto''' = parseThreeNoteConOctavaAuto'''' <*> int
-
-parseThreeNoteConOctavaAuto'''' :: H (Int -> String -> Int -> String -> [Note])
-parseThreeNoteConOctavaAuto'''' = parseThreeNoteConOctavaAuto''''' <*> identifier
-
-parseThreeNoteConOctavaAuto''''' :: H (String -> Int -> String -> Int -> String -> [Note])
-parseThreeNoteConOctavaAuto''''' = do
-  i1 <- int
-  return $ \c1 i2 c2 i3 c3 -> [catIntervalo i1 c1, catIntervalo i2 c2, catIntervalo i3 c3]
-
---
-parseDosNoteConOctavaAuto :: H [Note]
-parseDosNoteConOctavaAuto = parseDosNoteConOctavaAuto' <*> identifier
-
-parseDosNoteConOctavaAuto' :: H (String -> [Note])
-parseDosNoteConOctavaAuto' = parseDosNoteConOctavaAuto'' <*> int
-
-parseDosNoteConOctavaAuto'' :: H (Int -> String -> [Note])
-parseDosNoteConOctavaAuto'' = parseDosNoteConOctavaAuto''' <*> identifier
-
-parseDosNoteConOctavaAuto''' :: H (String -> Int -> String -> [Note])
-parseDosNoteConOctavaAuto''' = do
-  i1 <- int
-  return $ \c1 i2 c2-> [catIntervalo i1 c1, catIntervalo i2 c2]
-
---
-parseUnNoteConOctavaAuto :: H [Note]
-parseUnNoteConOctavaAuto = parseUnNoteConOctavaAuto' <*> identifier
-
-parseUnNoteConOctavaAuto' :: H (String -> [Note])
-parseUnNoteConOctavaAuto' = do
-  i <- int
-  return $ \c -> [catIntervalo i c]
-
-catIntervalo :: Int -> String -> Note
-catIntervalo i c = intervalo ((T.unpack $ T.strip  $ T.pack (show i)) ++ (T.unpack $ T.stripStart $ T.pack c)) 0
 
 -- listaDeStringsANote ::  [[String]] -> [Note]
 -- listaDeStringsANote xs = listaDeListaStringAListaDeNota xs -- [Note]
@@ -3229,7 +2495,7 @@ praseListaDeListaStringAListaDeAcordes = list parseNoteList
 -- parseStringsAListaDeNotes :: H [String]
 parseNoteList :: H [Note]
 parseNoteList = parseStringsAListaDeNotes
-              <|> parseNotesNoQuotes
+              -- <|> parseNotesNoQuotesConOctavaAuto
 
 parseStringsAListaDeNotes :: H [Note]
 parseStringsAListaDeNotes = parseUnStringAListadeNotas
@@ -3462,7 +2728,7 @@ parseSeisStringsAListadeNotas''''' = do
 --
 
 parseCincoStringsAListadeNotas :: H [Note]
-parseCincoStringsAListadeNotas = parseCuatroStringsAListadeNotas' <*> parseNote
+parseCincoStringsAListadeNotas = parseCincoStringsAListadeNotas' <*> parseNote
 
 parseCincoStringsAListadeNotas' :: H (Note -> [Note])
 parseCincoStringsAListadeNotas' = parseCincoStringsAListadeNotas'' <*> parseNote
@@ -3520,7 +2786,7 @@ parseUnStringAListadeNotas = do
   -- s1 <- string
   s1 <- parseNote -- Note
   return $ stringAListadeUnaNota s1
---
+
 -- helper funcs para acompanamiento
 -- stringAListadeUnaNota :: String -> [String]
 stringAListadeUnaNota :: Note -> [Note]
